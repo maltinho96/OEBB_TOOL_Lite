@@ -1,0 +1,18 @@
+{
+  "name": "oebb-app",
+  "version": "0.1.0",
+  "description": "Werkzeug zur Erstellung von Protokollen der oekologischen Baubegleitung (OEBB)",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "leaflet": "^1.9.4",
+    "xlsx-js-style": "^1.2.0"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
+  }
+}

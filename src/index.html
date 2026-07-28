@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Protokolle der ökologischen Baubegleitung</title>
+  <!-- Kein <link rel="stylesheet">: Die CSS-Dateien werden in src/main.js
+       per import geladen (Vite bündelt sie automatisch). -->
+</head>
+<body>
+
+  <!-- Obere Werkzeugleiste. Das Verhalten der Knöpfe wird in ui/tabs.js
+       verdrahtet (per data-tab / data-aktion, kein inline onclick mehr). -->
+  <div class="werkzeuge kein-druck" id="werkzeuge">
+    <button class="tab-knopf aktiv" data-tab="tab-uebersicht">🏠 Übersicht</button>
+    <button class="tab-knopf" id="knopfProtokolle" data-tab="tab-protokoll">📄 Protokolle</button>
+    <button class="tab-knopf" data-tab="tab-karte">🗺 Karte</button>
+    <button class="tab-knopf" data-tab="tab-stunden">🕒 Stunden</button>
+    <span class="trenner"></span>
+    <button class="gruen" data-aktion="speichern">💾 Speichern unter…</button>
+    <button class="blau" data-aktion="drucken">🖨 Drucken / PDF</button>
+    <button data-aktion="fotos">📷 Fotos</button>
+  </div>
+
+  <!-- Unterleiste der Protokoll-Reiter; nur sichtbar, wenn ein Protokoll offen ist. -->
+  <div class="unterleiste kein-druck" id="unterleiste" style="display:none">
+    <button class="sub-knopf" data-tab="tab-protokoll">📋 Begehungsprotokoll</button>
+    <button class="sub-knopf" data-tab="tab-vorbegehung">🚶 Vorbegehungsprotokoll</button>
+    <button class="sub-knopf" data-tab="tab-belehrung">🎓 Belehrungsprotokoll</button>
+    <span class="firmenschalter" id="firmenschalter">Firma:
+      <!-- Optionen werden aus config/firmen.js gefüllt -->
+      <select id="firmenSelect"></select>
+    </span>
+  </div>
+
+  <!-- Mount-Punkt: Hier hängen die Reiter-Inhalte ein, erzeugt aus main.js / ui/. -->
+  <div class="blatt" id="app"></div>
+
+  <!-- Versteckte Datei-Inputs für Bild-Uploads (von ui/fotos.js genutzt). -->
+  <input type="file" id="fotoInput" accept="image/*" multiple hidden />
+  <input type="file" id="einzelbildInput" accept="image/*" hidden />
+
+  <!-- Einstiegspunkt: lädt und verdrahtet alle Module. -->
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

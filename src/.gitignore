@@ -1,0 +1,14 @@
+# Abhängigkeiten (werden per `npm install` erzeugt, nie committen)
+node_modules/
+
+# Build-Ergebnis (wird per `npm run build` erzeugt)
+dist/
+
+# Vite-Cache
+.vite/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+*.local
