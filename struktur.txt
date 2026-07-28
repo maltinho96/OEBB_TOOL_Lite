@@ -1,0 +1,64 @@
+oebb-app/
+├── .gitignore                   # node_modules/, dist/
+├── .nvmrc
+├── package.json                 # deps: leaflet, xlsx  |  scripts: dev, build
+├── vite.config.js
+├── index.html                   # nur Mount-Gerüst
+│
+├── public/assets/
+│   ├── logo-greens.svg
+│   └── logo-ing.svg
+│
+└── src/
+    ├── main.js                  # importiert alles, verdrahtet die App
+    │
+    ├── config/
+    │   ├── firmen.js
+    │   └── konstanten.js
+    │
+    ├── core/
+    │   ├── storage/
+    │   │   ├── index.js         # Fassade
+    │   │   └── fsa.js           # Browser-Backend (später kommt tauri.js daneben)
+    │   ├── db.js
+    │   ├── meta.js
+    │   └── bilder.js
+    │
+    ├── domain/
+    │   ├── protokoll.js
+    │   ├── projekt.js
+    │   └── stunden.js
+    │
+    ├── schema/
+    │   ├── index.js
+    │   ├── felder.js
+    │   ├── begehung.js
+    │   ├── vorbegehung.js
+    │   └── belehrung.js
+    │
+    ├── content/
+    │   ├── rechtsgrundlagen.json
+    │   ├── festlegungen.json
+    │   └── textbausteine.json
+    │
+    ├── ui/
+    │   ├── tabs.js
+    │   ├── firma.js
+    │   ├── formular.js
+    │   ├── fotos.js
+    │   ├── karte.js
+    │   ├── projektformular.js
+    │   ├── stundentabelle.js
+    │   └── dashboard.js
+    │
+    ├── export/
+    │   ├── html-export.js
+    │   ├── html-vorlage.js
+    │   └── xlsx-export.js
+    │
+    └── styles/
+        ├── grundlagen.css
+        ├── themes.css
+        ├── formular.css
+        ├── karte.css
+        └── druck.css
