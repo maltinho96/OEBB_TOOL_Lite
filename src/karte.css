@@ -1,0 +1,9 @@
+/* Karten-Container (Leaflet). Die Leaflet-Basis-Stile kommen per
+   `import 'leaflet/dist/leaflet.css'` (z. B. in ui/karte.js), nicht hier. */
+
+.karte{height:280px; border:1px solid var(--rahmen); border-radius:6px; margin:6px 0;}
+.karte-gross{height:420px;}
+.oebb-nadel{font-size:26px; line-height:26px; text-shadow:0 1px 2px rgba(0,0,0,.4); transform:translate(-3px,-22px);}
+.koord-anzeige{font-size:11.5px; color:#555;}
+
+@media print{ .karte, .karte-gross{display:none;} }

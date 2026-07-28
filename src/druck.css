@@ -1,0 +1,37 @@
+/* Druck-/PDF-Ausgabe (window.print). */
+.druckfuss{display:none;}
+
+@media print{
+  @page{size:A4; margin:12mm 10mm 16mm;}
+  body{background:#fff; font-size:11px;}
+  table.form td{padding:3px 6px;}
+  textarea{min-height:34px;}
+  textarea.gross{min-height:180px;}
+  h2{margin:14px 0 4px;}
+  .blatt{box-shadow:none; max-width:none; width:100%; padding:0; margin:0; min-height:0;}
+  .werkzeuge, .unterleiste, .dropzone, .entfernen, .vis-entfernen, .abb-kopf, .kein-druck{display:none !important;}
+  *{print-color-adjust:exact; -webkit-print-color-adjust:exact;}
+  input, textarea{border-bottom:none; background:transparent;}
+  table.sz{font-size:10.5px; table-layout:fixed;}
+  table.sz td, table.sz th{word-wrap:break-word; overflow-wrap:anywhere;}
+  .sz-block{page-break-inside:avoid;}
+  .sz-block + .sz-block{page-break-before:always;}
+  textarea{resize:none; overflow:hidden;}
+  table.form{page-break-inside:auto;}
+  tr{page-break-inside:avoid; break-inside:avoid;}
+  .unterschrift-feld:empty::before, .plan-bild:empty::before, .vis-bild:empty::before{content:none;}
+  .plan-bild{cursor:default;}
+  .zusammen{page-break-inside:avoid; break-inside:avoid;}
+  .abb{page-break-inside:avoid; break-inside:avoid; border:none; background:none; padding:0;}
+  .abb + .abb{page-break-before:always;}
+  h2{page-break-after:avoid; break-after:avoid;}
+  .vis-zeile{page-break-inside:avoid;}
+  .abb-karte img{max-height:75mm;}
+  .abb.modus-2 .abb-bilder img{max-width:calc(50% - 6px); max-height:150mm;}
+  .abb.modus-1 .abb-bilder img{max-width:80%; max-height:160mm;}
+  .druckfuss{
+    display:flex; position:fixed; bottom:0; left:0; right:0;
+    font-size:9px; color:#888; justify-content:space-between;
+  }
+  .druckfuss .fname::after{content:var(--firma-name);}
+}

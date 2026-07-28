@@ -1,0 +1,197 @@
+/* ==== Farbpalette (generisch) ==== */
+:root{
+  --blau:#a8d4ea; --blau-hell:#d6ebf5;
+  --gruen:#8fd18f; --gruen-hell:#d9f0d9;
+  --pink:#e6a8d4; --pink-hell:#f6ddef;
+  --orange:#f2b27a; --orange-hell:#fbe3cd;
+  --gelb:#e8e858; --gelb-hell:#f5f5c8;
+  --grau:#d9d9d9; --grau-hell:#efefef;
+  --tinte:#1a1a1a; --rahmen:#555;
+}
+
+*{box-sizing:border-box;}
+body{
+  font-family:"Segoe UI", system-ui, sans-serif;
+  font-size:13px; color:var(--tinte);
+  background:#e8e6e1; margin:0; padding:0;
+}
+.blatt{
+  max-width:880px; margin:0 auto; background:#fff;
+  padding:26px 40px 60px; box-shadow:0 2px 14px rgba(0,0,0,.15);
+  min-height:70vh;
+}
+.logo{float:right; margin:0 0 8px 12px;}
+.logo img{width:44px; height:auto; display:none;}
+h1{font-size:21px; margin:0 0 16px; color:var(--firma);}
+h1 .nr{display:inline-block; width:56px;}
+h1 .nr input{font-size:21px; font-weight:700; width:48px; border:none; text-align:center; color:var(--firma);}
+h2{font-size:14px; margin:22px 0 6px; letter-spacing:.02em;}
+h2.c-gruen{color:#2e7d32;} h2.c-pink{color:#ad1f7e;} h2.c-orange{color:#c05f10;} h2.c-gelb{color:#8f8f00;} h2.c-grau{color:#555;}
+
+table.form{width:100%; border-collapse:collapse; margin-bottom:4px;}
+table.form td{border:1px solid var(--rahmen); padding:5px 8px; vertical-align:top;}
+td.label{font-weight:700; white-space:nowrap;}
+.zeile{display:flex; align-items:center; gap:6px;}
+.zeile b{white-space:nowrap;}
+.zeile input{flex:1 1 auto; width:auto;}
+
+.bg-blau td{background:var(--blau);} .bg-blau-h td{background:var(--blau-hell);}
+.bg-gruen td{background:var(--gruen);} .bg-gruen-h td{background:var(--gruen-hell);}
+.bg-pink td{background:var(--pink);} .bg-pink-h td{background:var(--pink-hell);}
+.bg-orange td{background:var(--orange);} .bg-orange-h td{background:var(--orange-hell);}
+.bg-gelb td{background:var(--gelb);} .bg-gelb-h td{background:var(--gelb-hell);}
+.bg-grau td{background:var(--grau);} .bg-grau-h td{background:var(--grau-hell);}
+
+input[type=text], input[type=date], input[type=tel], input[type=email]{
+  font:inherit; border:none; background:rgba(255,255,255,.65);
+  border-bottom:1px dotted #888; padding:2px 4px; width:100%;
+}
+input:focus, textarea:focus, [contenteditable]:focus{outline:2px solid #4a90d9; background:#fff;}
+textarea{
+  font:inherit; display:block; width:100%; border:none; background:rgba(255,255,255,.5);
+  resize:vertical; min-height:52px; padding:3px 5px; margin-top:4px;
+}
+textarea.gross{min-height:220px;}
+input[type=checkbox], input[type=radio]{width:17px; height:17px; accent-color:#1a1a1a;}
+.cb{display:inline-flex; align-items:center; gap:6px; margin-right:14px; font-weight:400;}
+.cb b{font-weight:700;}
+
+.wurzeltab td{text-align:left;}
+.wurzeltab .kopf{writing-mode:vertical-rl; transform:rotate(180deg); font-weight:700; font-size:11px; text-align:center; width:26px; padding:4px 2px;}
+.wurzeltab input[type=text]{width:52px; text-align:center;}
+
+.prio{display:flex; gap:28px; justify-content:center; align-items:center; padding:4px 0;}
+.prio-hinweis{text-align:center; font-weight:700; font-size:12px;}
+.fusz{font-size:10.5px; margin:4px 0 0;}
+
+/* ---------- Fotodokumentation ---------- */
+.abb{
+  border:1px solid var(--rahmen); margin:14px 0; padding:10px;
+  background:#fafafa; break-inside:avoid;
+}
+.abb-kopf{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;}
+.abb-kopf button{font:inherit; font-size:11px; padding:3px 9px; cursor:pointer; border:1px solid #888; border-radius:4px; background:#fff;}
+.abb-kopf button.entfernen{color:#a00; border-color:#a00; margin-left:auto;}
+.abb-karte{margin-bottom:8px;}
+.abb-karte img{width:100%; max-height:280px; object-fit:cover; border:1px solid #999; display:block;}
+.abb-bilder{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:8px; justify-content:flex-start;}
+.abb-bilder img{border:1px solid #999; width:auto; height:auto;}
+.abb.modus-2 .abb-bilder img{max-width:calc(50% - 6px); max-height:520px;}
+.abb.modus-1 .abb-bilder{flex-direction:column; align-items:center;}
+.abb.modus-1 .abb-bilder img{max-width:78%; max-height:560px;}
+.abb-titel{font-weight:700; margin-bottom:2px;}
+.abb-text{min-height:40px; border-bottom:1px dotted #aaa; padding:2px 4px; background:#fff;}
+.abb-text:empty::before{content:"Bildunterschrift hier eintragen …"; color:#999;}
+.dropzone{
+  border:2px dashed #999; border-radius:6px; padding:14px; text-align:center;
+  color:#666; background:#fdfdfd; cursor:pointer; margin-top:12px;
+}
+.dropzone.aktiv{border-color:#2e7d32; background:#eef7ee; color:#2e7d32;}
+
+.plan-bild{text-align:center; cursor:pointer;}
+.plan-bild img{max-width:100%; border:1px solid #999; display:inline-block;}
+.plan-bild:empty::before{
+  content:"🗺 Klicken und Übersichtsplan-Bild einfügen";
+  color:#999; font-size:12px;
+  display:flex; align-items:center; justify-content:center;
+  min-height:80px; border:1px dashed #aaa; border-radius:4px;
+}
+.plan-text{min-height:32px; border-bottom:1px dotted #aaa; padding:2px 4px; margin-top:6px;}
+
+.unterschrift-feld{min-height:60px; cursor:pointer;}
+.unterschrift-feld img{max-height:80px;}
+.unterschrift-feld:empty::before{
+  content:"✒ Klicken und Unterschrift-Bild einfügen";
+  color:#999; font-weight:400; font-size:11px;
+  display:flex; align-items:center; justify-content:center;
+  min-height:60px; border:1px dashed #aaa; border-radius:4px;
+}
+
+/* ---------- Belehrung: Visualisierungszeilen ---------- */
+.vis-zeile{display:flex; border:1px solid var(--rahmen); margin:-1px 0 0; break-inside:avoid;}
+.vis-bild{flex:0 0 46%; border-right:1px solid var(--rahmen); min-height:150px; cursor:pointer;
+          display:flex; align-items:center; justify-content:center; padding:8px;}
+.vis-bild img{max-width:100%; max-height:340px;}
+.vis-bild:empty::before{content:"🖼 Klicken und Bild einfügen"; color:#999; font-size:12px;}
+.vis-text{flex:1; padding:8px 10px; min-height:150px; white-space:pre-wrap;}
+.vis-entfernen{align-self:flex-start; margin:4px; font-size:11px; color:#a00; background:none; border:1px solid #a00; border-radius:4px; cursor:pointer; padding:2px 8px;}
+.bestaetigung{background:var(--blau); border:1px solid var(--rahmen); padding:8px 10px; font-weight:600; margin-top:14px;}
+
+/* ---------- Startseite / Dashboard ---------- */
+.start-titel{color:var(--firma); font-size:24px; margin:10px 0 4px;}
+.protokollwahl{display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:14px; margin:14px 0;}
+.dashboard{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-start;}
+.dash-links{flex:1 1 300px; min-width:280px;}
+.dash-rechts{flex:1 1 360px; min-width:300px;}
+.dash-zahlen{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;}
+.dash-kachel{flex:1 1 90px; border:1px solid #ccc; border-radius:8px; padding:10px; text-align:center; background:#fafafa;}
+.dash-kachel b{display:block; font-size:20px; color:var(--firma);}
+.dash-kachel span{font-size:11px; color:#666;}
+.dash-projekt{border:1px solid #ddd; border-radius:8px; padding:8px 10px; margin:6px 0; cursor:pointer; background:#fdfdfd;}
+.dash-projekt:hover{border-color:var(--firma);}
+.dash-projekt .dp-name{font-weight:700;}
+.dash-projekt .dp-detail{font-size:11.5px; color:#666;}
+.protokollkarte{
+  flex:1 1 220px; border:1px solid #bbb; border-radius:10px; padding:16px; cursor:pointer;
+  background:#fdfdfd;
+}
+.protokollkarte:hover{border-color:var(--firma); box-shadow:0 2px 8px rgba(0,0,0,.08);}
+.protokollkarte h3{margin:0 0 6px; color:var(--firma); font-size:15px;}
+.protokollkarte p{margin:0; font-size:12px; color:#555;}
+
+/* ---------- Navigation / Werkzeugleiste ---------- */
+.werkzeuge{
+  position:sticky; top:0; z-index:50; background:#2b2b2b; color:#fff;
+  display:flex; gap:8px; padding:8px 16px; align-items:center; flex-wrap:wrap;
+}
+.werkzeuge button{
+  font:inherit; font-weight:600; padding:6px 12px; border:none; border-radius:5px;
+  cursor:pointer; background:#4a4a4a; color:#fff;
+}
+.werkzeuge button.tab-knopf.aktiv{background:var(--firma);}
+.werkzeuge button.gruen{background:#2e7d32;}
+.werkzeuge button.blau{background:#4a90d9;}
+.werkzeuge .trenner{width:1px; height:22px; background:#666; margin:0 4px;}
+.firmenschalter{margin-left:auto; display:flex; align-items:center; gap:6px; font-size:12px; color:#ddd;}
+.firmenschalter select{
+  font:inherit; font-weight:600; padding:5px 8px; border-radius:5px;
+  background:#1c1c1c; color:#fff; border:1px solid #666;
+}
+.firmenschalter select:focus{outline:2px solid var(--firma);}
+
+.ordner-knopf{font:inherit; font-weight:600; padding:8px 14px; border:1px solid #888; border-radius:6px; cursor:pointer; background:#f4f4f4;}
+.ordner-knopf:hover{border-color:var(--firma); color:var(--firma);}
+table.uebersicht{width:100%; border-collapse:collapse; margin-top:10px;}
+table.uebersicht th, table.uebersicht td{border:1px solid var(--rahmen); padding:6px 8px; text-align:left; vertical-align:top;}
+table.uebersicht th{background:var(--grau); font-size:12px;}
+table.uebersicht tr:nth-child(even) td{background:var(--grau-hell);}
+table.uebersicht td.mitte{text-align:center;}
+.datei-liste{font-size:11.5px; margin:4px 0 0; padding-left:2px; list-style:none;}
+.datei-liste li{margin:2px 0; color:#444;}
+.sz-kopf{font-size:12px; line-height:1.5; margin-bottom:14px;}
+.sz-titel{font-size:17px; font-weight:700; margin:14px 0 2px;}
+table.sz{width:100%; border-collapse:collapse; font-size:11.5px; margin-top:8px; table-layout:fixed;}
+table.sz th, table.sz td{border:1px solid #000; padding:4px 6px; vertical-align:top; text-align:left; word-wrap:break-word; overflow-wrap:anywhere;}
+table.sz th{background:#efefef;}
+table.sz td.mitte, table.sz th.mitte{text-align:center;}
+table.sz tr.summe td{font-weight:700; background:#efefef;}
+.projekt-aktionen{display:flex; gap:6px; flex-wrap:wrap; align-items:center;}
+.projekt-aktionen select{font:inherit; padding:3px;}
+.unterleiste{position:sticky; top:44px; z-index:49; background:#3d3d3d; display:flex; gap:8px; padding:6px 16px; align-items:center;}
+.unterleiste .sub-knopf{font:inherit; font-size:12.5px; font-weight:600; padding:5px 11px; border:none; border-radius:5px; cursor:pointer; background:#555; color:#fff;}
+.unterleiste .sub-knopf.aktiv{background:var(--firma);}
+.sub-tabs{display:flex; gap:8px; margin:10px 0 14px; border-bottom:2px solid #ddd; padding-bottom:8px;}
+.sub2-knopf{font:inherit; font-weight:600; font-size:12.5px; padding:6px 12px; border:1px solid #bbb; border-radius:6px; cursor:pointer; background:#f4f4f4; color:#333;}
+.sub2-knopf.aktiv{background:var(--firma); color:#fff; border-color:var(--firma);}
+.aktionsleiste{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:8px 0 12px;}
+.haupt-knopf{
+  font:inherit; font-size:14px; font-weight:700; padding:10px 18px; border:none; border-radius:7px;
+  cursor:pointer; background:var(--firma); color:#fff; box-shadow:0 1px 4px rgba(0,0,0,.2);
+}
+.haupt-knopf:hover{filter:brightness(1.1);}
+.projektformular{border:1px solid #ccc; border-radius:8px; padding:12px; background:#fafafa; margin:10px 0 16px;}
+.projektformular h3{margin:0 0 8px; font-size:14px; color:var(--firma);}
+#tab-uebersicht h2{border-top:2px solid #e2e2e2; padding-top:14px; margin-top:26px;}
+#tab-uebersicht h2:first-of-type{border-top:none; padding-top:0;}
+.tab{display:none;}
+.tab.aktiv{display:block;}
