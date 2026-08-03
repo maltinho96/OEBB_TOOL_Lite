@@ -9,6 +9,7 @@ import { KARTE_START } from '../config/konstanten.js';
 import { grundordnerHolen, waehleGrundordner, waehleProjektordner, projektOrdnerHolen } from '../core/storage/index.js';
 import { dbLesen, dbAendern } from '../core/db.js';
 import { dbSetzen, dbHolen } from '../core/zustand.js';
+import { shapefilesEinlesen } from '../core/shapefile.js';
 import { logo } from '../schema/felder.js';
 import { nadelIcon, osmEbene } from './karte.js';
 import {
@@ -52,6 +53,10 @@ ${logo()}
     <span class="koord-anzeige" id="npKoord">Noch keine Nadel gesetzt – auf die Karte klicken.</span>
     <button style="font-size:11px; margin-left:8px" data-aktion="nadel-entfernen">Nadel entfernen</button>
   </td></tr>
+  <tr class="bg-grau-h"><td class="label">Flächen <small>(optional, .zip-Shapefiles)</small>:</td><td>
+    <input type="file" id="npShapeInput" accept=".zip" multiple>
+    <div id="npFlaechenListe" style="font-size:11.5px; margin-top:6px;"></div>
+  </td></tr>
   <tr class="bg-grau-h"><td class="label">Auftraggeber <small>(optional)</small>:</td><td><input type="text" id="npAuftraggeber"></td></tr>
   <tr class="bg-grau-h"><td class="label">Landkreis <small>(optional)</small>:</td><td><input type="text" id="npLandkreis"></td></tr>
   <tr class="bg-grau-h"><td class="label">Aktenzeichen <small>(optional)</small>:</td><td><input type="text" id="npAktenzeichen"></td></tr>
@@ -82,11 +87,14 @@ let npMarker = null;
 let npLat = null;
 let npLng = null;
 let bearbeitePid = null;
+let npFlaechen = []; // [{name, geojson}] – hochgeladene Shapefiles des Formulars
+let npFlaechenLayer = null; // Leaflet-LayerGroup für die Anzeige auf npKarte
 
 function npKarteInit() {
   if (npKarte) { setTimeout(() => npKarte.invalidateSize(), 120); return; }
   npKarte = L.map('npKarte').setView([KARTE_START.lat, KARTE_START.lng], 9);
   osmEbene().addTo(npKarte);
+  npFlaechenLayer = L.layerGroup().addTo(npKarte);
   npKarte.on('click', (ev) => nadelSetzen(ev.latlng.lat, ev.latlng.lng));
   setTimeout(() => npKarte.invalidateSize(), 120);
 }
@@ -105,6 +113,56 @@ function nadelEntfernen() {
   document.getElementById('npKoord').textContent = 'Noch keine Nadel gesetzt – auf die Karte klicken.';
 }
 
+// ---------- Flächen (Shapefiles) im Projektformular ----------
+
+// Zeichnet alle aktuell im Formular gehaltenen Flächen neu und aktualisiert
+// die Liste mit Entfernen-Knöpfen darunter.
+function flaechenAnzeigen() {
+  if (npFlaechenLayer) npFlaechenLayer.clearLayers();
+  const ziel = document.getElementById('npFlaechenListe');
+  if (!npFlaechen.length) { ziel.innerHTML = ''; return; }
+
+  let alleGrenzen = null;
+  npFlaechen.forEach((f, idx) => {
+    const layer = L.geoJSON(f.geojson, { style: { color: '#1f3864', weight: 2, fillOpacity: 0.15 } });
+    layer.bindTooltip(esc(f.name));
+    layer.addTo(npFlaechenLayer);
+    const b = layer.getBounds();
+    if (b.isValid()) alleGrenzen = alleGrenzen ? alleGrenzen.extend(b) : b;
+    void idx;
+  });
+  if (alleGrenzen && alleGrenzen.isValid()) npKarte.fitBounds(alleGrenzen, { padding: [20, 20], maxZoom: 15 });
+
+  ziel.innerHTML = npFlaechen
+    .map((f, idx) => `<span style="display:inline-flex; align-items:center; gap:4px; margin:2px 6px 2px 0; padding:2px 6px; background:#eef; border-radius:4px;">
+      🗺 ${esc(f.name)} <button data-aktion="flaeche-entfernen" data-idx="${idx}" style="border:none;background:none;color:#a00;cursor:pointer;font-size:12px;">✕</button>
+    </span>`)
+    .join('');
+}
+
+async function flaechenHinzufuegen(files) {
+  if (!files || !files.length) return;
+  try {
+    const neue = await shapefilesEinlesen(files);
+    npFlaechen.push(...neue);
+    flaechenAnzeigen();
+  } catch (err) {
+    alert('Shapefile konnte nicht gelesen werden: ' + err.message);
+  }
+}
+
+function flaechenEntfernen(idx) {
+  npFlaechen.splice(idx, 1);
+  flaechenAnzeigen();
+}
+
+function flaechenLeeren() {
+  npFlaechen = [];
+  if (npFlaechenLayer) npFlaechenLayer.clearLayers();
+  const ziel = document.getElementById('npFlaechenListe');
+  if (ziel) ziel.innerHTML = '';
+}
+
 // ---------- Projektformular öffnen/schließen/leeren ----------
 
 function formularLeeren() {
@@ -112,6 +170,7 @@ function formularLeeren() {
     document.getElementById(id).value = '';
   });
   nadelEntfernen();
+  flaechenLeeren();
   bearbeitePid = null;
   document.getElementById('npKnopfText').innerHTML = '＋ Anlegen &amp; Protokollordner wählen';
   const na = document.getElementById('npAbbrechen');
@@ -151,6 +210,8 @@ function projektBearbeiten(pid) {
   document.getElementById('npNotizen').value = i.notizen || '';
   if (p.lat != null && p.lng != null) { nadelSetzen(p.lat, p.lng); npKarte.setView([p.lat, p.lng], 12); }
   else nadelEntfernen();
+  npFlaechen = (p.flaechen || []).map((f) => ({ name: f.name, geojson: f.geojson }));
+  flaechenAnzeigen();
   bearbeitePid = pid;
   document.getElementById('npKnopfText').textContent = '💾 Änderungen speichern';
   const t2 = document.getElementById('npTitel');
@@ -171,6 +232,7 @@ async function projektAnlegen() {
     ort: document.getElementById('npOrt').value.trim(),
     lat: npLat,
     lng: npLng,
+    flaechen: npFlaechen.map((f) => ({ name: f.name, geojson: f.geojson })),
     infos: {
       auftraggeber: document.getElementById('npAuftraggeber').value.trim(),
       landkreis: document.getElementById('npLandkreis').value.trim(),
@@ -217,7 +279,7 @@ async function projektLoeschenMitBestaetigung(id) {
   neuZeichnen(db);
 }
 
-async function projektScannenUndSpeichern(id) {
+export async function projektScannenUndSpeichern(id) {
   const ordner = await projektOrdnerHolen(id, true);
   if (!ordner) { await projektOrdnerVerknuepfen(id, true); return; }
   statusText('Scanne …');
@@ -404,10 +466,18 @@ export function uebersichtTabInit(mount) {
       case 'projekt-ordner-verknuepfen': projektOrdnerVerknuepfen(pid, false); break;
       case 'projekt-bearbeiten': projektBearbeiten(pid); break;
       case 'projekt-loeschen': projektLoeschenMitBestaetigung(pid); break;
+      case 'flaeche-entfernen': flaechenEntfernen(parseInt(btn.dataset.idx, 10)); break;
       case 'dash-projekt-springen':
         document.getElementById('uebersichtErgebnis').scrollIntoView({ behavior: 'smooth' });
         break;
       // stundenzettel-drucken / projekt-exportieren: verdrahtet in export/xlsx-export.js (Stufe 5)
+    }
+  });
+
+  section.addEventListener('change', (e) => {
+    if (e.target.id === 'npShapeInput') {
+      flaechenHinzufuegen(e.target.files);
+      e.target.value = '';
     }
   });
 }
