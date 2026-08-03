@@ -8,6 +8,16 @@ const PROTOKOLL_TABS = ['tab-protokoll', 'tab-vorbegehung', 'tab-belehrung'];
 // "📄 Protokolle"-Knopf dorthin zurueckspringt.
 let letzterProtokollTab = 'tab-protokoll';
 
+// Hooks, die bei jedem Reiterwechsel aufgerufen werden (id als Argument).
+// Ersetzt das _tabZeigenAlt-Wrapper-Pattern des Originals: statt tabZeigen
+// global zu ueberschreiben, registrieren sich ui/karte.js, ui/stundentabelle.js
+// und ui/dashboard.js hier, um bei Bedarf nachzuladen (z. B. Karte beim
+// Oeffnen des Karten-Reiters aktualisieren).
+const wechselHooks = [];
+export function tabWechselHook(fn) {
+  wechselHooks.push(fn);
+}
+
 export function tabZeigen(id) {
   document.querySelectorAll('.tab').forEach((t) => {
     t.classList.toggle('aktiv', t.id === id);
@@ -30,6 +40,8 @@ export function tabZeigen(id) {
   });
 
   window.scrollTo(0, 0);
+
+  wechselHooks.forEach((fn) => fn(id));
 }
 
 // Springt zum zuletzt aktiven Protokoll-Reiter (Knopf "📄 Protokolle").
