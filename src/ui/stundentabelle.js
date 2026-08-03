@@ -67,7 +67,7 @@ ${logo()}
 
 // ---------- Sub-Reiter (erfassen / export) ----------
 
-function stBereich(name) {
+export function stBereich(name) {
   document.getElementById('st-erfassen').style.display = name === 'erfassen' ? '' : 'none';
   document.getElementById('st-export').style.display = name === 'export' ? '' : 'none';
   document.querySelectorAll('.sub2-knopf').forEach((b) => {
@@ -289,7 +289,7 @@ function exProjekteFuellen() {
   exMonateFuellen();
 }
 
-function exMonateFuellen() {
+export function exMonateFuellen() {
   const pid = document.getElementById('exProjekt').value;
   const sel = document.getElementById('exMonat');
   const db = dbHolen();
@@ -301,7 +301,7 @@ function exMonateFuellen() {
   exVorschau();
 }
 
-function exVorschau() {
+export function exVorschau() {
   const pid = document.getElementById('exProjekt').value;
   const mkey = document.getElementById('exMonat').value;
   const ziel = document.getElementById('exVorschau');
