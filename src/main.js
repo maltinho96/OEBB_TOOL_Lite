@@ -23,7 +23,7 @@ import { fotosInit } from './ui/fotos.js';
 import { karteTabInit, karteBeiAnzeigeAktualisieren } from './ui/karte.js';
 import { stundenTabInit, stundenBeiAnzeigeAktualisieren } from './ui/stundentabelle.js';
 import { uebersichtTabInit, uebersichtBeiAnzeigeAktualisieren } from './ui/dashboard.js';
-import { tabsInit, tabWechselHook } from './ui/tabs.js';
+import { tabsInit, tabWechselHook, tabZeigen } from './ui/tabs.js';
 import { werkzeugeInit } from './ui/werkzeuge.js';
 
 import { htmlExportInit } from './export/html-export.js';
@@ -56,9 +56,10 @@ function start() {
   htmlExportInit();
   xlsxExportInit();
 
-  // Startansicht: Übersicht ist bereits .tab.aktiv im HTML; hier nur
-  // einmalig die Projektdaten laden, falls der Grundordner schon
-  // freigegeben ist (wie im Original).
+  // Startansicht: Übersicht ist bereits .tab.aktiv im HTML; tabZeigen()
+  // synchronisiert einmalig den Rest (Werkzeugleiste etc.), damit der
+  // Zustand von Anfang an korrekt ist, nicht erst nach dem ersten Klick.
+  tabZeigen('tab-uebersicht');
   uebersichtBeiAnzeigeAktualisieren('tab-uebersicht');
 }
 

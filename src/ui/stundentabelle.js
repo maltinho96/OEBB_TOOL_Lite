@@ -8,7 +8,7 @@ import { grundordnerHolen } from '../core/storage/index.js';
 import { dbLesen, dbAendern } from '../core/db.js';
 import { dbSetzen, dbHolen } from '../core/zustand.js';
 import { logo } from '../schema/felder.js';
-import { projektScannenUndSpeichern } from './dashboard.js';
+import { projektScannenUndSpeichern } from './projektformular.js';
 import {
   statusIcon,
   stundenSumme,

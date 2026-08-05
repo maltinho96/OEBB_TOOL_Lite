@@ -87,22 +87,37 @@ export async function projektOrdnerHolen(id, interaktiv) {
   return h;
 }
 
-// ---------- Datenbank-Datei lesen/schreiben ----------
-// Gibt den Rohtext der oebb_datenbank.json zurueck oder null (fehlt/leer).
-export async function leseDbText(ordner) {
+// ---------- Beliebige Textdatei im Ordner lesen/schreiben/loeschen ----------
+// Generische Basis fuer DB-Datei UND Lock-Datei (core/db.js).
+export async function dateiLesen(ordner, name) {
   try {
-    const fh = await ordner.getFileHandle(DB_NAME);
+    const fh = await ordner.getFileHandle(name);
     const f = await fh.getFile();
     return await f.text();
   } catch (e) {
-    return null;
+    return null; // fehlt
   }
 }
-export async function schreibeDbText(ordner, text) {
-  const fh = await ordner.getFileHandle(DB_NAME, { create: true });
+export async function dateiSchreiben(ordner, name, text) {
+  const fh = await ordner.getFileHandle(name, { create: true });
   const w = await fh.createWritable();
   await w.write(text);
   await w.close();
+}
+export async function dateiLoeschen(ordner, name) {
+  try {
+    await ordner.removeEntry(name);
+  } catch (e) {
+    // schon weg oder nie da gewesen - kein Fehler
+  }
+}
+
+// ---------- Datenbank-Datei lesen/schreiben (duenne Wrapper) ----------
+export async function leseDbText(ordner) {
+  return dateiLesen(ordner, DB_NAME);
+}
+export async function schreibeDbText(ordner, text) {
+  return dateiSchreiben(ordner, DB_NAME, text);
 }
 
 // ---------- HTML-Dateien im Projektordner scannen ----------

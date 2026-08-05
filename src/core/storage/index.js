@@ -14,5 +14,8 @@ export {
   projektOrdnerHolen,
   leseDbText,
   schreibeDbText,
+  dateiLesen,
+  dateiSchreiben,
+  dateiLoeschen,
   scanneHtmlDateien,
 } from './fsa.js';

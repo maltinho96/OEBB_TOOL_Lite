@@ -33,6 +33,11 @@ export function tabZeigen(id) {
   const kp = document.getElementById('knopfProtokolle');
   if (kp) kp.classList.toggle('aktiv', istProt);
 
+  // "Speichern unter…" und "Drucken/PDF" wirken auf den aktiven Protokoll-
+  // Reiter und sind außerhalb (Übersicht/Karte/Stunden) sinnlos.
+  const pw = document.getElementById('protokollWerkzeuge');
+  if (pw) pw.style.display = istProt ? 'flex' : 'none';
+
   if (istProt) letzterProtokollTab = id;
 
   document.querySelectorAll('.sub-knopf').forEach((b) => {
