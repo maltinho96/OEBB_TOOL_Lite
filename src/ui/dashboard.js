@@ -95,6 +95,9 @@ Bei gleichzeitigem Schreiben gewinnt die zuletzt speichernde Person.</p>
     <select id="npZweitverantwortlich"></select>
   </td></tr>
   <tr class="bg-grau-h"><td class="label">Auftraggeber <small>(optional)</small>:</td><td><input type="text" id="npAuftraggeber"></td></tr>
+  <tr class="bg-grau-h"><td class="label">Ansprechpartner (AG) <small>(optional)</small>:</td><td><input type="text" id="npAnsprechpartner" placeholder="Name"></td></tr>
+  <tr class="bg-grau-h"><td class="label">Telefon Ansprechpartner <small>(optional)</small>:</td><td><input type="tel" id="npAnsprechpartnerTelefon"></td></tr>
+  <tr class="bg-grau-h"><td class="label">E-Mail Ansprechpartner <small>(optional)</small>:</td><td><input type="email" id="npAnsprechpartnerEmail"></td></tr>
   <tr class="bg-grau-h"><td class="label">Landkreis <small>(optional)</small>:</td><td><input type="text" id="npLandkreis"></td></tr>
   <tr class="bg-grau-h"><td class="label">Aktenzeichen <small>(optional)</small>:</td><td><input type="text" id="npAktenzeichen"></td></tr>
   <tr class="bg-grau-h"><td class="label">Notizen <small>(optional)</small>:<textarea id="npNotizen" rows="2"></textarea></td><td style="vertical-align:bottom">
@@ -194,9 +197,11 @@ function uebersichtRendern(db) {
       (dateien.length ? '<ul class="datei-liste">' + liste + '</ul>' : '<p style="font-size:11.5px">Noch keine Protokolle – „Scannen“ klicken.</p>') + '</details></td>' +
       '<td>' + esc(p.projektnummer) + '</td>' +
       '<td>' + esc(p.ort) + (p.lat != null ? ' <span title="' + p.lat + ', ' + p.lng + '">📍</span>' : '') +
-      (p.infos && (p.infos.auftraggeber || p.infos.landkreis || p.infos.aktenzeichen) || p.hauptverantwortlich
+      (p.infos && (p.infos.auftraggeber || p.infos.landkreis || p.infos.aktenzeichen || p.infos.ansprechpartner) || p.hauptverantwortlich
         ? '<div style="font-size:11px;color:#666">' +
           (p.infos && p.infos.auftraggeber ? 'AG: ' + esc(p.infos.auftraggeber) + ' ' : '') +
+          (p.infos && p.infos.ansprechpartner ? '· AP: ' + esc(p.infos.ansprechpartner) +
+            (p.infos.ansprechpartnerTelefon ? ' (Tel. ' + esc(p.infos.ansprechpartnerTelefon) + ')' : '') + ' ' : '') +
           (p.infos && p.infos.landkreis ? '· LK ' + esc(p.infos.landkreis) + ' ' : '') +
           (p.infos && p.infos.aktenzeichen ? '· Az. ' + esc(p.infos.aktenzeichen) + ' ' : '') +
           (p.hauptverantwortlich ? '· 👤 ' + esc(p.hauptverantwortlich) +

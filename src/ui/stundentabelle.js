@@ -49,7 +49,6 @@ ${logo()}
     <select id="exMonat" style="font:inherit; padding:4px; min-width:150px;"></select>
     <button class="ordner-knopf" data-aktion="ex-pdf">🖨 Als PDF drucken</button>
     <button class="ordner-knopf" data-aktion="ex-xlsx">📥 Als Excel</button>
-    <button class="ordner-knopf" data-aktion="ex-abrechnen">✔ Als abgerechnet markieren</button>
     <span id="exStatus" style="color:#555;"></span>
   </p>
   <details class="kein-druck" style="margin:8px 0"><summary style="cursor:pointer; font-weight:600">⚙ Export-Einstellungen (Kopf des Stundennachweises)</summary>
@@ -59,7 +58,6 @@ ${logo()}
     <tr class="bg-grau-h"><td class="label">Kundennummer:</td><td><input type="text" id="einstKundennr"></td></tr>
     <tr class="bg-grau-h"><td class="label">Leistungsnummer:</td><td><input type="text" id="einstLeistungsnr"></td></tr>
     <tr class="bg-grau-h"><td class="label">Lfd. Nr. (Stundensatz):</td><td><input type="text" id="einstLfdnr"></td></tr>
-    <tr class="bg-grau-h"><td class="label">Asp BvT (Ansprechpartner):</td><td><input type="text" id="einstAsp"></td></tr>
     <tr class="bg-grau-h"><td colspan="2"><button class="ordner-knopf" data-aktion="einst-speichern">💾 Einstellungen in Datenbank speichern</button></td></tr>
   </table></details>
   <div id="exVorschau"></div>
@@ -118,7 +116,6 @@ function einstellungenLaden(db) {
   setzen('einstKundennr', e.kundennr);
   setzen('einstLeistungsnr', e.leistungsnr);
   setzen('einstLfdnr', e.lfdnr);
-  setzen('einstAsp', e.asp);
 }
 
 async function einstellungenSpeichern() {
@@ -131,7 +128,6 @@ async function einstellungenSpeichern() {
       kundennr: document.getElementById('einstKundennr').value,
       leistungsnr: document.getElementById('einstLeistungsnr').value,
       lfdnr: document.getElementById('einstLfdnr').value,
-      asp: document.getElementById('einstAsp').value,
     };
   });
   dbSetzen(db);
@@ -345,7 +341,7 @@ export function zettelBlock(p, einst, mkey, mz) {
       html += '<tr><td class="mitte" rowspan="' + mz.length + '">1</td>' +
         '<td rowspan="' + mz.length + '">' + esc(smNummer(p)) + '</td>' +
         '<td rowspan="' + mz.length + '">' + esc(p.ort || '') + '</td>' +
-        '<td rowspan="' + mz.length + '">' + esc(einst.asp || '') + '</td>' +
+        '<td rowspan="' + mz.length + '">' + esc((p.infos && p.infos.ansprechpartner) || '') + '</td>' +
         '<td rowspan="' + mz.length + '">ÖBB</td>' + rest + '</tr>';
     } else {
       html += '<tr>' + rest + '</tr>';

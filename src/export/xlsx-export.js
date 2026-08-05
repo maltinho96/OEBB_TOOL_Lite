@@ -7,7 +7,7 @@
 import * as XLSX from 'xlsx-js-style';
 import { statusText } from '../core/util.js';
 import { grundordnerHolen } from '../core/storage/index.js';
-import { dbLesen, dbAendern } from '../core/db.js';
+import { dbLesen } from '../core/db.js';
 import { dbSetzen, dbHolen } from '../core/zustand.js';
 import { projektStundenzeilen, nachMonat, monatsName, smNummer } from '../domain/stunden.js';
 import { tabZeigen } from '../ui/tabs.js';
@@ -46,7 +46,7 @@ function arbeitsmappeBauen(db, pid, mkey) {
     mz.forEach((z, i) => {
       const d = z.datum ? z.datum.split('-').reverse().join('.') : '';
       summe += z.std;
-      if (i === 0) aoa.push([1, smNummer(p), p.ort || '', einst.asp || '', 'ÖBB', z.std, d, z.beschreibung]);
+      if (i === 0) aoa.push([1, smNummer(p), p.ort || '', (p.infos && p.infos.ansprechpartner) || '', 'ÖBB', z.std, d, z.beschreibung]);
       else aoa.push(['', '', '', '', '', z.std, d, z.beschreibung]);
     });
     aoa.push(['Summe', '', '', '', '', summe, '', '']);
@@ -199,32 +199,6 @@ async function exXlsx() {
   await projektExportieren(pid, mkey);
 }
 
-async function exAbrechnen() {
-  const pid = document.getElementById('exProjekt').value;
-  const mkey = document.getElementById('exMonat').value;
-  if (!pid || !mkey) return;
-  const mkeys = mkey === 'alle' ? null : [mkey];
-  let anzahl = 0;
-  const ordner = await grundordnerHolen(true);
-  if (!ordner) return;
-  const db = await dbAendern(ordner, (db) => {
-    const p = db.projekte[pid];
-    Object.keys(p.eintraege).forEach((datei) => {
-      const e = p.eintraege[datei];
-      const betroffen = (e.stunden || []).some((z) =>
-        parseFloat(z.std) && (!mkeys || mkeys.indexOf((z.datum || '').slice(0, 7)) >= 0)
-      );
-      if (betroffen && !e.abgerechnet) {
-        e.abgerechnet = true;
-        e.abgerechnetAm = new Date().toISOString().slice(0, 10);
-        anzahl++;
-      }
-    });
-  });
-  dbSetzen(db);
-  document.getElementById('exStatus').textContent = anzahl + ' Protokoll(e) als abgerechnet markiert.';
-}
-
 // Sprungziel aus der Übersichtstabelle (🖨-Knopf je Projekt).
 function stundenzettelDrucken(pid, mkey) {
   tabZeigen('tab-stunden');
@@ -253,7 +227,6 @@ export function xlsxExportInit() {
     switch (btn.dataset.aktion) {
       case 'ex-pdf': exPdf(); break;
       case 'ex-xlsx': exXlsx(); break;
-      case 'ex-abrechnen': exAbrechnen(); break;
       case 'projekt-exportieren': projektExportieren(btn.dataset.pid); break;
       case 'stundenzettel-drucken': {
         const monatSel = document.getElementById('mon_' + btn.dataset.pid);

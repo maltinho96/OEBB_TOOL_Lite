@@ -1,16 +1,29 @@
 // Belehrungsprotokoll. HTML originalgetreu; Logos/onclick angepasst.
-// Die Visualisierungs-Bildfelder starten leer (statt Logo-Platzhalter) –
-// dann greift der "Bild einfügen"-Hinweis aus dem CSS.
+// Die Visualisierungs-Bildfelder sind mit Standard-Referenzbildern
+// vorbelegt (public/assets/belehrung_bilder/belehrung_bild_01.png … 09.png,
+// eins je
+// VIS_TEXTE-Zeile in Reihenfolge) – per Klick weiterhin ersetzbar.
 // data-Hooks: vis-bild -> data-einzelbild="vis", ✕ -> data-aktion="vis-entfernen",
 //             ＋ Zeile -> data-aktion="vis-zeile-hinzu" (verdrahtet in ui/fotos.js).
 
 import { logo } from './felder.js';
 
-// Eine Visualisierungszeile mit vorbelegtem Text.
-function visZeile(text) {
+// import.meta.env.BASE_URL: lokal "/", auf GitHub Pages "/OEBB_TOOL_Lite/",
+// spaeter unter Tauri entsprechend – siehe felder.js logo() fuer denselben Trick.
+const BASIS = import.meta.env.BASE_URL;
+
+// Eine Visualisierungszeile mit vorbelegtem Text und optional einem
+// Standard-Referenzbild (public/assets/belehrung_bilder/belehrung_bild_01.png …).
+// Klick auf das Bild ersetzt es weiterhin wie gewohnt durch ein eigenes
+// (data-einzelbild="vis", verdrahtet in ui/fotos.js) – die Vorbelegung
+// ist nur ein Startpunkt, kein fester Wert.
+function visZeile(text, bildDatei) {
+  const bildHtml = bildDatei
+    ? '<img src="' + BASIS + 'assets/belehrung_bilder/' + bildDatei + '" alt="">'
+    : '';
   return `
   <div class="vis-zeile">
-    <div class="vis-bild" data-einzelbild="vis"></div>
+    <div class="vis-bild" data-einzelbild="vis">${bildHtml}</div>
     <div class="vis-text" contenteditable="true">${text}</div>
     <button class="vis-entfernen kein-druck" data-aktion="vis-entfernen">✕</button>
   </div>`;
@@ -87,7 +100,7 @@ ${logo()}
 <table class="form"><tr class="bg-pink-h"><td><textarea class="gross" style="min-height:110px"></textarea></td></tr></table>
 
 <h2 class="c-grau">Visualisierung der geltenden Bestimmungen</h2>
-<div class="visContainer">${VIS_TEXTE.map(visZeile).join('')}
+<div class="visContainer">${VIS_TEXTE.map((text, i) => visZeile(text, 'belehrung_bild_' + String(i + 1).padStart(2, '0') + '.png')).join('')}
 </div>
 <button class="kein-druck" style="margin-top:8px" data-aktion="vis-zeile-hinzu">＋ Zeile hinzufügen</button>
 

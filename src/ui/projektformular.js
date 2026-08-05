@@ -67,7 +67,7 @@ function nadelEntfernen() {
 // ---------- Formular öffnen/schließen/leeren ----------
 
 function formularLeeren() {
-  ['npName', 'npNummer', 'npOrt', 'npAuftraggeber', 'npLandkreis', 'npAktenzeichen', 'npNotizen'].forEach((id) => {
+  ['npName', 'npNummer', 'npOrt', 'npAuftraggeber', 'npAnsprechpartner', 'npAnsprechpartnerTelefon', 'npAnsprechpartnerEmail', 'npLandkreis', 'npAktenzeichen', 'npNotizen'].forEach((id) => {
     document.getElementById(id).value = '';
   });
   document.getElementById('npStatus').value = 'aktuell';
@@ -110,6 +110,9 @@ export function projektBearbeiten(pid) {
   teamAnzeigen(p.hauptverantwortlich || '', p.zweitverantwortlich || '');
   const i = p.infos || {};
   document.getElementById('npAuftraggeber').value = i.auftraggeber || '';
+  document.getElementById('npAnsprechpartner').value = i.ansprechpartner || '';
+  document.getElementById('npAnsprechpartnerTelefon').value = i.ansprechpartnerTelefon || '';
+  document.getElementById('npAnsprechpartnerEmail').value = i.ansprechpartnerEmail || '';
   document.getElementById('npLandkreis').value = i.landkreis || '';
   document.getElementById('npAktenzeichen').value = i.aktenzeichen || '';
   document.getElementById('npNotizen').value = i.notizen || '';
@@ -142,6 +145,9 @@ async function projektAnlegen() {
     flaechen: flaechenAktuelle(),
     infos: {
       auftraggeber: document.getElementById('npAuftraggeber').value.trim(),
+      ansprechpartner: document.getElementById('npAnsprechpartner').value.trim(),
+      ansprechpartnerTelefon: document.getElementById('npAnsprechpartnerTelefon').value.trim(),
+      ansprechpartnerEmail: document.getElementById('npAnsprechpartnerEmail').value.trim(),
       landkreis: document.getElementById('npLandkreis').value.trim(),
       aktenzeichen: document.getElementById('npAktenzeichen').value.trim(),
       notizen: document.getElementById('npNotizen').value.trim(),

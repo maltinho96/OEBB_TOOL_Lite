@@ -7,6 +7,7 @@
 
 import { baueMeta, metaSerialisieren } from '../core/meta.js';
 import { htmlVorlage } from './html-vorlage.js';
+import { bildElementeEinbetten } from '../core/bilder.js';
 
 // Aktuell sichtbarer Protokoll-Tab.
 function aktiverTab() {
@@ -84,6 +85,7 @@ export async function alsHtmlSpeichern() {
   }
 
   zustandSichern(tab);
+  await bildElementeEinbetten(tab);
   const meta = metaAusTab(tab);
   const metaScriptTag =
     '<script type="application/json" id="protokollMeta">' + metaSerialisieren(meta) + '</script>';

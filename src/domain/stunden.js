@@ -72,8 +72,8 @@ export function monatsName(key) {
   return MONATE[parseInt(key.slice(5, 7), 10) - 1] + ' ' + key.slice(0, 4);
 }
 
-// Sechsstellige (o. länger) Nummer aus der Projektnummer für den Nachweis.
+// SM-Nr. für den Stundennachweis: exakt das, was beim Projekt-Anlegen
+// als Projektnummer eingetragen wurde – keine Umformung.
 export function smNummer(p) {
-  const m = (p.projektnummer || '').match(/\d{6,}/);
-  return m ? m[0] : (p.projektnummer || '');
+  return p.projektnummer || '';
 }
