@@ -29,17 +29,40 @@ ${logo()}
 <h1>Übersicht</h1>
 <p style="margin-top:2px; color:#555">Protokolle, Projekte und Stundennachweise – alles in einer Datei, gemeinsam über den Grundordner.</p>
 
-<h2 class="c-grau">Auf einen Blick</h2>
+<h2 class="c-grau">Einrichtung</h2>
+<p>Der <b>Grundordner</b> ist der Ordner, in dem diese Anwendung und die gemeinsame Datenbank
+(<code>oebb_datenbank.json</code>) liegen. Beim ersten Start hier klicken – danach merkt sich der
+Browser die Verknüpfung. Jedes Projekt bekommt unten einmalig seinen Protokollordner verknüpft –
+danach genügt dort „Scannen“.</p>
 <p class="kein-druck">
-  <button class="ordner-knopf" data-aktion="uebersicht-aktualisieren">🔄 Projektdaten laden</button>
-  <span id="startStatus" style="margin-left:10px; color:#555;"></span>
+  <button class="haupt-knopf" data-aktion="grundordner-festlegen">📂 Grundordner festlegen</button>
+  <span id="grundordnerStatus" style="margin-left:10px; color:#555;">Noch nicht festgelegt.</span>
 </p>
-<div class="dash-zahlen" id="startZahlen"></div>
-<div id="startProjekte"></div>
+<p style="font-size:11.5px; color:#777;">Ordner-Verknüpfungen merkt sich der Browser pro Person (Chromium/Chrome/Edge);
+Kolleginnen verknüpfen die Ordner bei der ersten Nutzung einmal selbst.
+Bei gleichzeitigem Schreiben gewinnt die zuletzt speichernde Person.</p>
 
+<h3 style="margin:16px 0 4px; font-size:13px; color:#555;">Team (für Verantwortliche in Projekten)</h3>
+<p class="kein-druck" style="display:flex; gap:6px; align-items:center;">
+  <input type="text" id="teamNeuerName" placeholder="Name eingeben …" style="max-width:220px;">
+  <button class="ordner-knopf" data-aktion="team-hinzufuegen">＋ Hinzufügen</button>
+</p>
+<div id="teamListe" style="font-size:11.5px; margin-top:6px;"></div>
+
+<div id="uebersichtProjekteBereich" style="display:none">
 <h2 class="c-grau">Projekte</h2>
+<div class="dash-zahlen" id="startZahlen"></div>
 <div class="aktionsleiste kein-druck">
   <button class="haupt-knopf" data-aktion="projekt-formular-oeffnen">＋ Neues Projekt anlegen</button>
+  <button class="ordner-knopf" data-aktion="uebersicht-aktualisieren">🔄 Aktualisieren</button>
+  <label style="font-size:12.5px; color:#555;">Anzeigen:
+    <select id="projektStatusFilter" style="font:inherit; padding:3px;">
+      <option value="aktuell" selected>▶ Aktuelle Projekte</option>
+      <option value="geplant">🕓 Geplante Projekte</option>
+      <option value="abgeschlossen">✔ Abgeschlossene Projekte</option>
+      <option value="alle">Alle Projekte</option>
+    </select>
+  </label>
   <span id="scanStatus" style="color:#555;"></span>
 </div>
 <div class="kein-druck projektformular" id="npDetails" style="display:none">
@@ -57,6 +80,19 @@ ${logo()}
     <input type="file" id="npShapeInput" accept=".zip" multiple>
     <div id="npFlaechenListe" style="font-size:11.5px; margin-top:6px;"></div>
   </td></tr>
+  <tr class="bg-grau-h"><td class="label">Status:</td><td>
+    <select id="npStatus">
+      <option value="aktuell">▶ Aktuell</option>
+      <option value="geplant">🕓 Geplant / kommend</option>
+      <option value="abgeschlossen">✔ Abgeschlossen</option>
+    </select>
+  </td></tr>
+  <tr class="bg-grau-h"><td class="label">Hauptverantwortlich:</td><td>
+    <select id="npHauptverantwortlich"></select>
+  </td></tr>
+  <tr class="bg-grau-h"><td class="label">Zweitverantwortlich <small>(optional)</small>:</td><td>
+    <select id="npZweitverantwortlich"></select>
+  </td></tr>
   <tr class="bg-grau-h"><td class="label">Auftraggeber <small>(optional)</small>:</td><td><input type="text" id="npAuftraggeber"></td></tr>
   <tr class="bg-grau-h"><td class="label">Landkreis <small>(optional)</small>:</td><td><input type="text" id="npLandkreis"></td></tr>
   <tr class="bg-grau-h"><td class="label">Aktenzeichen <small>(optional)</small>:</td><td><input type="text" id="npAktenzeichen"></td></tr>
@@ -66,18 +102,70 @@ ${logo()}
   </td></tr>
 </table></div>
 <div id="uebersichtErgebnis"></div>
-
-<h2 class="c-grau">Einrichtung</h2>
-<p>Der <b>Grundordner</b> ist der Ordner, in dem diese Anwendung und die gemeinsame Datenbank
-(<code>oebb_datenbank.json</code>) liegen. Jedes Projekt bekommt oben einmalig seinen Protokollordner
-verknüpft – danach genügt dort „Scannen“.</p>
-<p class="kein-druck">
-  <button class="ordner-knopf" data-aktion="grundordner-festlegen">📂 Grundordner festlegen</button>
-</p>
-<p style="font-size:11.5px; color:#777;">Ordner-Verknüpfungen merkt sich der Browser pro Person (Chromium/Chrome/Edge);
-Kolleginnen verknüpfen die Ordner bei der ersten Nutzung einmal selbst.
-Bei gleichzeitigem Schreiben gewinnt die zuletzt speichernde Person.</p>
+</div>
 `;
+}
+
+// ---------- Team (Verantwortliche) ----------
+
+// Zeigt die Team-Liste in der Einrichtung (mit Entfernen-Knöpfen) und
+// befüllt die beiden Verantwortlichen-Selects im Projektformular.
+// vorbelegtHaupt/vorbelegtZweit: aktuelle Werte beim Bearbeiten eines
+// Projekts, damit auch ein inzwischen aus dem Team entferntes Mitglied
+// weiter sichtbar bleibt (Historie geht nicht verloren).
+function teamAnzeigen(vorbelegtHaupt, vorbelegtZweit) {
+  const db = dbHolen();
+  const namen = (db && db.mitarbeitende) || [];
+
+  const listeZiel = document.getElementById('teamListe');
+  if (listeZiel) {
+    listeZiel.innerHTML = namen.length
+      ? namen.map((n, idx) => `<span style="display:inline-flex; align-items:center; gap:4px; margin:2px 6px 2px 0; padding:2px 6px; background:#eef; border-radius:4px;">
+          👤 ${esc(n)} <button data-aktion="team-entfernen" data-idx="${idx}" style="border:none;background:none;color:#a00;cursor:pointer;font-size:12px;">✕</button>
+        </span>`).join('')
+      : '<span style="color:#777">Noch niemand im Team – oben Namen hinzufügen.</span>';
+  }
+
+  [
+    { id: 'npHauptverantwortlich', leer: '– wählen –', wert: vorbelegtHaupt },
+    { id: 'npZweitverantwortlich', leer: '– keine/r –', wert: vorbelegtZweit },
+  ].forEach(({ id, leer, wert }) => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    sel.innerHTML = '<option value="">' + leer + '</option>' +
+      namen.map((n) => '<option value="' + esc(n) + '">' + esc(n) + '</option>').join('');
+    if (wert) {
+      if (!namen.includes(wert)) {
+        sel.insertAdjacentHTML('beforeend', '<option value="' + esc(wert) + '">' + esc(wert) + ' (nicht mehr im Team)</option>');
+      }
+      sel.value = wert;
+    }
+  });
+}
+
+async function mitarbeiterHinzufuegen() {
+  const feld = document.getElementById('teamNeuerName');
+  const name = feld.value.trim();
+  if (!name) return;
+  const ordner = await grundordnerHolen(true);
+  if (!ordner) { statusText('Bitte zuerst den Grundordner festlegen.'); return; }
+  const db = await dbAendern(ordner, (db) => {
+    db.mitarbeitende = db.mitarbeitende || [];
+    if (!db.mitarbeitende.includes(name)) db.mitarbeitende.push(name);
+  });
+  dbSetzen(db);
+  feld.value = '';
+  teamAnzeigen();
+}
+
+async function mitarbeiterEntfernen(idx) {
+  const ordner = await grundordnerHolen(true);
+  if (!ordner) return;
+  const db = await dbAendern(ordner, (db) => {
+    if (db.mitarbeitende) db.mitarbeitende.splice(idx, 1);
+  });
+  dbSetzen(db);
+  teamAnzeigen();
 }
 
 // ---------- Kartennadel im Projektformular (Anlegen/Bearbeiten) ----------
@@ -169,6 +257,8 @@ function formularLeeren() {
   ['npName', 'npNummer', 'npOrt', 'npAuftraggeber', 'npLandkreis', 'npAktenzeichen', 'npNotizen'].forEach((id) => {
     document.getElementById(id).value = '';
   });
+  document.getElementById('npStatus').value = 'aktuell';
+  teamAnzeigen();
   nadelEntfernen();
   flaechenLeeren();
   bearbeitePid = null;
@@ -203,6 +293,8 @@ function projektBearbeiten(pid) {
   document.getElementById('npName').value = p.name || '';
   document.getElementById('npNummer').value = p.projektnummer || '';
   document.getElementById('npOrt').value = p.ort || '';
+  document.getElementById('npStatus').value = p.status || 'aktuell';
+  teamAnzeigen(p.hauptverantwortlich || '', p.zweitverantwortlich || '');
   const i = p.infos || {};
   document.getElementById('npAuftraggeber').value = i.auftraggeber || '';
   document.getElementById('npLandkreis').value = i.landkreis || '';
@@ -230,6 +322,9 @@ async function projektAnlegen() {
     name,
     projektnummer: nummer,
     ort: document.getElementById('npOrt').value.trim(),
+    status: document.getElementById('npStatus').value,
+    hauptverantwortlich: document.getElementById('npHauptverantwortlich').value,
+    zweitverantwortlich: document.getElementById('npZweitverantwortlich').value,
     lat: npLat,
     lng: npLng,
     flaechen: npFlaechen.map((f) => ({ name: f.name, geojson: f.geojson })),
@@ -261,6 +356,16 @@ async function projektOrdnerVerknuepfen(id, danachScannen) {
   if (!h) return;
   statusText('Protokollordner verknüpft: ' + h.name);
   if (danachScannen) await projektScannenUndSpeichern(id);
+}
+
+async function projektStatusSetzen(id, neuerStatus) {
+  const ordner = await grundordnerHolen(true);
+  if (!ordner) return;
+  const db = await dbAendern(ordner, (db) => {
+    if (db.projekte[id]) db.projekte[id].status = neuerStatus;
+  });
+  dbSetzen(db);
+  neuZeichnen(db);
 }
 
 async function projektLoeschenMitBestaetigung(id) {
@@ -308,11 +413,20 @@ async function grundordnerFestlegen() {
 
 async function uebersichtAktualisieren(interaktiv) {
   const ordner = await grundordnerHolen(interaktiv !== false);
-  if (!ordner) { statusText('Noch kein Grundordner festgelegt.'); return; }
+  const bereich = document.getElementById('uebersichtProjekteBereich');
+  const status = document.getElementById('grundordnerStatus');
+  if (!ordner) {
+    if (bereich) bereich.style.display = 'none';
+    if (status) status.textContent = 'Noch nicht festgelegt.';
+    return;
+  }
+  if (bereich) bereich.style.display = '';
+  if (status) status.textContent = '✅ verknüpft: ' + ordner.name;
   const db = await dbLesen(ordner);
   dbSetzen(db);
   statusText(Object.keys(db.projekte).length + ' Projekte in der Datenbank (' + ordner.name + ').');
   neuZeichnen(db);
+  teamAnzeigen();
 }
 
 function neuZeichnen(db) {
@@ -322,14 +436,25 @@ function neuZeichnen(db) {
 
 function uebersichtRendern(db) {
   const ziel = document.getElementById('uebersichtErgebnis');
-  const ids = Object.keys(db.projekte);
-  if (!ids.length) {
+  const filterSel = document.getElementById('projektStatusFilter');
+  const filter = filterSel ? filterSel.value : 'aktuell';
+  const alleIds = Object.keys(db.projekte);
+  const ids = alleIds.filter((pid) => {
+    const s = db.projekte[pid].status || 'aktuell';
+    return filter === 'alle' || s === filter;
+  });
+  if (!alleIds.length) {
     ziel.innerHTML = '<p>Noch keine Projekte angelegt. Über „＋ Projekt anlegen“ starten.</p>';
     return;
   }
+  if (!ids.length) {
+    ziel.innerHTML = '<p>Keine Projekte mit diesem Status. <button class="ordner-knopf" data-aktion="filter-alle">Alle anzeigen</button></p>';
+    return;
+  }
   const typNamen = { protokoll: 'Protokoll', vorbegehung: 'Vorbegehung', belehrung: 'Belehrung' };
+  const statusLabel = { aktuell: '▶ Aktuell', geplant: '🕓 Geplant', abgeschlossen: '✔ Abgeschlossen' };
   let html = '<table class="uebersicht"><tr>' +
-    '<th>Projekt</th><th>Projektnummer</th><th>Ort</th><th>Prot.</th><th>Vorb.</th><th>Bel.</th>' +
+    '<th>Projekt</th><th>Projektnummer</th><th>Ort</th><th>Status</th><th>Prot.</th><th>Vorb.</th><th>Bel.</th>' +
     '<th>Abgerechnet</th><th>Σ Std.</th><th class="kein-druck">Stundenzettel</th><th class="kein-druck">Aktionen</th></tr>';
 
   ids.sort((a, b) => (db.projekte[a].name || '').localeCompare(db.projekte[b].name || '')).forEach((pid) => {
@@ -364,12 +489,15 @@ function uebersichtRendern(db) {
       (dateien.length ? '<ul class="datei-liste">' + liste + '</ul>' : '<p style="font-size:11.5px">Noch keine Protokolle – „Scannen“ klicken.</p>') + '</details></td>' +
       '<td>' + esc(p.projektnummer) + '</td>' +
       '<td>' + esc(p.ort) + (p.lat != null ? ' <span title="' + p.lat + ', ' + p.lng + '">📍</span>' : '') +
-      (p.infos && (p.infos.auftraggeber || p.infos.landkreis || p.infos.aktenzeichen)
+      (p.infos && (p.infos.auftraggeber || p.infos.landkreis || p.infos.aktenzeichen) || p.hauptverantwortlich
         ? '<div style="font-size:11px;color:#666">' +
-          (p.infos.auftraggeber ? 'AG: ' + esc(p.infos.auftraggeber) + ' ' : '') +
-          (p.infos.landkreis ? '· LK ' + esc(p.infos.landkreis) + ' ' : '') +
-          (p.infos.aktenzeichen ? '· Az. ' + esc(p.infos.aktenzeichen) : '') + '</div>'
+          (p.infos && p.infos.auftraggeber ? 'AG: ' + esc(p.infos.auftraggeber) + ' ' : '') +
+          (p.infos && p.infos.landkreis ? '· LK ' + esc(p.infos.landkreis) + ' ' : '') +
+          (p.infos && p.infos.aktenzeichen ? '· Az. ' + esc(p.infos.aktenzeichen) + ' ' : '') +
+          (p.hauptverantwortlich ? '· 👤 ' + esc(p.hauptverantwortlich) +
+            (p.zweitverantwortlich ? ' (Vertr.: ' + esc(p.zweitverantwortlich) + ')' : '') : '') + '</div>'
         : '') + '</td>' +
+      '<td class="mitte">' + statusLabel[p.status || 'aktuell'] + '</td>' +
       '<td class="mitte">' + z.protokoll + '</td>' +
       '<td class="mitte">' + z.vorbegehung + '</td>' +
       '<td class="mitte">' + z.belehrung + '</td>' +
@@ -385,16 +513,27 @@ function uebersichtRendern(db) {
       '<button class="ordner-knopf" data-aktion="projekt-scannen" data-pid="' + pid + '">🔍 Scannen</button>' +
       '<button class="ordner-knopf" data-aktion="projekt-ordner-verknuepfen" data-pid="' + pid + '">📂</button>' +
       '<button class="ordner-knopf" data-aktion="projekt-bearbeiten" data-pid="' + pid + '">✎</button>' +
+      ((p.status || 'aktuell') === 'abgeschlossen'
+        ? '<button class="ordner-knopf" data-aktion="projekt-reaktivieren" data-pid="' + pid + '">↩ Reaktivieren</button>'
+        : (p.status === 'geplant'
+          ? '<button class="ordner-knopf" data-aktion="projekt-starten" data-pid="' + pid + '">▶ Starten</button>'
+          : '') +
+          '<button class="ordner-knopf" data-aktion="projekt-abschliessen" data-pid="' + pid + '">✔ Abschließen</button>') +
       '<button class="ordner-knopf" style="color:#a00" data-aktion="projekt-loeschen" data-pid="' + pid + '">✕</button>' +
       '</div></td></tr>';
   });
   html += '</table>';
-  ziel.innerHTML = html;
+  ziel.innerHTML = '<div style="overflow-x:auto; max-width:100%;">' + html + '</div>';
 }
 
 function startRendern(db) {
   if (!document.getElementById('startZahlen')) return;
-  const ids = Object.keys(db.projekte);
+  const filterSel = document.getElementById('projektStatusFilter');
+  const filter = filterSel ? filterSel.value : 'aktuell';
+  const ids = Object.keys(db.projekte).filter((pid) => {
+    const s = db.projekte[pid].status || 'aktuell';
+    return filter === 'alle' || s === filter;
+  });
   let protokolle = 0;
   let stunden = 0;
   let offen = 0;
@@ -415,31 +554,6 @@ function startRendern(db) {
     '<div class="dash-kachel"><b>' + stunden + '</b><span>Σ Stunden</span></div>' +
     '<div class="dash-kachel"><b>' + offen + '</b><span>ohne Stunden</span></div>' +
     '<div class="dash-kachel"><b>' + abger + ' / ' + protokolle + '</b><span>abgerechnet</span></div>';
-
-  const liste = ids
-    .map((pid) => {
-      const p = db.projekte[pid];
-      const dateien = Object.keys(p.eintraege || {});
-      let su = 0;
-      let off = 0;
-      dateien.forEach((k) => { const x = stundenSumme(p.eintraege[k]); su += x; if (x === 0) off++; });
-      return {
-        pid, p, anzahl: dateien.length, stunden: su, offen: off,
-        letzte: dateien.reduce((a, k) => Math.max(a, p.eintraege[k].geaendert || 0), 0),
-      };
-    })
-    .sort((a, b) => b.letzte - a.letzte)
-    .slice(0, 6);
-
-  document.getElementById('startProjekte').innerHTML = liste.map((e) => {
-    return '<div class="dash-projekt" data-aktion="dash-projekt-springen">' +
-      '<div class="dp-name">' + (esc(e.p.name) || esc(e.p.projektnummer) || 'Projekt') +
-      (e.p.lat != null ? ' 📍' : '') + '</div>' +
-      '<div class="dp-detail">' + esc(e.p.projektnummer || '') + (e.p.ort ? ' · ' + esc(e.p.ort) : '') +
-      ' · ' + e.anzahl + ' Protokolle · ' + e.stunden + ' Std.' +
-      (e.offen ? ' · <b style="color:#c05f10">' + e.offen + ' ohne Stunden</b>' : ' · ✅ alle abgerechnet') +
-      '</div></div>';
-  }).join('') || '<p style="color:#777">Noch keine Projekte – im Reiter „Übersicht“ anlegen.</p>';
 }
 
 // ---------- Initialisierung ----------
@@ -462,10 +576,20 @@ export function uebersichtTabInit(mount) {
       case 'projekt-anlegen': projektAnlegen(); break;
       case 'bearbeiten-abbrechen': bearbeitenAbbrechen(); break;
       case 'grundordner-festlegen': grundordnerFestlegen(); break;
+      case 'team-hinzufuegen': mitarbeiterHinzufuegen(); break;
+      case 'team-entfernen': mitarbeiterEntfernen(parseInt(btn.dataset.idx, 10)); break;
       case 'projekt-scannen': projektScannenUndSpeichern(pid); break;
       case 'projekt-ordner-verknuepfen': projektOrdnerVerknuepfen(pid, false); break;
       case 'projekt-bearbeiten': projektBearbeiten(pid); break;
       case 'projekt-loeschen': projektLoeschenMitBestaetigung(pid); break;
+      case 'projekt-abschliessen': projektStatusSetzen(pid, 'abgeschlossen'); break;
+      case 'projekt-starten': projektStatusSetzen(pid, 'aktuell'); break;
+      case 'projekt-reaktivieren': projektStatusSetzen(pid, 'aktuell'); break;
+      case 'filter-alle': {
+        const sel = document.getElementById('projektStatusFilter');
+        if (sel) { sel.value = 'alle'; neuZeichnen(dbHolen()); }
+        break;
+      }
       case 'flaeche-entfernen': flaechenEntfernen(parseInt(btn.dataset.idx, 10)); break;
       case 'dash-projekt-springen':
         document.getElementById('uebersichtErgebnis').scrollIntoView({ behavior: 'smooth' });
@@ -478,6 +602,17 @@ export function uebersichtTabInit(mount) {
     if (e.target.id === 'npShapeInput') {
       flaechenHinzufuegen(e.target.files);
       e.target.value = '';
+    }
+    if (e.target.id === 'projektStatusFilter') {
+      const db = dbHolen();
+      if (db) neuZeichnen(db);
+    }
+  });
+
+  section.addEventListener('keydown', (e) => {
+    if (e.target.id === 'teamNeuerName' && e.key === 'Enter') {
+      e.preventDefault();
+      mitarbeiterHinzufuegen();
     }
   });
 }

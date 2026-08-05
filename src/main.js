@@ -24,6 +24,7 @@ import { karteTabInit, karteBeiAnzeigeAktualisieren } from './ui/karte.js';
 import { stundenTabInit, stundenBeiAnzeigeAktualisieren } from './ui/stundentabelle.js';
 import { uebersichtTabInit, uebersichtBeiAnzeigeAktualisieren } from './ui/dashboard.js';
 import { tabsInit, tabWechselHook } from './ui/tabs.js';
+import { werkzeugeInit } from './ui/werkzeuge.js';
 
 import { htmlExportInit } from './export/html-export.js';
 import { xlsxExportInit } from './export/xlsx-export.js';
@@ -51,6 +52,7 @@ function start() {
   tabWechselHook(uebersichtBeiAnzeigeAktualisieren);
 
   tabsInit();
+  werkzeugeInit();
   htmlExportInit();
   xlsxExportInit();
 

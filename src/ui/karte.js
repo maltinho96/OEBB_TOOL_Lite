@@ -55,7 +55,7 @@ let projektKarte = null;
 function projektKarteZeigen() {
   if (!projektKarte) return;
   projektKarte.eachLayer((l) => {
-    if (l instanceof L.Marker) projektKarte.removeLayer(l);
+    if (l instanceof L.Marker || l instanceof L.GeoJSON) projektKarte.removeLayer(l);
   });
   const db = dbHolen();
   if (!db) return;
@@ -73,6 +73,13 @@ function projektKarteZeigen() {
       );
       punkte.push([p.lat, p.lng]);
     }
+    // Hochgeladene Shapefiles (Trassen/Schutzgebiete) des Projekts mitzeichnen.
+    (p.flaechen || []).forEach((f) => {
+      const layer = L.geoJSON(f.geojson, { style: { color: '#1f3864', weight: 2, fillOpacity: 0.1 } }).addTo(projektKarte);
+      layer.bindTooltip(esc(p.name || '') + ' – ' + esc(f.name));
+      const b = layer.getBounds();
+      if (b.isValid()) { punkte.push([b.getSouth(), b.getWest()]); punkte.push([b.getNorth(), b.getEast()]); }
+    });
   });
   if (punkte.length) projektKarte.fitBounds(punkte, { padding: [40, 40], maxZoom: 12 });
 }
