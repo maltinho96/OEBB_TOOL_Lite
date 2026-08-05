@@ -6,11 +6,18 @@
 // Firmen-Logo. Verweist auf die Asset-Dateien in public/assets/ (statt
 // wie im Original riesige Base64-Strings). Welches Logo sichtbar ist,
 // steuert themes.css ueber die firma-Klasse am <html>.
+//
+// import.meta.env.BASE_URL statt eines fest verdrahteten "/assets/..."-
+// Pfads: lokal ist das "/", auf GitHub Pages "/OEBB_TOOL_Lite/" (siehe
+// vite.config.js "base"). Ohne das wuerden die Logos unter Pages ins
+// Leere zeigen (Pfad relativ zur Domain-Wurzel statt zum Unterordner).
+const BASIS = import.meta.env.BASE_URL;
+
 export function logo() {
   return (
     '<span class="logo">' +
-    '<img class="lg-greens" src="/assets/logo-greens.svg" alt="NET-TEC GREENgineers Logo">' +
-    '<img class="lg-ing" src="/assets/logo-ing.svg" alt="NET-TEC Ingenieurgesellschaft Logo">' +
+    '<img class="lg-greens" src="' + BASIS + 'assets/logo-greens.svg" alt="NET-TEC GREENgineers Logo">' +
+    '<img class="lg-ing" src="' + BASIS + 'assets/logo-ing.svg" alt="NET-TEC Ingenieurgesellschaft Logo">' +
     '</span>'
   );
 }
