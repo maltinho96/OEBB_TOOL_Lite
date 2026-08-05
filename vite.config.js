@@ -6,6 +6,10 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills';
 export default defineConfig({
   root: '.',            // Projektwurzel; index.html ist der Einstieg
   publicDir: 'public',  // wird 1:1 in den Build kopiert (Logos etc.)
+  // GitHub Pages liefert unter https://<user>.github.io/<repo>/ aus,
+  // also unter einem Unterpfad statt der Domain-Wurzel. Ohne "base"
+  // waeren alle Datei-Pfade (CSS, Logos, JS-Chunks) im Build kaputt.
+  base: '/OEBB_TOOL_Lite/',
   plugins: [
     // shpjs (Shapefile-Import) bringt eine Kette alter Node-Pakete mit
     // (buffer, string_decoder, safe-buffer, parsedbf, immediate, lie …),
@@ -16,6 +20,7 @@ export default defineConfig({
   ],
   server: {
     port: 5173,
+    strictPort: true,   // lieber Fehler als stiller Port-Wechsel (siehe unten)
     open: true,         // Browser beim Start automatisch oeffnen
   },
   build: {

@@ -1,0 +1,51 @@
+name: Deploy nach GitHub Pages
+
+# Läuft automatisch bei jedem Push auf den beta-neu-Branch. Für die
+# spätere main-Beta einfach "beta-neu" unten zu "main" ändern (oder eine
+# zweite Branch-Zeile ergänzen), sobald der Split-Stand stabil ist.
+on:
+  push:
+    branches: [beta-neu]
+  workflow_dispatch: # erlaubt manuelles Auslösen über den "Actions"-Tab
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-und-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Repo auschecken
+        uses: actions/checkout@v4
+
+      - name: Node.js einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Abhängigkeiten installieren
+        run: npm ci --legacy-peer-deps
+
+      - name: Build erzeugen
+        run: npm run build
+
+      - name: Pages vorbereiten
+        uses: actions/configure-pages@v5
+
+      - name: Build als Pages-Artefakt hochladen
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - name: Nach GitHub Pages deployen
+        id: deployment
+        uses: actions/deploy-pages@v4
