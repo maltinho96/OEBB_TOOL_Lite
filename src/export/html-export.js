@@ -53,7 +53,10 @@ function dateinameBauen(tab) {
     const nr = sauber(feld('nummer')) || 'XX';
     return datum + '_' + nr + '.Protokoll_' + ort + '.html';
   }
-  if (typ === 'vorbegehung') return datum + '_Vorbegehungsprotokoll_' + ort + '.html';
+  if (typ === 'vorbegehung') {
+    const nrV = sauber(feld('nummer'));
+    return datum + (nrV ? '_' + nrV + '.Vorbegehungsprotokoll_' : '_Vorbegehungsprotokoll_') + ort + '.html';
+  }
   if (typ === 'belehrung') return datum + '_Belehrungsprotokoll_' + ort + '.html';
   return datum + '_OEBB_Protokoll.html';
 }

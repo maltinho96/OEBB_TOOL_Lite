@@ -8,7 +8,7 @@ export const vorbegehung = {
   label: '🚶 Vorbegehungsprotokoll',
   html: () => `
 ${logo()}
-<h1>Vorbegehungsprotokoll der ökologischen Baubegleitung</h1>
+<h1><span class="nr"><input type="text" value="" aria-label="Protokollnummer" data-feld="nummer">.</span> Vorbegehungsprotokoll der ökologischen Baubegleitung</h1>
 
 <table class="form">
   <tr class="bg-blau"><td class="label" style="width:220px">Netzbetreiber:</td><td><input type="text"></td></tr>

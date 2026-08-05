@@ -1,12 +1,19 @@
 // Firmenwahl (Farbthema + Logo). Originalgetreu aus firmaSetzen() portiert.
 
+import { firmaNachId } from '../config/firmen.js';
+
 // Setzt die Firma: tauscht die firma-*-Klasse am <html> (steuert
-// themes.css) und synchronisiert das Auswahlfeld.
+// themes.css), synchronisiert das Auswahlfeld und setzt den Seitentitel
+// auf den Firmennamen. Letzteres hat einen praktischen Nebeneffekt: der
+// Browser nutzt document.title auch als Text in der Druck-Kopfzeile
+// (Datei -> Drucken) – so steht dort der Firmenname statt eines
+// generischen App-Titels.
 export function firmaSetzen(id) {
   document.documentElement.classList.remove('firma-greens', 'firma-ing');
   document.documentElement.classList.add('firma-' + id);
   const select = document.getElementById('firmenSelect');
   if (select) select.value = id;
+  document.title = firmaNachId(id).name;
 }
 
 // Fuellt das Auswahlfeld aus FIRMEN, verdrahtet den onchange-Handler und
