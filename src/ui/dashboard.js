@@ -88,6 +88,8 @@ Bei gleichzeitigem Schreiben gewinnt die zuletzt speichernde Person.</p>
       <option value="abgeschlossen">✔ Abgeschlossen</option>
     </select>
   </td></tr>
+  <tr class="bg-grau-h"><td class="label">Geplanter Start <small>(optional)</small>:</td><td><input type="date" id="npStart"></td></tr>
+  <tr class="bg-grau-h"><td class="label">Geplantes Ende <small>(optional)</small>:</td><td><input type="date" id="npEnde"></td></tr>
   <tr class="bg-grau-h"><td class="label">Hauptverantwortlich:</td><td>
     <select id="npHauptverantwortlich"></select>
   </td></tr>
@@ -197,7 +199,7 @@ function uebersichtRendern(db) {
       (dateien.length ? '<ul class="datei-liste">' + liste + '</ul>' : '<p style="font-size:11.5px">Noch keine Protokolle – „Scannen“ klicken.</p>') + '</details></td>' +
       '<td>' + esc(p.projektnummer) + '</td>' +
       '<td>' + esc(p.ort) + (p.lat != null ? ' <span title="' + p.lat + ', ' + p.lng + '">📍</span>' : '') +
-      (p.infos && (p.infos.auftraggeber || p.infos.landkreis || p.infos.aktenzeichen || p.infos.ansprechpartner) || p.hauptverantwortlich
+      (p.infos && (p.infos.auftraggeber || p.infos.landkreis || p.infos.aktenzeichen || p.infos.ansprechpartner) || p.hauptverantwortlich || p.start || p.ende
         ? '<div style="font-size:11px;color:#666">' +
           (p.infos && p.infos.auftraggeber ? 'AG: ' + esc(p.infos.auftraggeber) + ' ' : '') +
           (p.infos && p.infos.ansprechpartner ? '· AP: ' + esc(p.infos.ansprechpartner) +
@@ -205,7 +207,11 @@ function uebersichtRendern(db) {
           (p.infos && p.infos.landkreis ? '· LK ' + esc(p.infos.landkreis) + ' ' : '') +
           (p.infos && p.infos.aktenzeichen ? '· Az. ' + esc(p.infos.aktenzeichen) + ' ' : '') +
           (p.hauptverantwortlich ? '· 👤 ' + esc(p.hauptverantwortlich) +
-            (p.zweitverantwortlich ? ' (Vertr.: ' + esc(p.zweitverantwortlich) + ')' : '') : '') + '</div>'
+            (p.zweitverantwortlich ? ' (Vertr.: ' + esc(p.zweitverantwortlich) + ')' : '') : '') +
+          (p.start || p.ende
+            ? '· 📅 ' + (p.start ? new Date(p.start).toLocaleDateString('de-DE') : '?') +
+              ' – ' + (p.ende ? new Date(p.ende).toLocaleDateString('de-DE') : '?')
+            : '') + '</div>'
         : '') + '</td>' +
       '<td class="mitte">' + statusLabel[p.status || 'aktuell'] + '</td>' +
       '<td class="mitte">' + z.protokoll + '</td>' +
@@ -240,30 +246,41 @@ function startRendern(db) {
   if (!document.getElementById('startZahlen')) return;
   const filterSel = document.getElementById('projektStatusFilter');
   const filter = filterSel ? filterSel.value : 'aktuell';
-  const ids = Object.keys(db.projekte).filter((pid) => {
+  const alleIds = Object.keys(db.projekte);
+  const ids = alleIds.filter((pid) => {
     const s = db.projekte[pid].status || 'aktuell';
     return filter === 'alle' || s === filter;
   });
   let protokolle = 0;
   let stunden = 0;
-  let offen = 0;
-  let abger = 0;
   ids.forEach((pid) => {
     const p = db.projekte[pid];
     Object.keys(p.eintraege || {}).forEach((k) => {
       protokolle++;
-      const su = stundenSumme(p.eintraege[k]);
-      stunden += su;
-      if (su === 0) offen++;
-      if (p.eintraege[k].abgerechnet) abger++;
+      stunden += stundenSumme(p.eintraege[k]);
     });
   });
+
+  // Status-Aufschlüsselung: immer über ALLE Projekte, unabhängig vom
+  // Anzeigen-Filter oben – so bleibt der Gesamtüberblick sichtbar, egal
+  // welcher Status gerade in der Tabelle gefiltert ist.
+  let aktuellN = 0;
+  let geplantN = 0;
+  let abgeschlossenN = 0;
+  alleIds.forEach((pid) => {
+    const s = db.projekte[pid].status || 'aktuell';
+    if (s === 'geplant') geplantN++;
+    else if (s === 'abgeschlossen') abgeschlossenN++;
+    else aktuellN++;
+  });
+
   document.getElementById('startZahlen').innerHTML =
     '<div class="dash-kachel"><b>' + ids.length + '</b><span>Projekte</span></div>' +
     '<div class="dash-kachel"><b>' + protokolle + '</b><span>Protokolle</span></div>' +
     '<div class="dash-kachel"><b>' + stunden + '</b><span>Σ Stunden</span></div>' +
-    '<div class="dash-kachel"><b>' + offen + '</b><span>ohne Stunden</span></div>' +
-    '<div class="dash-kachel"><b>' + abger + ' / ' + protokolle + '</b><span>abgerechnet</span></div>';
+    '<div class="dash-kachel"><b>' + aktuellN + '</b><span>▶ Aktuell</span></div>' +
+    '<div class="dash-kachel"><b>' + geplantN + '</b><span>🕓 Geplant</span></div>' +
+    '<div class="dash-kachel"><b>' + abgeschlossenN + '</b><span>✔ Abgeschlossen</span></div>';
 }
 
 // ---------- Initialisierung ----------

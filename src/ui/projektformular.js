@@ -67,7 +67,7 @@ function nadelEntfernen() {
 // ---------- Formular öffnen/schließen/leeren ----------
 
 function formularLeeren() {
-  ['npName', 'npNummer', 'npOrt', 'npAuftraggeber', 'npAnsprechpartner', 'npAnsprechpartnerTelefon', 'npAnsprechpartnerEmail', 'npLandkreis', 'npAktenzeichen', 'npNotizen'].forEach((id) => {
+  ['npName', 'npNummer', 'npOrt', 'npAuftraggeber', 'npAnsprechpartner', 'npAnsprechpartnerTelefon', 'npAnsprechpartnerEmail', 'npLandkreis', 'npAktenzeichen', 'npNotizen', 'npStart', 'npEnde'].forEach((id) => {
     document.getElementById(id).value = '';
   });
   document.getElementById('npStatus').value = 'aktuell';
@@ -107,6 +107,8 @@ export function projektBearbeiten(pid) {
   document.getElementById('npNummer').value = p.projektnummer || '';
   document.getElementById('npOrt').value = p.ort || '';
   document.getElementById('npStatus').value = p.status || 'aktuell';
+  document.getElementById('npStart').value = p.start || '';
+  document.getElementById('npEnde').value = p.ende || '';
   teamAnzeigen(p.hauptverantwortlich || '', p.zweitverantwortlich || '');
   const i = p.infos || {};
   document.getElementById('npAuftraggeber').value = i.auftraggeber || '';
@@ -138,6 +140,8 @@ async function projektAnlegen() {
     projektnummer: nummer,
     ort: document.getElementById('npOrt').value.trim(),
     status: document.getElementById('npStatus').value,
+    start: document.getElementById('npStart').value,
+    ende: document.getElementById('npEnde').value,
     hauptverantwortlich: document.getElementById('npHauptverantwortlich').value,
     zweitverantwortlich: document.getElementById('npZweitverantwortlich').value,
     lat: npLat,
