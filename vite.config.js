@@ -1,15 +1,15 @@
 import { defineConfig } from 'vite';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
-// Phase 1: reine Browser-Entwicklung, noch ohne Tauri.
-// (Fuer Tauri kaeme spaeter z. B. server.strictPort + build.target dazu.)
-export default defineConfig({
+// base wird NUR beim Production-Build gesetzt (npm run build -> GitHub
+// Pages liefert unter /OEBB_TOOL_Lite/ aus). Im Dev-Modus (npm run dev)
+// bleibt base auf "/", damit die App lokal / in Codespaces unter der
+// Wurzel-URL laeuft und man keinen Unterpfad an die URL haengen muss.
+// command ist 'serve' bei dev, 'build' beim Bauen.
+export default defineConfig(({ command }) => ({
   root: '.',            // Projektwurzel; index.html ist der Einstieg
   publicDir: 'public',  // wird 1:1 in den Build kopiert (Logos etc.)
-  // GitHub Pages liefert unter https://<user>.github.io/<repo>/ aus,
-  // also unter einem Unterpfad statt der Domain-Wurzel. Ohne "base"
-  // waeren alle Datei-Pfade (CSS, Logos, JS-Chunks) im Build kaputt.
-  base: '/OEBB_TOOL_Lite/',
+  base: command === 'build' ? '/OEBB_TOOL_Lite/' : '/',
   plugins: [
     // shpjs (Shapefile-Import) bringt eine Kette alter Node-Pakete mit
     // (buffer, string_decoder, safe-buffer, parsedbf, immediate, lie …),
@@ -20,11 +20,11 @@ export default defineConfig({
   ],
   server: {
     port: 5173,
-    strictPort: true,   // lieber Fehler als stiller Port-Wechsel (siehe unten)
+    strictPort: true,   // lieber Fehler als stiller Port-Wechsel
     open: true,         // Browser beim Start automatisch oeffnen
   },
   build: {
     outDir: 'dist',
     emptyOutDir: true,
   },
-});
+}));

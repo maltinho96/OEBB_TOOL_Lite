@@ -25,6 +25,7 @@ import { stundenTabInit, stundenBeiAnzeigeAktualisieren } from './ui/stundentabe
 import { uebersichtTabInit, uebersichtBeiAnzeigeAktualisieren } from './ui/dashboard.js';
 import { tabsInit, tabWechselHook, tabZeigen } from './ui/tabs.js';
 import { werkzeugeInit } from './ui/werkzeuge.js';
+import { baubegleiterVorbelegen } from './core/nutzer.js';
 
 import { htmlExportInit } from './export/html-export.js';
 import { htmlImportInit } from './export/html-import.js';
@@ -51,6 +52,7 @@ function start() {
   tabWechselHook(karteBeiAnzeigeAktualisieren);
   tabWechselHook(stundenBeiAnzeigeAktualisieren);
   tabWechselHook(uebersichtBeiAnzeigeAktualisieren);
+  tabWechselHook(baubegleiterVorbelegen);
 
   tabsInit();
   werkzeugeInit();

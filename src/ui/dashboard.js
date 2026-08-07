@@ -50,6 +50,12 @@ Bei gleichzeitigem Schreiben gewinnt die zuletzt speichernde Person.</p>
 </p>
 <div id="teamListe" style="font-size:11.5px; margin-top:6px;"></div>
 
+<p class="kein-druck" style="margin-top:10px; display:flex; gap:6px; align-items:center;">
+  <b style="font-size:13px; color:#555;">Ich bin:</b>
+  <select id="nutzerAuswahl" style="font:inherit; padding:3px; min-width:200px;"></select>
+  <span style="font-size:11.5px; color:#777;">– wird bei neuen Protokollen automatisch als Baubegleiter*in eingetragen.</span>
+</p>
+
 <div id="uebersichtProjekteBereich" style="display:none">
 <h2 class="c-grau">Projekte</h2>
 <div class="dash-zahlen" id="startZahlen"></div>

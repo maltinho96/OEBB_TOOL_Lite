@@ -6,6 +6,7 @@ import { esc, statusText } from '../core/util.js';
 import { grundordnerHolen } from '../core/storage/index.js';
 import { dbAendern } from '../core/db.js';
 import { dbSetzen, dbHolen } from '../core/zustand.js';
+import { aktuellerNutzer, nutzerSetzen } from '../core/nutzer.js';
 
 // Zeigt die Team-Liste (mit Entfernen-Knöpfen) und befüllt die beiden
 // Verantwortlichen-Selects im Projektformular. vorbelegtHaupt/vorbelegtZweit:
@@ -40,6 +41,20 @@ export function teamAnzeigen(vorbelegtHaupt, vorbelegtZweit) {
       sel.value = wert;
     }
   });
+
+  // "Ich bin"-Auswahl: aus derselben Team-Liste, aktueller Nutzer aus
+  // localStorage vorausgewählt (bleibt auch sichtbar, falls er inzwischen
+  // aus dem Team entfernt wurde).
+  const nutzerSel = document.getElementById('nutzerAuswahl');
+  if (nutzerSel) {
+    const aktiv = aktuellerNutzer();
+    nutzerSel.innerHTML = '<option value="">– niemand ausgewählt –</option>' +
+      namen.map((n) => '<option value="' + esc(n) + '">' + esc(n) + '</option>').join('');
+    if (aktiv && !namen.includes(aktiv)) {
+      nutzerSel.insertAdjacentHTML('beforeend', '<option value="' + esc(aktiv) + '">' + esc(aktiv) + ' (nicht mehr im Team)</option>');
+    }
+    nutzerSel.value = aktiv;
+  }
 }
 
 export async function mitarbeiterHinzufuegen() {
@@ -80,6 +95,12 @@ export function teamInit(section) {
     if (e.target.id === 'teamNeuerName' && e.key === 'Enter') {
       e.preventDefault();
       mitarbeiterHinzufuegen();
+    }
+  });
+  section.addEventListener('change', (e) => {
+    if (e.target.id === 'nutzerAuswahl') {
+      nutzerSetzen(e.target.value);
+      statusText(e.target.value ? 'Angemeldet als: ' + e.target.value : 'Keine Person ausgewählt.');
     }
   });
 }

@@ -54,7 +54,7 @@ ${logo()}
     <td colspan="2"><span class="zeile"><b>Straße:</b> <input type="text"></span></td>
   </tr>
   <tr class="bg-gelb-h">
-    <td class="label" colspan="2">Ökologische*r Baubegleiter*in:<br><input type="text"></td>
+    <td class="label" colspan="2">Ökologische*r Baubegleiter*in:<br><input type="text" data-feld="baubegleiter"></td>
     <td class="label" colspan="2" rowspan="2">Unterschrift:
       <div class="unterschrift-feld" data-einzelbild="unterschrift" title="Klicken, um ein Unterschrift-Bild einzufügen"></div>
     </td>
