@@ -169,11 +169,7 @@ function stTabRendern() {
       '<span class="st-status">' + statusIcon(e) + '</span> ' + (typNamen[e.typ] || esc(e.typ)) +
       (e.nummer ? ' Nr. ' + esc(e.nummer) : '') + (dat ? ' · Begehung am ' + dat : '') +
       ' <span style="font-weight:400;color:#666">(' + esc(e.datei) + ')</span>' +
-      ' <label class="kein-druck" style="font-weight:400; margin-left:10px; cursor:pointer">' +
-      '<input type="checkbox" style="width:14px;height:14px;vertical-align:-2px" ' + (e.abgerechnet ? 'checked ' : '') +
-      'data-aktion="st-abgerechnet" data-datei="' + encodeURIComponent(e.datei) + '"> abgerechnet' +
-      (e.abgerechnet && e.abgerechnetAm ? ' <span style="color:#666">(am ' + esc(new Date(e.abgerechnetAm).toLocaleDateString('de-DE')) + ')</span>' : '') +
-      '</label></td>' +
+      '</td>' +
       '<td><button class="kein-druck" title="Zeile hinzufügen" data-aktion="st-zeile-plus" data-datei="' + encodeURIComponent(e.datei) + '">＋</button></td></tr>';
 
     zeilen.forEach((z) => {
@@ -205,28 +201,6 @@ function stZeilePlus(btn) {
     ref = ref.nextElementSibling;
   }
   ref.parentNode.insertBefore(tr, ref.nextElementSibling);
-}
-
-async function abgerechnetSetzen(kasten) {
-  const pid = document.getElementById('stProjekt').value;
-  const datei = decodeURIComponent(kasten.dataset.datei);
-  const neu = kasten.checked;
-  const ordner = await grundordnerHolen(true);
-  if (!ordner) return;
-  const db = await dbAendern(ordner, (db) => {
-    const e = db.projekte[pid] && db.projekte[pid].eintraege[datei];
-    if (e) {
-      e.abgerechnet = neu;
-      e.abgerechnetAm = neu ? new Date().toISOString().slice(0, 10) : '';
-    }
-  });
-  dbSetzen(db);
-  const status = kasten.closest('tr').querySelector('.st-status');
-  if (status) {
-    const e2 = db.projekte[pid].eintraege[datei];
-    status.textContent = statusIcon(e2);
-  }
-  statusText(neu ? 'Als abgerechnet markiert: ' + datei : 'Abrechnungs-Markierung entfernt: ' + datei);
 }
 
 async function stTabSpeichern() {
@@ -387,12 +361,7 @@ export function stundenTabInit(mount) {
       case 'st-zeile-plus': stZeilePlus(btn); break;
       case 'st-zeile-entfernen': btn.closest('tr').remove(); break;
       case 'einst-speichern': einstellungenSpeichern(); break;
-      // ex-pdf / ex-xlsx / ex-abrechnen: verdrahtet in export/xlsx-export.js (Stufe 5)
-    }
-  });
-  section.addEventListener('change', (e) => {
-    if (e.target.closest('[data-aktion="st-abgerechnet"]')) {
-      abgerechnetSetzen(e.target);
+      // ex-pdf / ex-xlsx: verdrahtet in export/xlsx-export.js (Stufe 5)
     }
   });
 }

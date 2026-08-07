@@ -165,19 +165,16 @@ function uebersichtRendern(db) {
   const statusLabel = { aktuell: '▶ Aktuell', geplant: '🕓 Geplant', abgeschlossen: '✔ Abgeschlossen' };
   let html = '<table class="uebersicht"><tr>' +
     '<th>Projekt</th><th>Projektnummer</th><th>Ort</th><th>Status</th><th>Prot.</th><th>Vorb.</th><th>Bel.</th>' +
-    '<th>Abgerechnet</th><th>Σ Std.</th><th class="kein-druck">Stundenzettel</th><th class="kein-druck">Aktionen</th></tr>';
+    '<th>Σ Std.</th><th class="kein-druck">Stundenzettel</th><th class="kein-druck">Aktionen</th></tr>';
 
   ids.sort((a, b) => (db.projekte[a].name || '').localeCompare(db.projekte[b].name || '')).forEach((pid) => {
     const p = db.projekte[pid];
     const dateien = Object.keys(p.eintraege).map((k) => { const e = p.eintraege[k]; e.datei = k; return e; });
     const z = { protokoll: 0, vorbegehung: 0, belehrung: 0 };
-    let abgerechnet = 0;
     let stdSumme = 0;
     dateien.forEach((e) => {
       if (z[e.typ] !== undefined) z[e.typ]++;
-      const su = stundenSumme(e);
-      stdSumme += su;
-      if (e.abgerechnet) abgerechnet++;
+      stdSumme += stundenSumme(e);
     });
     const monate = Object.keys(nachMonat(projektStundenzeilen(p))).sort();
     const monatOpts = monate.map((m) => '<option value="' + m + '">' + monatsName(m) + '</option>').join('');
@@ -189,8 +186,7 @@ function uebersichtRendern(db) {
         return '<li>' + statusIcon(d) + ' ' + esc(d.datei) + ' – ' + (typNamen[d.typ] || esc(d.typ)) +
           (d.nummer ? ' Nr. ' + esc(d.nummer) : '') +
           (dat ? ', Begehung am ' + dat : '') +
-          (su > 0 ? ' – <b>' + su + ' Std.</b>' : ' – <i>noch keine Stunden → Reiter „🕒 Stunden“</i>') +
-          (d.abgerechnet ? ' – abgerechnet' + (d.abgerechnetAm ? ' am ' + esc(new Date(d.abgerechnetAm).toLocaleDateString('de-DE')) : '') : '') + '</li>';
+          (su > 0 ? ' – <b>' + su + ' Std.</b>' : ' – <i>noch keine Stunden → Reiter „🕒 Stunden“</i>') + '</li>';
       })
       .join('');
 
@@ -217,7 +213,6 @@ function uebersichtRendern(db) {
       '<td class="mitte">' + z.protokoll + '</td>' +
       '<td class="mitte">' + z.vorbegehung + '</td>' +
       '<td class="mitte">' + z.belehrung + '</td>' +
-      '<td class="mitte">' + abgerechnet + ' / ' + dateien.length + '</td>' +
       '<td class="mitte"><b>' + stdSumme + '</b></td>' +
       '<td class="kein-druck"><div class="projekt-aktionen">' +
       (monate.length ? '<select id="mon_' + pid + '"><option value="alle">Alle Monate</option>' + monatOpts + '</select>' +

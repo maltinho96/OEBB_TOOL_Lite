@@ -3,9 +3,8 @@
 
 import { MONATE } from '../config/konstanten.js';
 
-// Statussymbol eines Eintrags: abgerechnet / hat Stunden / nur Protokoll.
+// Statussymbol eines Eintrags: hat Stunden / nur Protokoll.
 export function statusIcon(e) {
-  if (e.abgerechnet) return '✅';
   return stundenSumme(e) > 0 ? '🕒' : '📄';
 }
 

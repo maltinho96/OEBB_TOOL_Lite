@@ -53,14 +53,12 @@ export async function projektScannen(ordner) {
   return { neu, gefunden, geprueft };
 }
 
-// Scan-Ergebnis in ein Projekt einpflegen: vorhandene Stunden- und
-// Abrechnungs-Angaben je Datei bleiben erhalten, Metadaten werden ersetzt.
+// Scan-Ergebnis in ein Projekt einpflegen: vorhandene Stunden-Angaben je
+// Datei bleiben erhalten, Metadaten werden ersetzt.
 export function eintraegeZusammenfuehren(projekt, neu) {
   Object.keys(neu).forEach((datei) => {
     const alt = projekt.eintraege[datei] || {};
     neu[datei].stunden = alt.stunden || [];
-    neu[datei].abgerechnet = alt.abgerechnet || false;
-    neu[datei].abgerechnetAm = alt.abgerechnetAm || '';
     projekt.eintraege[datei] = neu[datei];
   });
 }

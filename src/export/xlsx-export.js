@@ -1,5 +1,5 @@
 // Stundenzettel-Export: Excel-Arbeitsmappe (ein Blatt je Monat, formatiert),
-// PDF-Druck des Stunden-Reiters, "als abgerechnet markieren" und der
+// PDF-Druck des Stunden-Reiters und der
 // Monatsauswahl-Dialog, den die Übersichtstabelle beim Sprung aus einem
 // Projekt öffnet. Originalgetreu portiert; xlsx-js-style ersetzt die im
 // Original eingebettete Kopie derselben Bibliothek (kommt jetzt aus npm).

@@ -27,6 +27,7 @@ import { tabsInit, tabWechselHook, tabZeigen } from './ui/tabs.js';
 import { werkzeugeInit } from './ui/werkzeuge.js';
 
 import { htmlExportInit } from './export/html-export.js';
+import { htmlImportInit } from './export/html-import.js';
 import { xlsxExportInit } from './export/xlsx-export.js';
 
 // ---------------------------------------------------------------------
@@ -54,6 +55,7 @@ function start() {
   tabsInit();
   werkzeugeInit();
   htmlExportInit();
+  htmlImportInit();
   xlsxExportInit();
 
   // Startansicht: Übersicht ist bereits .tab.aktiv im HTML; tabZeigen()
