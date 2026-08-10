@@ -5,7 +5,7 @@
 // nur noch ein und kümmert sich um Laden/Rendern der Übersicht.
 
 import { esc, statusText } from '../core/util.js';
-import { grundordnerHolen, waehleGrundordner } from '../core/storage/index.js';
+import { grundordnerHolen, waehleGrundordner, gespeicherterGrundordner } from '../core/storage/index.js';
 import { dbLesen } from '../core/db.js';
 import { dbSetzen, dbHolen } from '../core/zustand.js';
 import { logo } from '../schema/felder.js';
@@ -121,6 +121,28 @@ Bei gleichzeitigem Schreiben gewinnt die zuletzt speichernde Person.</p>
 // ---------- Laden + Rendern ----------
 
 async function grundordnerFestlegen() {
+  // Bereits verbunden? Dann will der Klick bewusst einen ANDEREN Ordner
+  // waehlen -> voller Dialog.
+  const bereitsVerbunden = await grundordnerHolen(false).catch(() => null);
+  if (bereitsVerbunden) {
+    const h = await waehleGrundordner();
+    if (!h) return;
+    statusText('Grundordner: ' + h.name);
+    uebersichtAktualisieren(false);
+    return;
+  }
+  // Nicht verbunden, aber gespeichert? Dann per Berechtigungs-Nachfrage
+  // reaktivieren (ein Klick, kein Dateidialog).
+  const gespeichert = await gespeicherterGrundordner().catch(() => null);
+  if (gespeichert) {
+    const reaktiviert = await grundordnerHolen(true);
+    if (reaktiviert) {
+      statusText('Grundordner verbunden: ' + reaktiviert.name);
+      uebersichtAktualisieren(false);
+      return;
+    }
+  }
+  // Nichts gespeichert (oder Reaktivierung fehlgeschlagen) -> voller Dialog.
   const h = await waehleGrundordner();
   if (!h) return;
   statusText('Grundordner: ' + h.name);
@@ -131,13 +153,25 @@ async function uebersichtAktualisieren(interaktiv) {
   const ordner = await grundordnerHolen(interaktiv !== false);
   const bereich = document.getElementById('uebersichtProjekteBereich');
   const status = document.getElementById('grundordnerStatus');
+  const knopf = document.querySelector('[data-aktion="grundordner-festlegen"]');
   if (!ordner) {
     if (bereich) bereich.style.display = 'none';
-    if (status) status.textContent = 'Noch nicht festgelegt.';
+    // Handle gespeichert, aber Berechtigung (noch) nicht erteilt? Dann
+    // beim naechsten Klick reicht die Berechtigungs-Nachfrage – kein
+    // erneutes Ordner-Suchen. Knopf und Text entsprechend anpassen.
+    const gespeichert = await gespeicherterGrundordner().catch(() => null);
+    if (gespeichert) {
+      if (status) status.textContent = '🔗 „' + gespeichert.name + '“ gespeichert – zum Verbinden anklicken.';
+      if (knopf) knopf.textContent = '🔗 Grundordner „' + gespeichert.name + '“ verbinden';
+    } else {
+      if (status) status.textContent = 'Noch nicht festgelegt.';
+      if (knopf) knopf.textContent = '📂 Grundordner festlegen';
+    }
     return;
   }
   if (bereich) bereich.style.display = '';
   if (status) status.textContent = '✅ verknüpft: ' + ordner.name;
+  if (knopf) knopf.textContent = '📂 Anderen Grundordner wählen';
   const db = await dbLesen(ordner);
   dbSetzen(db);
   statusText(Object.keys(db.projekte).length + ' Projekte in der Datenbank (' + ordner.name + ').');

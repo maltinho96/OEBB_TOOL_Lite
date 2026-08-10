@@ -10,6 +10,7 @@ export {
   fsaVerfuegbar,
   waehleGrundordner,
   grundordnerHolen,
+  gespeicherterGrundordner,
   waehleProjektordner,
   projektOrdnerHolen,
   leseDbText,

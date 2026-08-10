@@ -69,6 +69,16 @@ export async function grundordnerHolen(interaktiv) {
   return h;
 }
 
+// Prüft, ob ein Grundordner-Handle gespeichert ist – unabhaengig davon,
+// ob die Zugriffsberechtigung gerade noch gilt. Damit kann die Oberflaeche
+// beim Start einen "wieder verbinden"-Knopf anbieten (ein Klick statt
+// erneutem Ordner-Auswaehlen), denn der Browser vergisst nach dem
+// Schliessen des Tabs die Berechtigung, nicht aber den Handle selbst.
+export async function gespeicherterGrundordner() {
+  if (grundOrdner) return grundOrdner;
+  return await idbHolen('grundOrdner').catch(() => null);
+}
+
 // ---------- Projektordner ----------
 export async function waehleProjektordner(id) {
   if (!fsaVerfuegbar()) return null;
