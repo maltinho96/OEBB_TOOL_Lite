@@ -61,11 +61,18 @@ function gruppenRechteck(gruppe) {
   let west = Math.min(...lngs);
   let ost = Math.max(...lngs);
 
-  if (gruppe.length === 1) {
-    const dLat = (EINZEL_KASTEN_M / 2) / 111320;
-    const dLng = (EINZEL_KASTEN_M / 2) / (111320 * Math.cos(sued * Math.PI / 180));
-    sued -= dLat; nord += dLat; west -= dLng; ost += dLng;
-  }
+  // Mindestgröße erzwingen: Ist die tatsächliche Ausdehnung der Gruppe
+  // kleiner als MIN_KASTEN_M (Einzelfoto oder mehrere dicht beieinander),
+  // den Kasten um seinen Mittelpunkt auf die Mindestgröße aufblasen –
+  // sonst schrumpft das Rechteck zu einem unbrauchbaren dünnen Strich.
+  const mitteLat = (sued + nord) / 2;
+  const mitteLng = (west + ost) / 2;
+  const halbLat = (MIN_KASTEN_M / 2) / 111320;
+  const halbLng = (MIN_KASTEN_M / 2) / (111320 * Math.cos(mitteLat * Math.PI / 180));
+
+  if ((nord - sued) < 2 * halbLat) { sued = mitteLat - halbLat; nord = mitteLat + halbLat; }
+  if ((ost - west) < 2 * halbLng) { west = mitteLng - halbLng; ost = mitteLng + halbLng; }
+
   return [[sued, west], [nord, ost]];
 }
 
