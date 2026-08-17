@@ -16,7 +16,7 @@ body{
   background:#e8e6e1; margin:0; padding:0;
 }
 .blatt{
-  max-width:1200px; margin:0 auto; background:#fff;
+  max-width:880px; margin:0 auto; background:#fff;
   padding:26px 40px 60px; box-shadow:0 2px 14px rgba(0,0,0,.15);
   min-height:70vh;
 }
@@ -74,7 +74,12 @@ input[type=checkbox], input[type=radio]{width:17px; height:17px; accent-color:#1
 .abb-kopf button.entfernen{color:#a00; border-color:#a00; margin-left:auto;}
 .abb-karte{margin-bottom:8px;}
 .abb-karte img{width:100%; max-height:280px; object-fit:cover; border:1px solid #999; display:block;}
-.abb-bilder{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:8px; justify-content:flex-start;}
+.einklapp-hinweis{color:#666; font-size:11px; margin-left:8px;}
+.fotokarte{margin:6px 0 10px;}
+.fotokarte-map{height:260px; border:1px solid #999; border-radius:4px;}
+.fotokarte-legende{font-size:11px; color:#555; margin-top:3px;}
+.fotokarte-hinweis{font-size:11px; color:#888; margin:4px 0 8px; font-style:italic;}
+.abb-bilder{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:8px; justify-content:center;}
 .abb-bilder img{border:1px solid #999; width:auto; height:auto;}
 .abb.modus-2 .abb-bilder img{max-width:calc(50% - 6px); max-height:520px;}
 .abb.modus-1 .abb-bilder{flex-direction:column; align-items:center;}

@@ -39,11 +39,12 @@ ${logo()}
 </table>
 
 <h2 class="c-gruen">Baumschutz</h2>
-<table class="form">
-  <tr class="bg-gruen"><td colspan="7"><span class="cb"><b>Begehung ohne Beanstandung:</b> <input type="checkbox" checked></span></td></tr>
+<table class="form" data-schutzblock data-schutzblock-gruppe="baumschutz">
+  <tr class="bg-gruen"><td colspan="7"><span class="cb"><b>Begehung ohne Beanstandung:</b> <input type="checkbox" data-einklapp checked></span> <span class="einklapp-hinweis kein-druck"></span></td></tr>
+  <tr class="bg-gruen-h" data-immer-sichtbar><td colspan="7" class="label">Kommentar (z. B. warum kein Schaden entstand / Begehung ohne Befund):<textarea rows="2"></textarea></td></tr>
   <tr class="bg-gruen-h"><td colspan="7" class="label">Feinst- und Feinwurzelflächenverlust m²: <input type="text" style="width:90px"></td></tr>
 </table>
-<table class="form wurzeltab">
+<table class="form wurzeltab" data-schutzblock-anhang="baumschutz">
   <tr class="bg-gruen-h">
     <td class="kopf" rowspan="3">Rindenschäden</td>
     <td class="label">Schwachwurzel/-n*:</td><td><input type="text"></td>
@@ -63,7 +64,7 @@ ${logo()}
     <td class="label">Starkwurzel/-n*:</td><td><input type="text"></td>
   </tr>
 </table>
-<table class="form">
+<table class="form" data-schutzblock-anhang="baumschutz">
   <tr class="bg-gruen"><td><span class="cb"><b>Schutzabstände wurden eingehalten:</b> <input type="checkbox"></span></td></tr>
   <tr class="bg-gruen-h"><td class="label">Kommentar Schaden und Ursache:<textarea rows="3"></textarea></td></tr>
   <tr class="bg-gruen-h"><td class="label">Durchzuführende Baumpflegerische Maßnahmen:<textarea rows="2"></textarea></td></tr>
@@ -79,12 +80,12 @@ ${logo()}
   </td></tr>
   <tr class="bg-gruen-h"><td class="label">Bereits durchgeführte Maßnahme/n:<textarea rows="2"></textarea></td></tr>
 </table>
-<p class="fusz">*Feinst- und Feinwurzeln &lt; 0,5 cm, Schwachwurzel 0,5 cm – 2,0 cm, Grobwurzel 2,0 – 5,0 cm, Starkwurzel &gt; 5,0 cm</p>
+<p class="fusz" data-schutzblock-anhang="baumschutz">*Feinst- und Feinwurzeln &lt; 0,5 cm, Schwachwurzel 0,5 cm – 2,0 cm, Grobwurzel 2,0 – 5,0 cm, Starkwurzel &gt; 5,0 cm</p>
 
 <div class="zusammen">
 <h2 class="c-orange">Boden- und Wasserschutz</h2>
-<table class="form">
-  <tr class="bg-orange"><td colspan="4"><span class="cb"><b>Begehung ohne Beanstandung:</b> <input type="checkbox" checked></span></td></tr>
+<table class="form" data-schutzblock>
+  <tr class="bg-orange"><td colspan="4"><span class="cb"><b>Begehung ohne Beanstandung:</b> <input type="checkbox" data-einklapp checked></span> <span class="einklapp-hinweis kein-druck"></span></td></tr>
   <tr class="bg-orange-h">
     <td colspan="2"><span class="cb"><b>Oberbodenverdichtung:</b> <input type="checkbox"></span></td>
     <td colspan="2"><span class="cb"><b>Unterbodenverdichtung:</b> <input type="checkbox"></span></td>
@@ -96,8 +97,8 @@ ${logo()}
 </div>
 
 <h2 class="c-pink">Arten- und Habitatschutz</h2>
-<table class="form">
-  <tr class="bg-pink"><td colspan="6"><span class="cb"><b>Begehung ohne Beanstandung:</b> <input type="checkbox" checked></span></td></tr>
+<table class="form" data-schutzblock>
+  <tr class="bg-pink"><td colspan="6"><span class="cb"><b>Begehung ohne Beanstandung:</b> <input type="checkbox" data-einklapp checked></span> <span class="einklapp-hinweis kein-druck"></span></td></tr>
   <tr class="bg-pink"><td colspan="6" class="label">Vogelschutz</td></tr>
   <tr class="bg-pink-h"><td colspan="6"><span class="cb"><b>Bauzeitenregelung eingehalten:</b> <input type="checkbox"></span></td></tr>
   <tr class="bg-pink-h">

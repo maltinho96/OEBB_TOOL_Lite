@@ -25,6 +25,7 @@ import { stundenTabInit, stundenBeiAnzeigeAktualisieren } from './ui/stundentabe
 import { uebersichtTabInit, uebersichtBeiAnzeigeAktualisieren } from './ui/dashboard.js';
 import { tabsInit, tabWechselHook, tabZeigen } from './ui/tabs.js';
 import { werkzeugeInit } from './ui/werkzeuge.js';
+import { einklappenInit } from './ui/einklappen.js';
 import { baubegleiterVorbelegen } from './core/nutzer.js';
 
 import { htmlExportInit } from './export/html-export.js';
@@ -48,6 +49,7 @@ function start() {
 
   fotosInit(app);
   firmaInit(document.getElementById('firmenSelect'), FIRMEN);
+  einklappenInit(app);
 
   tabWechselHook(karteBeiAnzeigeAktualisieren);
   tabWechselHook(stundenBeiAnzeigeAktualisieren);

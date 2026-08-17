@@ -27,6 +27,13 @@ export function logo() {
 export function fotodokumentation(kleingedrucktes) {
   return (
     '<h2 class="c-grau">Fotodokumentation</h2>' +
+    // Standortkarte der Fotos: erscheint erst, wenn ein Foto mit GPS
+    // eingefuegt wurde (ui/fotokarte.js). Bis dahin nur der Hinweis.
+    '<div class="fotokarte" style="display:none">' +
+    '<div class="fotokarte-map"></div>' +
+    '<div class="fotokarte-legende">📍 Aufnahmeorte der Fotos (aus den Bild-GPS-Daten)</div>' +
+    '</div>' +
+    '<div class="fotokarte-hinweis kein-druck">Fotos mit Standortdaten setzen automatisch einen Pin auf einer Karte.</div>' +
     '<div class="fotoContainer"></div>' +
     '<div class="dropzone kein-druck" data-dropzone>' +
     '📷 Fotos hierher ziehen oder klicken zum Auswählen<br>' +

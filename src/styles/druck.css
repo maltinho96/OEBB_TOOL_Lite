@@ -2,6 +2,9 @@
 .druckfuss{display:none;}
 
 @media print{
+  .fotokarte{page-break-inside:avoid; margin:4px 0 8px;}
+  .fotokarte-map{height:70mm; border:1px solid #999;}
+  .fotokarte-legende{font-size:10px; color:#333;}
   @page{size:A4; margin:12mm 10mm 16mm;}
   body{background:#fff; font-size:11px;}
   table.form td{padding:3px 6px;}
@@ -27,7 +30,9 @@
   h2{page-break-after:avoid; break-after:avoid;}
   .vis-zeile{page-break-inside:avoid;}
   .abb-karte img{max-height:75mm;}
+  .abb-bilder{display:flex; flex-wrap:wrap; gap:10px; justify-content:center;}
   .abb.modus-2 .abb-bilder img{max-width:calc(50% - 6px); max-height:150mm;}
+  .abb.modus-1 .abb-bilder{flex-direction:column; align-items:center;}
   .abb.modus-1 .abb-bilder img{max-width:80%; max-height:160mm;}
   .druckfuss{
     display:flex; position:fixed; bottom:0; left:0; right:0;
