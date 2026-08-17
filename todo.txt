@@ -1,0 +1,4 @@
+- bilder in protokoll zentrieren
+- metadaten aus den benuttzen bildern nehmen und dann in dem querkarten ausschnitt die bilder mit stecknadel markieren
+- ankreuzen: beanstandung / keine beanstandung -> einklappen + gerne auch bei baumschutz teilweise dinge wegklappen // #
+  - kommentarspalte bei baumschutz immer da
