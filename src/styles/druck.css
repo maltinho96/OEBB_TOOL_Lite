@@ -4,6 +4,7 @@
 @media print{
   .plankarte{page-break-inside:avoid; margin:4px 0 8px;}
   .plankarte-map{height:90mm; border:1px solid #999;}
+  .bereich-nummer{color:#1f6fd6 !important; background:none !important; border:none !important;}
   @page{size:A4; margin:12mm 10mm 16mm;}
   body{background:#fff; font-size:11px;}
   table.form td{padding:3px 6px;}

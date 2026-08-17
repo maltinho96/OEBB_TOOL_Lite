@@ -78,6 +78,16 @@ input[type=checkbox], input[type=radio]{width:17px; height:17px; accent-color:#1
 .plankarte{margin:6px 0 10px;}
 .plankarte-map{height:320px; border:1px solid #999; border-radius:4px;}
 .plankarte-hinweis{font-size:11px; color:#888; margin:4px 0 8px; font-style:italic;}
+.bereich-nummer{
+  color:#1f6fd6; font-weight:800; font-size:20px;
+  line-height:1; text-align:center; white-space:nowrap;
+  background:none; border:none; box-shadow:none;
+  /* Weißer "Buffer" rund um die Ziffer, damit sie über der Karte lesbar
+     bleibt – per Textkontur statt Hintergrund-Box. */
+  text-shadow:
+    -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 2px 2px 0 #fff,
+    -2px 0 0 #fff, 2px 0 0 #fff, 0 -2px 0 #fff, 0 2px 0 #fff;
+}
 .abb-bilder{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:8px; justify-content:center;}
 .abb-bilder img{border:1px solid #999; width:auto; height:auto;}
 .abb.modus-2 .abb-bilder img{max-width:calc(50% - 6px); max-height:520px;}

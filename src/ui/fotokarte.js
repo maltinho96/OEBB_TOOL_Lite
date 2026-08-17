@@ -1,28 +1,29 @@
-// Übersichtsplan-Karte: sammelt die GPS-Koordinaten der eingefügten Fotos
-// (ausgelesen in core/exif.js, bevor das Bild verkleinert wird) und zeichnet
-// je Foto-Gruppe ein blaues Rechteck auf eine OSM-Karte. Gruppierung per
-// einfachem Ketten-Clustering: ein Foto gehört zu einer Gruppe, wenn es
-// höchstens GRUPPEN_ABSTAND_M von IRGENDEINEM Foto der Gruppe entfernt ist.
-// Liegen Fotos weiter auseinander, entstehen mehrere Rechtecke.
+// Übersichtsplan-Karte: liest die GPS-Koordinaten der aktuell im Protokoll
+// vorhandenen Fotos (als data-lat/data-lng an den <img>, gesetzt in
+// ui/fotos.js) und zeichnet je Foto-Gruppe ein nummeriertes blaues Rechteck
+// auf eine OSM-Karte.
 //
-// Ein Einzelfoto (Gruppe mit nur einem Punkt) bekommt einen kleinen festen
-// Kasten, damit es auf der Karte sichtbar ist.
+// Wichtig: Die Karte wird bei JEDER Änderung komplett neu aus dem aktuellen
+// DOM-Zustand aufgebaut (karteAktualisieren). Dadurch stimmt sie immer –
+// auch nach dem Löschen eines Fotos, im Gegensatz zum früheren Ansatz, der
+// Punkte nur angehäuft hat.
 //
-// Die Koordinaten werden pro Protokoll-Reiter (container) gesammelt; bei
-// jedem neuen Foto werden die Gruppen und Rechtecke neu berechnet.
+// Gruppierung per Ketten-Clustering: ein Foto gehört zu einer Gruppe, wenn
+// es höchstens GRUPPEN_ABSTAND_M von IRGENDEINEM Foto der Gruppe entfernt
+// ist. Weiter entfernte Fotos bilden eigene Rechtecke. Ein Einzelfoto
+// bekommt einen kleinen festen Kasten.
 
 import L from 'leaflet';
 import { KARTE_START } from '../config/konstanten.js';
 import { osmEbene } from './karte.js';
 
 const GRUPPEN_ABSTAND_M = 50;   // ab hier neue Gruppe
-const EINZEL_KASTEN_M = 30;     // Kantenlänge für Einzelfoto-Kasten
+const MIN_KASTEN_M = 45;        // Mindest-Kantenlänge eines Rechtecks
+                                // (auch bei Einzelfoto oder dicht
+                                //  beieinanderliegenden Fotos)
 
-// Pro Container eine Leaflet-Instanz + gesammelte Punkte vorhalten.
-const instanzen = new Map(); // container -> { karte, punkte: [{lat,lng}], rechteckGruppe }
+const instanzen = new Map(); // container -> { karte, rechteckGruppe }
 
-// Grobe Entfernung zweier Koordinaten in Metern (Äquirektangular-Näherung,
-// für wenige-100-m-Distanzen völlig ausreichend, kein Bedarf an Haversine).
 function distanzM(a, b) {
   const R = 6371000;
   const rad = Math.PI / 180;
@@ -31,10 +32,8 @@ function distanzM(a, b) {
   return Math.sqrt(x * x + y * y) * R;
 }
 
-// Punkte per Ketten-Clustering gruppieren: verschmelze Gruppen, sobald zwei
-// Punkte aus verschiedenen Gruppen näher als GRUPPEN_ABSTAND_M sind.
 function gruppieren(punkte) {
-  const gruppen = punkte.map((p) => [p]); // jede Punkt zunächst eigene Gruppe
+  const gruppen = punkte.map((p) => [p]);
   let veraendert = true;
   while (veraendert) {
     veraendert = false;
@@ -54,8 +53,6 @@ function gruppieren(punkte) {
   return gruppen;
 }
 
-// Rechteck-Grenzen einer Gruppe (Bounding-Box). Bei nur einem Punkt einen
-// kleinen festen Kasten drumlegen.
 function gruppenRechteck(gruppe) {
   const lats = gruppe.map((p) => p.lat);
   const lngs = gruppe.map((p) => p.lng);
@@ -65,7 +62,6 @@ function gruppenRechteck(gruppe) {
   let ost = Math.max(...lngs);
 
   if (gruppe.length === 1) {
-    // Halbe Kantenlänge in Grad umrechnen.
     const dLat = (EINZEL_KASTEN_M / 2) / 111320;
     const dLng = (EINZEL_KASTEN_M / 2) / (111320 * Math.cos(sued * Math.PI / 180));
     sued -= dLat; nord += dLat; west -= dLng; ost += dLng;
@@ -84,34 +80,72 @@ function karteFuerContainer(container) {
   );
   osmEbene().addTo(karte);
   const rechteckGruppe = L.layerGroup().addTo(karte);
-  const eintrag = { karte, punkte: [], rechteckGruppe };
+  const eintrag = { karte, rechteckGruppe };
   instanzen.set(container, eintrag);
   setTimeout(() => karte.invalidateSize(), 150);
   return eintrag;
 }
 
-// Wird pro eingefügtem Foto MIT GPS aufgerufen. Fügt den Punkt hinzu und
-// zeichnet alle Gruppen-Rechtecke neu.
-export function fotoPinHinzufuegen(container, lat, lng /*, nummer (ungenutzt) */) {
+// Liest alle aktuell vorhandenen Foto-Koordinaten aus dem DOM (data-lat/
+// data-lng an den <img> in .abb-bilder).
+function punkteAusDom(container) {
+  const punkte = [];
+  container.querySelectorAll('.abb-bilder img[data-lat][data-lng]').forEach((img) => {
+    const lat = parseFloat(img.dataset.lat);
+    const lng = parseFloat(img.dataset.lng);
+    if (!Number.isNaN(lat) && !Number.isNaN(lng)) punkte.push({ lat, lng });
+  });
+  return punkte;
+}
+
+// Baut die Karte des Containers komplett neu aus dem aktuellen DOM-Zustand.
+// Aufzurufen nach jedem Einfügen UND Löschen von Fotos.
+export function karteAktualisieren(container) {
   const eintrag = karteFuerContainer(container);
   if (!eintrag) return;
 
-  eintrag.punkte.push({ lat, lng });
-
-  // Rechtecke neu zeichnen.
   eintrag.rechteckGruppe.clearLayers();
-  const gruppen = gruppieren(eintrag.punkte);
+
+  const punkte = punkteAusDom(container);
+  const wrapper = container.querySelector('.plankarte');
+  // Ohne verortete Fotos: Karte bleibt auf Startansicht, keine Rechtecke.
+  if (!punkte.length) {
+    eintrag.karte.setView([KARTE_START.lat, KARTE_START.lng], KARTE_START.zoom);
+    setTimeout(() => eintrag.karte.invalidateSize(), 100);
+    return;
+  }
+
+  let gruppen = gruppieren(punkte).sort((a, b) => {
+    const nordA = Math.max(...a.map((p) => p.lat));
+    const nordB = Math.max(...b.map((p) => p.lat));
+    return nordB - nordA;
+  });
+
   const alleGrenzen = [];
-  gruppen.forEach((g) => {
+  gruppen.forEach((g, i) => {
     const grenzen = gruppenRechteck(g);
     L.rectangle(grenzen, { color: '#1f6fd6', weight: 2, fillColor: '#1f6fd6', fillOpacity: 0.15 })
       .addTo(eintrag.rechteckGruppe);
+
+    // Nummer in die MITTE des Rechtecks (reine Ziffer mit weißem Buffer,
+    // Styling in grundlagen.css .bereich-nummer).
+    const mitteLat = (grenzen[0][0] + grenzen[1][0]) / 2;
+    const mitteLng = (grenzen[0][1] + grenzen[1][1]) / 2;
+    L.marker([mitteLat, mitteLng], {
+      icon: L.divIcon({
+        className: 'bereich-nummer',
+        html: String(i + 1),
+        iconSize: [24, 24],
+        iconAnchor: [12, 12],
+      }),
+      interactive: false,
+    }).addTo(eintrag.rechteckGruppe);
+
     alleGrenzen.push(grenzen[0], grenzen[1]);
   });
 
-  // Kartenausschnitt an alle Rechtecke anpassen.
   if (alleGrenzen.length) {
-    eintrag.karte.fitBounds(L.latLngBounds(alleGrenzen), { padding: [25, 25], maxZoom: 17 });
+    eintrag.karte.fitBounds(L.latLngBounds(alleGrenzen), { padding: [30, 30], maxZoom: 17 });
   }
   setTimeout(() => eintrag.karte.invalidateSize(), 100);
 }

@@ -10,7 +10,7 @@
 import { bildAlsDataUrl } from '../core/bilder.js';
 import { BILD_MAX, BILD_QUALITAET } from '../config/konstanten.js';
 import { gpsAusDatei } from '../core/exif.js';
-import { fotoPinHinzufuegen } from './fotokarte.js';
+import { karteAktualisieren } from './fotokarte.js';
 
 // ---------- Hilfsfunktionen ----------
 
@@ -95,24 +95,29 @@ async function fotosVerarbeiten(files) {
   }
   const liste = Array.from(files).filter((f) => f.type.indexOf('image/') === 0);
   let block = null;
-  let fotoNr = tab.querySelectorAll('.abb-bilder img').length; // fortlaufend
   for (let i = 0; i < liste.length; i++) {
     if (i % 2 === 0) block = neuerAbbBlock();
     try {
       // GPS aus der ORIGINAL-Datei lesen, BEVOR verkleinert wird (die
-      // Verkleinerung entfernt EXIF/GPS). Fehlt GPS, gibt es null -> kein Pin.
+      // Verkleinerung entfernt EXIF/GPS). Fehlt GPS, bleibt es ohne.
       const gps = await gpsAusDatei(liste[i]);
       const url = await bildAlsDataUrl(liste[i], BILD_MAX.foto, BILD_QUALITAET);
       const img = document.createElement('img');
       img.src = url;
+      // Koordinate am Bild selbst hinterlegen, damit die Übersichtskarte
+      // sich jederzeit korrekt aus dem DOM neu aufbauen kann (auch nach
+      // dem Löschen eines Fotos). Wird beim HTML-Export mitgespeichert.
+      if (gps) {
+        img.dataset.lat = gps.lat;
+        img.dataset.lng = gps.lng;
+      }
       block.querySelector('.abb-bilder').appendChild(img);
-      fotoNr++;
-      if (gps) fotoPinHinzufuegen(tab, gps.lat, gps.lng, fotoNr);
     } catch (err) {
       alert('Bild konnte nicht gelesen werden: ' + liste[i].name);
     }
   }
   abbNummerieren();
+  karteAktualisieren(tab);
 }
 
 // ---------- Belehrung: Visualisierungszeilen ----------
@@ -222,6 +227,7 @@ export function fotosInit(root) {
       case 'abb-entfernen':
         btn.closest('.abb').remove();
         abbNummerieren();
+        karteAktualisieren(aktiverTab());
         break;
       case 'vis-entfernen':
         btn.closest('.vis-zeile').remove();
