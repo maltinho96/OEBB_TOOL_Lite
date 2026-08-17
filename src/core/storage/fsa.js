@@ -114,6 +114,16 @@ export async function dateiSchreiben(ordner, name, text) {
   await w.write(text);
   await w.close();
 }
+
+// Unterordner-Handle holen (bei Bedarf anlegen). Fuer die monatlichen
+// Sicherungen (backups/), damit sie den Grundordner nicht zumuellen.
+export async function unterordnerHolen(ordner, name) {
+  try {
+    return await ordner.getDirectoryHandle(name, { create: true });
+  } catch (e) {
+    return null;
+  }
+}
 export async function dateiLoeschen(ordner, name) {
   try {
     await ordner.removeEntry(name);

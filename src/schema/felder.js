@@ -27,13 +27,6 @@ export function logo() {
 export function fotodokumentation(kleingedrucktes) {
   return (
     '<h2 class="c-grau">Fotodokumentation</h2>' +
-    // Standortkarte der Fotos: erscheint erst, wenn ein Foto mit GPS
-    // eingefuegt wurde (ui/fotokarte.js). Bis dahin nur der Hinweis.
-    '<div class="fotokarte" style="display:none">' +
-    '<div class="fotokarte-map"></div>' +
-    '<div class="fotokarte-legende">📍 Aufnahmeorte der Fotos (aus den Bild-GPS-Daten)</div>' +
-    '</div>' +
-    '<div class="fotokarte-hinweis kein-druck">Fotos mit Standortdaten setzen automatisch einen Pin auf einer Karte.</div>' +
     '<div class="fotoContainer"></div>' +
     '<div class="dropzone kein-druck" data-dropzone>' +
     '📷 Fotos hierher ziehen oder klicken zum Auswählen<br>' +
@@ -42,13 +35,17 @@ export function fotodokumentation(kleingedrucktes) {
   );
 }
 
-// Uebersichtsplan-Block (Bildfeld + Textzeile).
-// data-einzelbild="plan" wird in ui/fotos.js verdrahtet.
+// Uebersichtsplan-Block: OSM-Karte, auf der die Bereiche der Foto-Gruppen
+// als blaue Rechtecke markiert werden (ui/fotokarte.js). Ersetzt das
+// frühere Bild-Upload-Feld. Die Textzeile darunter bleibt für Anmerkungen.
 export function uebersichtsplan() {
   return (
     '<div class="zusammen">' +
     '<h2 class="c-grau">Übersichtsplan</h2>' +
-    '<div class="plan-bild" data-einzelbild="plan" title="Klicken, um den Übersichtsplan einzufügen oder zu ersetzen"></div>' +
+    '<div class="plankarte" data-plankarte>' +
+    '<div class="plankarte-map"></div>' +
+    '</div>' +
+    '<div class="plankarte-hinweis kein-druck">Eingefügte Fotos mit Standortdaten markieren hier automatisch die fotografierten Bereiche (blaue Rechtecke).</div>' +
     '<div class="plan-text" contenteditable="true"></div>' +
     '</div>'
   );

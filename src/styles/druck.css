@@ -2,9 +2,8 @@
 .druckfuss{display:none;}
 
 @media print{
-  .fotokarte{page-break-inside:avoid; margin:4px 0 8px;}
-  .fotokarte-map{height:70mm; border:1px solid #999;}
-  .fotokarte-legende{font-size:10px; color:#333;}
+  .plankarte{page-break-inside:avoid; margin:4px 0 8px;}
+  .plankarte-map{height:90mm; border:1px solid #999;}
   @page{size:A4; margin:12mm 10mm 16mm;}
   body{background:#fff; font-size:11px;}
   table.form td{padding:3px 6px;}

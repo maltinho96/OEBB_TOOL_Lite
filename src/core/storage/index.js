@@ -18,5 +18,6 @@ export {
   dateiLesen,
   dateiSchreiben,
   dateiLoeschen,
+  unterordnerHolen,
   scanneHtmlDateien,
 } from './fsa.js';

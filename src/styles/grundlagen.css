@@ -75,10 +75,9 @@ input[type=checkbox], input[type=radio]{width:17px; height:17px; accent-color:#1
 .abb-karte{margin-bottom:8px;}
 .abb-karte img{width:100%; max-height:280px; object-fit:cover; border:1px solid #999; display:block;}
 .einklapp-hinweis{color:#666; font-size:11px; margin-left:8px;}
-.fotokarte{margin:6px 0 10px;}
-.fotokarte-map{height:260px; border:1px solid #999; border-radius:4px;}
-.fotokarte-legende{font-size:11px; color:#555; margin-top:3px;}
-.fotokarte-hinweis{font-size:11px; color:#888; margin:4px 0 8px; font-style:italic;}
+.plankarte{margin:6px 0 10px;}
+.plankarte-map{height:320px; border:1px solid #999; border-radius:4px;}
+.plankarte-hinweis{font-size:11px; color:#888; margin:4px 0 8px; font-style:italic;}
 .abb-bilder{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:8px; justify-content:center;}
 .abb-bilder img{border:1px solid #999; width:auto; height:auto;}
 .abb.modus-2 .abb-bilder img{max-width:calc(50% - 6px); max-height:520px;}

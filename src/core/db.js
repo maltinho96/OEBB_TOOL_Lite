@@ -3,7 +3,7 @@
 // JSON-Struktur, Migration und die Aenderungs-Transaktion. KEIN DOM
 // (bis auf die statusText-Meldung beim Warten auf eine fremde Sperre).
 
-import { leseDbText, schreibeDbText, dateiLesen, dateiSchreiben, dateiLoeschen } from './storage/index.js';
+import { leseDbText, schreibeDbText, dateiLesen, dateiSchreiben, dateiLoeschen, unterordnerHolen } from './storage/index.js';
 import { statusText } from './util.js';
 import {
   LOCK_NAME,
@@ -104,16 +104,42 @@ export async function dbSchreiben(ordner, db) {
   await schreibeDbText(ordner, JSON.stringify(db, null, 1));
 }
 
-// Aenderungs-Transaktion: Sperre erwerben -> lesen -> aenderung(db)
-// anwenden -> schreiben -> Sperre freigeben. Die Sperre stellt sicher,
-// dass niemand anderes zwischen Lesen und Schreiben dieselbe Datei
-// veraendert (siehe lockErwerben). Gibt die geaenderte DB zurueck; das
+// Monatliche Sicherung: legt beim ersten Schreiben eines Monats eine Kopie
+// des aktuellen Datenbank-Stands unter backups/oebb_JJJJ-MM.json an. Existiert
+// die Datei fuer den laufenden Monat schon, passiert nichts (nur EIN
+// Schnappschuss pro Monat, der den Monatsanfangs-Stand festhaelt). Fehler
+// beim Sichern sind unkritisch und duerfen das eigentliche Speichern nie
+// blockieren – deshalb komplett in try/catch.
+async function monatsSicherung(ordner, db) {
+  try {
+    const jetzt = new Date();
+    const monat = jetzt.getFullYear() + '-' + String(jetzt.getMonth() + 1).padStart(2, '0');
+    const name = 'oebb_' + monat + '.json';
+    const backupOrdner = await unterordnerHolen(ordner, 'backups');
+    if (!backupOrdner) return;
+    // Schon vorhanden? Dann nicht ueberschreiben (Monatsanfangs-Stand halten).
+    const vorhanden = await dateiLesen(backupOrdner, name);
+    if (vorhanden != null) return;
+    await dateiSchreiben(backupOrdner, name, JSON.stringify(db, null, 1));
+  } catch (e) {
+    // Sicherung fehlgeschlagen (z. B. keine Schreibrechte im Unterordner) -
+    // das eigentliche Speichern laeuft trotzdem weiter.
+  }
+}
+
+// Aenderungs-Transaktion: Sperre erwerben -> lesen -> (ggf. Monatssicherung)
+// -> aenderung(db) anwenden -> schreiben -> Sperre freigeben. Die Sperre
+// stellt sicher, dass niemand anderes zwischen Lesen und Schreiben dieselbe
+// Datei veraendert (siehe lockErwerben). Gibt die geaenderte DB zurueck; das
 // Neu-Zeichnen der Oberflaeche ist bewusst NICHT hier, sondern Sache der
 // aufrufenden UI-Schicht.
 export async function dbAendern(ordner, aenderung) {
   await lockErwerben(ordner);
   try {
     const db = await dbLesen(ordner);
+    // Vor der Aenderung den aktuellen Stand monatlich sichern (nur einmal
+    // pro Monat, siehe monatsSicherung).
+    await monatsSicherung(ordner, db);
     await aenderung(db);
     await dbSchreiben(ordner, db);
     return db;
