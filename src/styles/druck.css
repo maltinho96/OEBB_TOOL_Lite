@@ -25,15 +25,7 @@
   table.sz td, table.sz th{word-wrap:break-word; overflow-wrap:anywhere;}
   .sz-block{page-break-inside:avoid;}
   .sz-block + .sz-block{page-break-before:always;}
-  textarea{resize:none; overflow:visible;}
-  /* Druck-Ersatz für <textarea>: wächst mit dem Inhalt, kein Abschneiden.
-     Sieht aus wie das Feld (gleiche Schrift, gleicher Innenabstand). */
-  .druck-verbergen{display:none !important;}
-  .druck-ersatz{
-    display:block; white-space:pre-wrap; word-wrap:break-word;
-    font:inherit; padding:3px 5px; margin-top:4px; min-height:34px;
-    page-break-inside:avoid;
-  }
+  textarea{resize:none; overflow:hidden;}
   table.form{page-break-inside:auto;}
   tr{page-break-inside:avoid; break-inside:avoid;}
   .unterschrift-feld:empty::before, .plan-bild:empty::before, .vis-bild:empty::before{content:none;}
