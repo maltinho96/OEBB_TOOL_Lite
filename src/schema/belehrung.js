@@ -6,7 +6,7 @@
 // data-Hooks: vis-bild -> data-einzelbild="vis", ✕ -> data-aktion="vis-entfernen",
 //             ＋ Zeile -> data-aktion="vis-zeile-hinzu" (verdrahtet in ui/fotos.js).
 
-import { logo } from './felder.js';
+import { logo, abschlussFusszeile } from './felder.js';
 
 // import.meta.env.BASE_URL: lokal "/", auf GitHub Pages "/OEBB_TOOL_Lite/",
 // spaeter unter Tauri entsprechend – siehe felder.js logo() fuer denselben Trick.
@@ -119,5 +119,7 @@ Ich verpflichte mich, diese Bestimmungen bei der Ausführung der Bauarbeiten str
   </tr>
 </table>
 </div>
+
+${abschlussFusszeile()}
 `,
 };

@@ -2,7 +2,7 @@
 // Ausgangsdatei; Base64-Logos ersetzt (felder.logo), Inline-onclick durch
 // data-Hooks ersetzt (in ui/fotos.js verdrahtet).
 
-import { logo, fotodokumentation, uebersichtsplan } from './felder.js';
+import { logo, fotodokumentation, uebersichtsplan, abschlussFusszeile } from './felder.js';
 
 export const begehung = {
   id: 'tab-protokoll',
@@ -13,7 +13,7 @@ ${logo()}
 <h1><span class="nr"><input type="text" value="" aria-label="Protokollnummer" data-feld="nummer">.</span> Protokoll der ökologischen Baubegleitung</h1>
 
 <table class="form">
-  <tr class="bg-blau"><td class="label" style="width:220px">Netzbetreiber:</td><td><input type="text"></td></tr>
+  <tr class="bg-blau"><td class="label" style="width:220px">Auftraggeber:</td><td><input type="text" data-feld="auftraggeber-fuss"></td></tr>
   <tr class="bg-blau-h"><td class="label">Tiefbauunternehmen:</td><td><input type="text"></td></tr>
   <tr class="bg-blau"><td class="label">Projekt:</td><td><textarea rows="3" data-feld="projekt"></textarea></td></tr>
 </table>
@@ -35,13 +35,11 @@ ${logo()}
   </tr>
   <tr class="bg-grau"><td class="label" colspan="2">Geltendes naturschutzrechtliches Aktenzeichen:</td><td colspan="2"><input type="text"></td></tr>
   <tr class="bg-grau-h"><td class="label">Projektnummer:</td><td colspan="3"><input type="text" data-feld="projektnummer"></td></tr>
-  <tr class="bg-grau"><td class="label">Fotostandorte:</td><td colspan="3"><textarea rows="2"></textarea></td></tr>
 </table>
 
 <h2 class="c-gruen">Baumschutz</h2>
 <table class="form" data-schutzblock data-schutzblock-gruppe="baumschutz">
   <tr class="bg-gruen"><td colspan="7"><span class="cb"><b>Begehung ohne Beanstandung:</b> <input type="checkbox" data-einklapp checked></span> <span class="einklapp-hinweis kein-druck"></span></td></tr>
-  <tr class="bg-gruen-h" data-immer-sichtbar><td colspan="7" class="label">Kommentar (z. B. warum kein Schaden entstand / Begehung ohne Befund):<textarea rows="2"></textarea></td></tr>
   <tr class="bg-gruen-h"><td colspan="7" class="label">Feinst- und Feinwurzelflächenverlust m²: <input type="text" style="width:90px"></td></tr>
 </table>
 <table class="form wurzeltab" data-schutzblock-anhang="baumschutz">
@@ -168,5 +166,7 @@ ${logo()}
 ${uebersichtsplan()}
 
 ${fotodokumentation('Je 2 Fotos ergeben eine Abbildung (umschaltbar auf 1 Bild) · Kartenausschnitt wird automatisch vom Übersichtsplan übernommen · alles wird in der Datei gespeichert')}
+
+${abschlussFusszeile()}
 `,
 };

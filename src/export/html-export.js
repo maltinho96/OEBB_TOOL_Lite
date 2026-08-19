@@ -51,7 +51,7 @@ function dateinameBauen(tab) {
 
   if (typ === 'protokoll') {
     const nr = sauber(feld('nummer')) || 'XX';
-    return datum + '_' + nr + '.Protokoll_' + ort + '.html';
+    return datum + '_' + nr + '.ÖBB_Protokoll_' + ort + '.html';
   }
   if (typ === 'vorbegehung') {
     const nrV = sauber(feld('nummer'));

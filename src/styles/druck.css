@@ -2,6 +2,12 @@
 .druckfuss{display:none;}
 
 @media print{
+  /* Dokument-Fußzeile am Ende des Protokolls, Firmenfarbe (--firma). */
+  .dok-fusszeile{
+    margin-top:14px; padding-top:4px; text-align:center;
+    font-size:10px; color:var(--firma); border-top:1.5px solid var(--firma);
+    page-break-inside:avoid;
+  }
   .plankarte{page-break-inside:avoid; margin:4px 0 8px;}
   .plankarte-map{height:90mm; border:1px solid #999;}
   .bereich-nummer{color:#1f6fd6 !important; background:none !important; border:none !important;}
@@ -19,21 +25,28 @@
   table.sz td, table.sz th{word-wrap:break-word; overflow-wrap:anywhere;}
   .sz-block{page-break-inside:avoid;}
   .sz-block + .sz-block{page-break-before:always;}
-  textarea{resize:none; overflow:hidden;}
+  textarea{resize:none; overflow:visible;}
+  /* Druck-Ersatz für <textarea>: wächst mit dem Inhalt, kein Abschneiden.
+     Sieht aus wie das Feld (gleiche Schrift, gleicher Innenabstand). */
+  .druck-verbergen{display:none !important;}
+  .druck-ersatz{
+    display:block; white-space:pre-wrap; word-wrap:break-word;
+    font:inherit; padding:3px 5px; margin-top:4px; min-height:34px;
+    page-break-inside:avoid;
+  }
   table.form{page-break-inside:auto;}
   tr{page-break-inside:avoid; break-inside:avoid;}
   .unterschrift-feld:empty::before, .plan-bild:empty::before, .vis-bild:empty::before{content:none;}
   .plan-bild{cursor:default;}
   .zusammen{page-break-inside:avoid; break-inside:avoid;}
-  .abb{page-break-inside:avoid; break-inside:avoid; border:none; background:none; padding:0;}
-  .abb + .abb{page-break-before:always;}
+  .abb{page-break-inside:avoid; break-inside:avoid; border:none; background:none; padding:0; margin-bottom:8px;}
   h2{page-break-after:avoid; break-after:avoid;}
   .vis-zeile{page-break-inside:avoid;}
   .abb-karte img{max-height:75mm;}
   .abb-bilder{display:flex; flex-wrap:wrap; gap:10px; justify-content:center;}
-  .abb.modus-2 .abb-bilder img{max-width:calc(50% - 6px); max-height:150mm;}
+  .abb.modus-2 .abb-bilder img{max-width:calc(50% - 6px); max-height:105mm;}
   .abb.modus-1 .abb-bilder{flex-direction:column; align-items:center;}
-  .abb.modus-1 .abb-bilder img{max-width:80%; max-height:160mm;}
+  .abb.modus-1 .abb-bilder img{max-width:80%; max-height:110mm;}
   .druckfuss{
     display:flex; position:fixed; bottom:0; left:0; right:0;
     font-size:9px; color:#888; justify-content:space-between;

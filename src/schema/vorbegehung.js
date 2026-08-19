@@ -1,6 +1,6 @@
 // Vorbegehungsprotokoll. HTML originalgetreu; Logos/onclick angepasst.
 
-import { logo, fotodokumentation, uebersichtsplan } from './felder.js';
+import { logo, fotodokumentation, uebersichtsplan, abschlussFusszeile } from './felder.js';
 
 export const vorbegehung = {
   id: 'tab-vorbegehung',
@@ -11,7 +11,7 @@ ${logo()}
 <h1><span class="nr"><input type="text" value="" aria-label="Protokollnummer" data-feld="nummer">.</span> Vorbegehungsprotokoll der ökologischen Baubegleitung</h1>
 
 <table class="form">
-  <tr class="bg-blau"><td class="label" style="width:220px">Netzbetreiber:</td><td><input type="text"></td></tr>
+  <tr class="bg-blau"><td class="label" style="width:220px">Auftraggeber:</td><td><input type="text" data-feld="auftraggeber-fuss"></td></tr>
   <tr class="bg-blau-h"><td class="label">Tiefbauunternehmen:</td><td><input type="text"></td></tr>
   <tr class="bg-blau"><td class="label">Projekt:</td><td><textarea rows="3" data-feld="projekt"></textarea></td></tr>
 </table>
@@ -68,5 +68,7 @@ ${logo()}
 ${uebersichtsplan()}
 
 ${fotodokumentation('Je 2 Fotos ergeben eine Abbildung (umschaltbar auf 1 Bild) · Kartenausschnitt wird automatisch vom Übersichtsplan übernommen')}
+
+${abschlussFusszeile()}
 `,
 };
