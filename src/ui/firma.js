@@ -23,5 +23,8 @@ export function firmaInit(select, firmen) {
     .map((f) => `<option value="${f.id}">${f.name}</option>`)
     .join('');
   select.addEventListener('change', () => firmaSetzen(select.value));
-  firmaSetzen(firmen[0].id);
+  // Startfirma: bevorzugt "ing" (NET-TEC Ingenieurgesellschaft mbH); falls
+  // es diese id nicht mehr gibt, die erste Firma der Liste.
+  const start = firmen.find((f) => f.id === 'ing') ? 'ing' : firmen[0].id;
+  firmaSetzen(start);
 }
