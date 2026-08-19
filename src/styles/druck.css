@@ -2,6 +2,10 @@
 .druckfuss{display:none;}
 
 @media print{
+  /* Logo im Druck etwas kleiner, damit es nicht über den rechten
+     Seitenrand hinausragt (abgeschnitten wird). */
+  .logo{margin:0 0 6px 10px;}
+  .logo img{width:140px; max-width:45mm;}
   /* Dokument-Fußzeile am Ende des Protokolls, Firmenfarbe (--firma). */
   .dok-fusszeile{
     margin-top:14px; padding-top:4px; text-align:center;

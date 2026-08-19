@@ -21,7 +21,7 @@ body{
   min-height:70vh;
 }
 .logo{float:right; margin:-10px 0 8px 12px;}
-.logo img{width:180px; height:auto; display:none;}
+.logo img{width:170px; height:auto; display:none;}
 h1{font-size:21px; margin:0 0 16px; color:var(--firma);}
 h1 .nr{display:inline-block; width:56px;}
 h1 .nr input{font-size:21px; font-weight:700; width:48px; border:none; text-align:center; color:var(--firma);}
