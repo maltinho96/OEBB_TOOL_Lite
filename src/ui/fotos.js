@@ -1,7 +1,7 @@
-// Fotodokumentation: Einzelbildfelder (Unterschrift/Plan/Vis), die
-// Abbildungs-Blöcke der Fotodokumentation (1/2 Bilder je Abb.), Drag&Drop
-// und die Kartenausschnitt-Übernahme. Originalgetreu aus der HTML portiert,
-// nur auf data-Hooks statt Inline-onclick umgestellt.
+// Fotodokumentation: Einzelbildfelder (Unterschrift/Vis), die
+// Abbildungs-Blöcke der Fotodokumentation (1/2 Bilder je Abb.) und
+// Drag&Drop. Die Karte über jedem Block entsteht automatisch aus den
+// GPS-Daten der Fotos (ui/fotokarte.js).
 //
 // fotosInit(root) einmalig nach formularInit() aufrufen (root = #app oder
 // document). Verdrahtet alle data-einzelbild / data-dropzone / data-aktion
@@ -52,8 +52,6 @@ function neuerAbbBlock() {
   block.innerHTML =
     '<div class="abb-kopf kein-druck">' +
     '<button data-aktion="abb-modus">🔁 1 / 2 Bilder</button>' +
-    '<button data-aktion="abb-karte-uebernehmen">🗺 Übersichtskarte übernehmen</button>' +
-    '<button data-aktion="abb-karte-waehlen">🗺 Eigener Kartenausschnitt…</button>' +
     '<button data-aktion="abb-foto-hinzu">＋ Foto</button>' +
     '<button class="entfernen" data-aktion="abb-entfernen">✕ entfernen</button>' +
     '</div>' +
@@ -62,15 +60,21 @@ function neuerAbbBlock() {
     '<div class="abb-titel">Abb.</div>' +
     '<div class="abb-text" contenteditable="true"></div>';
   container.appendChild(block);
-
-  // Kartenausschnitt automatisch vom Übersichtsplan übernehmen, falls vorhanden.
-  const plan = aktiverTab().querySelector('.plan-bild img');
-  if (plan) {
-    const k = document.createElement('img');
-    k.src = plan.src;
-    block.querySelector('.abb-karte').appendChild(k);
-  }
   return block;
+}
+
+// Liest GPS aus der Original-Datei (vor dem Verkleinern, das EXIF entfernt),
+// verkleinert das Bild und hängt die Koordinate als data-lat/-lng an.
+async function fotoMitGps(file) {
+  const gps = await gpsAusDatei(file);
+  const url = await bildAlsDataUrl(file, BILD_MAX.foto, BILD_QUALITAET);
+  const img = document.createElement('img');
+  img.src = url;
+  if (gps) {
+    img.dataset.lat = gps.lat;
+    img.dataset.lng = gps.lng;
+  }
+  return img;
 }
 
 function abbNummerieren() {
@@ -98,20 +102,7 @@ async function fotosVerarbeiten(files) {
   for (let i = 0; i < liste.length; i++) {
     if (i % 2 === 0) block = neuerAbbBlock();
     try {
-      // GPS aus der ORIGINAL-Datei lesen, BEVOR verkleinert wird (die
-      // Verkleinerung entfernt EXIF/GPS). Fehlt GPS, bleibt es ohne.
-      const gps = await gpsAusDatei(liste[i]);
-      const url = await bildAlsDataUrl(liste[i], BILD_MAX.foto, BILD_QUALITAET);
-      const img = document.createElement('img');
-      img.src = url;
-      // Koordinate am Bild selbst hinterlegen, damit die Übersichtskarte
-      // sich jederzeit korrekt aus dem DOM neu aufbauen kann (auch nach
-      // dem Löschen eines Fotos). Wird beim HTML-Export mitgespeichert.
-      if (gps) {
-        img.dataset.lat = gps.lat;
-        img.dataset.lng = gps.lng;
-      }
-      block.querySelector('.abb-bilder').appendChild(img);
+      block.querySelector('.abb-bilder').appendChild(await fotoMitGps(liste[i]));
     } catch (err) {
       alert('Bild konnte nicht gelesen werden: ' + liste[i].name);
     }
@@ -144,8 +135,8 @@ export function fotosInit(root) {
   const fotoInput = document.getElementById('fotoInput');
   const einzelbildInput = document.getElementById('einzelbildInput');
 
-  // Verstecktes <input type=file multiple> für Block-Fotos und Kartenausschnitt
-  // wird bei Bedarf einmalig erzeugt (index.html hat nur fotoInput + einzelbildInput).
+  // Verstecktes <input type=file multiple> für Block-Fotos wird bei Bedarf
+  // einmalig erzeugt (index.html hat nur fotoInput + einzelbildInput).
   let blockFotoInput = document.getElementById('blockFotoInput');
   if (!blockFotoInput) {
     blockFotoInput = document.createElement('input');
@@ -155,15 +146,6 @@ export function fotosInit(root) {
     blockFotoInput.multiple = true;
     blockFotoInput.hidden = true;
     document.body.appendChild(blockFotoInput);
-  }
-  let blockKarteInput = document.getElementById('blockKarteInput');
-  if (!blockKarteInput) {
-    blockKarteInput = document.createElement('input');
-    blockKarteInput.type = 'file';
-    blockKarteInput.id = 'blockKarteInput';
-    blockKarteInput.accept = 'image/*';
-    blockKarteInput.hidden = true;
-    document.body.appendChild(blockKarteInput);
   }
 
   // Einzelbildfelder (Unterschrift/Übersichtsplan/Vis) per Klick.
@@ -206,20 +188,6 @@ export function fotosInit(root) {
         block.classList.toggle('modus-2');
         break;
       }
-      case 'abb-karte-uebernehmen': {
-        const plan = btn.closest('.tab').querySelector('.plan-bild img');
-        if (!plan) { alert('Es ist noch kein Übersichtsplan eingefügt.'); break; }
-        const ziel = btn.closest('.abb').querySelector('.abb-karte');
-        ziel.innerHTML = '';
-        const k = document.createElement('img');
-        k.src = plan.src;
-        ziel.appendChild(k);
-        break;
-      }
-      case 'abb-karte-waehlen':
-        zielBlock = btn.closest('.abb');
-        blockKarteInput.click();
-        break;
       case 'abb-foto-hinzu':
         zielBlock = btn.closest('.abb');
         blockFotoInput.click();
@@ -241,23 +209,10 @@ export function fotosInit(root) {
   blockFotoInput.addEventListener('change', async (e) => {
     if (!e.target.files.length || !zielBlock) return;
     for (let i = 0; i < e.target.files.length; i++) {
-      const url = await bildAlsDataUrl(e.target.files[i], BILD_MAX.foto, BILD_QUALITAET);
-      const img = document.createElement('img');
-      img.src = url;
-      zielBlock.querySelector('.abb-bilder').appendChild(img);
+      zielBlock.querySelector('.abb-bilder').appendChild(await fotoMitGps(e.target.files[i]));
     }
     abbNummerieren();
-    e.target.value = '';
-  });
-
-  blockKarteInput.addEventListener('change', async (e) => {
-    if (!e.target.files.length || !zielBlock) return;
-    const url = await bildAlsDataUrl(e.target.files[0], BILD_MAX.plan, BILD_QUALITAET);
-    const ziel = zielBlock.querySelector('.abb-karte');
-    ziel.innerHTML = '';
-    const img = document.createElement('img');
-    img.src = url;
-    ziel.appendChild(img);
+    karteAktualisieren(zielBlock.closest('.tab'));
     e.target.value = '';
   });
 }

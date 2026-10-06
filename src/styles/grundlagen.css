@@ -20,8 +20,8 @@ body{
   padding:26px 40px 60px; box-shadow:0 2px 14px rgba(0,0,0,.15);
   min-height:70vh;
 }
-.logo{float:right; margin:-10px 0 8px 12px;}
-.logo img{width:170px; height:auto; display:none;}
+.logo{float:right; margin:-6px 0 8px 12px;}
+.logo img{width:180px; height:auto; display:none;}
 h1{font-size:21px; margin:0 0 16px; color:var(--firma);}
 h1 .nr{display:inline-block; width:56px;}
 h1 .nr input{font-size:21px; font-weight:700; width:48px; border:none; text-align:center; color:var(--firma);}
@@ -73,7 +73,23 @@ input[type=checkbox], input[type=radio]{width:17px; height:17px; accent-color:#1
 .abb-kopf button{font:inherit; font-size:11px; padding:3px 9px; cursor:pointer; border:1px solid #888; border-radius:4px; background:#fff;}
 .abb-kopf button.entfernen{color:#a00; border-color:#a00; margin-left:auto;}
 .abb-karte{margin-bottom:8px;}
-.abb-karte img{width:100%; max-height:280px; object-fit:cover; border:1px solid #999; display:block;}
+/* Karte über dem Foto-Block, 3:1. Feste Pixelmaße (718 x 239 px = 190 x
+   63 mm), damit Bildschirm und Druck exakt denselben Ausschnitt zeigen –
+   Leaflet zeichnet beim Drucken nicht neu, eine andere Breite würde den
+   Ausschnitt verschieben. */
+.abb-karte-map{width:100%; max-width:718px; height:239px; margin:0 auto; border:1px solid #999; border-radius:4px;}
+.foto-marker{
+  background:#1f6fd6; color:#fff; font-weight:700; font-size:11px;
+  border:2px solid #fff; border-radius:11px; box-shadow:0 1px 3px rgba(0,0,0,.5);
+  text-align:center; line-height:18px; box-sizing:border-box; white-space:nowrap;
+}
+.projektwahl{
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  margin:-10px 0 14px; padding:6px 10px; background:#f3f5f8;
+  border:1px solid #d5dbe3; border-radius:6px; font-size:13px;
+}
+.projektwahl select{font:inherit; padding:3px 6px; max-width:420px;}
+.projektwahl-hinweis{font-size:11.5px; color:#777;}
 .einklapp-hinweis{color:#666; font-size:11px; margin-left:8px;}
 .plankarte{margin:6px 0 10px;}
 .plankarte-map{height:320px; border:1px solid #999; border-radius:4px;}

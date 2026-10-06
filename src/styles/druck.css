@@ -2,10 +2,16 @@
 .druckfuss{display:none;}
 
 @media print{
-  /* Logo im Druck etwas kleiner, damit es nicht über den rechten
-     Seitenrand hinausragt (abgeschnitten wird). */
-  .logo{margin:0 0 6px 10px;}
-  .logo img{width:140px; max-width:45mm;}
+  /* Karten-Bedienelemente (Zoom) im Druck ausblenden, aber die OSM-
+     Attribution (Lizenz-Pflicht) sichtbar lassen. */
+  .leaflet-control-zoom{display:none !important;}
+  .leaflet-control-attribution{
+    background:rgba(255,255,255,.7) !important; font-size:7px !important;
+  }
+  /* Logo in voller Größe, aber etwas tiefer angesetzt, damit es oben
+     nicht vom Seitenrand abgeschnitten wird. */
+  .logo{margin:6mm 0 6px 10px;}
+  .logo img{width:180px;}
   /* Dokument-Fußzeile am Ende des Protokolls, Firmenfarbe (--firma). */
   .dok-fusszeile{
     margin-top:14px; padding-top:4px; text-align:center;
@@ -38,11 +44,14 @@
   .abb{page-break-inside:avoid; break-inside:avoid; border:none; background:none; padding:0; margin-bottom:8px;}
   h2{page-break-after:avoid; break-after:avoid;}
   .vis-zeile{page-break-inside:avoid;}
-  .abb-karte img{max-height:75mm;}
+  /* Karte über dem Block: 190 x 63 mm (3:1), gleiche Pixel wie am Bildschirm. */
+  .abb-karte-map{width:190mm; max-width:100%; height:63mm; border:1px solid #999;}
+  .foto-marker{background:#1f6fd6 !important; color:#fff !important;}
   .abb-bilder{display:flex; flex-wrap:wrap; gap:10px; justify-content:center;}
-  .abb.modus-2 .abb-bilder img{max-width:calc(50% - 6px); max-height:105mm;}
+  /* Bildhöhen so, dass zwei Blöcke (Karte + Fotos + Text) auf eine Seite passen. */
+  .abb.modus-2 .abb-bilder img{max-width:calc(50% - 6px); max-height:58mm;}
   .abb.modus-1 .abb-bilder{flex-direction:column; align-items:center;}
-  .abb.modus-1 .abb-bilder img{max-width:80%; max-height:110mm;}
+  .abb.modus-1 .abb-bilder img{max-width:80%; max-height:58mm;}
   .druckfuss{
     display:flex; position:fixed; bottom:0; left:0; right:0;
     font-size:9px; color:#888; justify-content:space-between;

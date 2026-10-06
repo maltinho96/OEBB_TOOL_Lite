@@ -83,8 +83,9 @@ Bei gleichzeitigem Schreiben gewinnt die zuletzt speichernde Person.</p>
     <span class="koord-anzeige" id="npKoord">Noch keine Nadel gesetzt – auf die Karte klicken.</span>
     <button style="font-size:11px; margin-left:8px" data-aktion="nadel-entfernen">Nadel entfernen</button>
   </td></tr>
-  <tr class="bg-grau-h"><td class="label">Flächen <small>(optional, .zip-Shapefiles)</small>:</td><td>
-    <input type="file" id="npShapeInput" accept=".zip" multiple>
+  <tr class="bg-grau-h"><td class="label">Flächen <small>(optional, Shapefiles)</small>:</td><td>
+    <input type="file" id="npShapeInput" accept=".shp,.dbf,.prj,.cpg,.shx,.zip" multiple>
+    <div style="font-size:11px; color:#666; margin-top:3px;">.shp, .dbf und .prj gemeinsam auswählen (Strg+Klick). Mehrere Shapes auf einmal gehen auch.</div>
     <div id="npFlaechenListe" style="font-size:11.5px; margin-top:6px;"></div>
   </td></tr>
   <tr class="bg-grau-h"><td class="label">Status:</td><td>
