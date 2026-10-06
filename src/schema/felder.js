@@ -51,11 +51,15 @@ export function uebersichtsplan() {
   );
 }
 
-// Abschluss-Fußzeile am Dokumentende: erscheint einmal unten im Protokoll
-// (nicht auf jeder Seite – das ist mit HTML/CSS in Chrome nicht zuverlässig).
-// Text = "Ökologische Baubegleitung im Auftrag der »Auftraggeber«", der Name
-// wird von ui/fusszeile.js aus dem Auftraggeber-Feld gefüllt. Farbe folgt
-// der Firmenfarbe (--firma).
+// Fußzeile (Bildschirm-Vorschau am Dokumentende): Datum | Auftrag | Seite.
+// Beim Drucken wird sie ausgeblendet; dort setzt ui/fusszeile.js dieselbe
+// Zeile über @page-Seitenränder auf JEDE Seite, mit echter Seitenzahl.
 export function abschlussFusszeile() {
-  return '<div class="dok-fusszeile" data-dok-fusszeile>Ökologische Baubegleitung</div>';
+  return (
+    '<div class="dok-fusszeile" data-dok-fusszeile>' +
+    '<span class="fz-datum"></span>' +
+    '<span class="fz-text">Ökologische Baubegleitung</span>' +
+    '<span class="fz-seite">Seite 1/x</span>' +
+    '</div>'
+  );
 }
