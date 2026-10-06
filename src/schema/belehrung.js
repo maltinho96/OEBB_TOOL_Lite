@@ -17,7 +17,9 @@ const BASIS = import.meta.env.BASE_URL;
 // Klick auf das Bild ersetzt es weiterhin wie gewohnt durch ein eigenes
 // (data-einzelbild="vis", verdrahtet in ui/fotos.js) – die Vorbelegung
 // ist nur ein Startpunkt, kein fester Wert.
-function visZeile(text, bildDatei) {
+// Exportiert, damit das Belehrungsprotokoll "Karel" dieselben Piktogramm-
+// Zeilen wiederverwenden kann.
+export function visZeile(text, bildDatei) {
   const bildHtml = bildDatei
     ? '<img src="' + BASIS + 'assets/belehrung_bilder/' + bildDatei + '" alt="">'
     : '';
@@ -29,7 +31,7 @@ function visZeile(text, bildDatei) {
   </div>`;
 }
 
-const VIS_TEXTE = [
+export const VIS_TEXTE = [
   `− Wurzelraum = Kronentraufe + 1,5 m
    − Kein Baggereinsatz
    − Kein Bodenauftrag

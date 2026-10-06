@@ -21,6 +21,7 @@ const TYP_ZU_TAB = {
   protokoll: 'tab-protokoll',
   vorbegehung: 'tab-vorbegehung',
   belehrung: 'tab-belehrung',
+  'belehrung-karel': 'tab-belehrung-karel',
 };
 
 // Überträgt Feldwerte aus dem geladenen Quell-Reiter (quelle) in den
@@ -42,7 +43,15 @@ function felderUebernehmen(quelle, ziel) {
   // Textareas: der Wert steht als Textinhalt (so schreibt es zustandSichern).
   const qt = quelle.querySelectorAll('textarea');
   const zt = ziel.querySelectorAll('textarea');
-  qt.forEach((el, i) => { if (zt[i]) zt[i].value = el.textContent || ''; });
+  qt.forEach((el, i) => {
+    if (zt[i]) {
+      // Beim Export steht der Text als Elementinhalt zwischen den Tags
+      // (textContent); manche Parser legen ihn zusätzlich in value ab.
+      // Beides berücksichtigen, damit der Import zuverlässig greift.
+      const wert = el.value || el.textContent || '';
+      zt[i].value = wert;
+    }
+  });
 
   // Checkboxen / Radios
   const qc = quelle.querySelectorAll('input[type=checkbox],input[type=radio]');
@@ -58,7 +67,9 @@ function felderUebernehmen(quelle, ziel) {
   // Bestätigung) – aber KEINE Bildfelder (plan-bild/vis-bild/unterschrift).
   const qe = quelle.querySelectorAll('[contenteditable]');
   const ze = ziel.querySelectorAll('[contenteditable]');
-  qe.forEach((el, i) => { if (ze[i]) ze[i].innerHTML = el.innerHTML; });
+  // Nur Text übernehmen, kein HTML: eine geladene (fremde) Datei könnte sonst
+  // Skripte/Markup einschleusen. innerText erhält dabei die Zeilenumbrüche.
+  qe.forEach((el, i) => { if (ze[i]) ze[i].innerText = el.innerText || el.textContent || ''; });
 }
 
 async function protokollLaden(file) {

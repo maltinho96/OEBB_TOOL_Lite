@@ -202,7 +202,7 @@ function uebersichtRendern(db) {
     ziel.innerHTML = '<p>Keine Projekte mit diesem Status. <button class="ordner-knopf" data-aktion="filter-alle">Alle anzeigen</button></p>';
     return;
   }
-  const typNamen = { protokoll: 'Protokoll', vorbegehung: 'Vorbegehung', belehrung: 'Belehrung' };
+  const typNamen = { protokoll: 'Protokoll', vorbegehung: 'Vorbegehung', belehrung: 'Belehrung', 'belehrung-karel': 'Belehrung (Karel)' };
   const statusLabel = { aktuell: '▶ Aktuell', geplant: '🕓 Geplant', abgeschlossen: '✔ Abgeschlossen' };
   let html = '<table class="uebersicht"><tr>' +
     '<th>Projekt</th><th>Projektnummer</th><th>Ort</th><th>Status</th><th>Prot.</th><th>Vorb.</th><th>Bel.</th>' +
@@ -214,7 +214,9 @@ function uebersichtRendern(db) {
     const z = { protokoll: 0, vorbegehung: 0, belehrung: 0 };
     let stdSumme = 0;
     dateien.forEach((e) => {
-      if (z[e.typ] !== undefined) z[e.typ]++;
+      // Beide Belehrungs-Varianten zählen in die Spalte "Bel.".
+      const t = e.typ === 'belehrung-karel' ? 'belehrung' : e.typ;
+      if (z[t] !== undefined) z[t]++;
       stdSumme += stundenSumme(e);
     });
     const monate = Object.keys(nachMonat(projektStundenzeilen(p))).sort();

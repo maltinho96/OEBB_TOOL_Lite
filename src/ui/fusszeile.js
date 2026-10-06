@@ -11,7 +11,7 @@
 // als <style id="druckFussStil"> erzeugt und bei jeder relevanten Änderung
 // neu geschrieben (Eingabe in Datum/Auftraggeber, Reiterwechsel, Firma).
 
-const PROTOKOLL_TABS = ['tab-protokoll', 'tab-vorbegehung', 'tab-belehrung'];
+import { PROTOKOLL_TABS } from '../config/konstanten.js';
 
 function datumDeutsch(iso) {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');

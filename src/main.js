@@ -26,7 +26,7 @@ import { uebersichtTabInit, uebersichtBeiAnzeigeAktualisieren } from './ui/dashb
 import { tabsInit, tabWechselHook, tabZeigen } from './ui/tabs.js';
 import { werkzeugeInit } from './ui/werkzeuge.js';
 import { einklappenInit } from './ui/einklappen.js';
-import { fusszeileInit } from './ui/fusszeile.js';
+import { fusszeileInit, fusszeileBeiAnzeige } from './ui/fusszeile.js';
 import { projektwahlInit, projektwahlBeiAnzeige } from './ui/projektwahl.js';
 import { baubegleiterVorbelegen } from './core/nutzer.js';
 
@@ -60,6 +60,7 @@ function start() {
   tabWechselHook(uebersichtBeiAnzeigeAktualisieren);
   tabWechselHook(baubegleiterVorbelegen);
   tabWechselHook(projektwahlBeiAnzeige);
+  tabWechselHook(fusszeileBeiAnzeige);
 
   tabsInit();
   werkzeugeInit();

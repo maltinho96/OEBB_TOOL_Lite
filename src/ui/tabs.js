@@ -2,7 +2,7 @@
 // portiert – hier die einzige Stelle, die direkt auf .tab/.tab-knopf/
 // .sub-knopf/#unterleiste zugreift.
 
-const PROTOKOLL_TABS = ['tab-protokoll', 'tab-vorbegehung', 'tab-belehrung'];
+import { PROTOKOLL_TABS } from '../config/konstanten.js';
 
 // Merkt sich den zuletzt gezeigten Protokoll-Reiter, damit der
 // "📄 Protokolle"-Knopf dorthin zurueckspringt.

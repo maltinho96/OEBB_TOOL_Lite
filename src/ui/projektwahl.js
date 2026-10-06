@@ -12,7 +12,7 @@ import { dbHolen } from '../core/zustand.js';
 import { esc } from '../core/util.js';
 import { karteAktualisieren } from './fotokarte.js';
 
-const PROTOKOLL_TABS = ['tab-protokoll', 'tab-vorbegehung', 'tab-belehrung'];
+import { PROTOKOLL_TABS } from '../config/konstanten.js';
 
 function leiste(tab) {
   let l = tab.querySelector('.projektwahl');

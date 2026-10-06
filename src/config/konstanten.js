@@ -36,3 +36,8 @@ export const MONATE = [
   'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
   'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember',
 ];
+
+// Alle Protokoll-Reiter (ids aus schema/*.js). Zentral hier, damit Reiter-
+// Umschaltung, Projekt-Auswahl und Fußzeile dieselbe Liste nutzen – ein
+// neuer Protokolltyp muss nur hier und in schema/index.js eingetragen werden.
+export const PROTOKOLL_TABS = ['tab-protokoll', 'tab-vorbegehung', 'tab-belehrung', 'tab-belehrung-karel'];

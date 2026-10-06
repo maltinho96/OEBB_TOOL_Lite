@@ -55,3 +55,8 @@
   }
   .druckfuss .fname::after{content:var(--firma-name);}
 }
+
+/* Graue Beispieltexte (placeholder) nie mitdrucken. */
+@media print{
+  ::placeholder{color:transparent !important;}
+}

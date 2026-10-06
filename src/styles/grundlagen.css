@@ -233,3 +233,11 @@ table.sz tr.summe td{font-weight:700; background:#efefef;}
 #tab-uebersicht h2:first-of-type{border-top:none; padding-top:0;}
 .tab{display:none;}
 .tab.aktiv{display:block;}
+
+/* ---------- Belehrungsprotokoll "Karel" (Auflagen zum Naturschutz) ----------
+   Baut auf table.form / bg-* / h2.c-* des Originals auf; hier nur Ergänzungen. */
+h2.c-blau{color:#2a6f97;}
+.kb-auflagen{min-height:120px; margin-top:0;}
+.kb-kontakte td.label:not([colspan]){width:70px;}
+.kb-hinweise{white-space:pre-wrap; line-height:1.45; padding:2px 0;}
+.kb-kenntnis td.label > input{display:block; margin-top:4px;}

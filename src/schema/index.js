@@ -5,5 +5,6 @@
 import { begehung } from './begehung.js';
 import { vorbegehung } from './vorbegehung.js';
 import { belehrung } from './belehrung.js';
+import { belehrungKarel } from './belehrung-karel.js';
 
-export const schemaRegistry = [begehung, vorbegehung, belehrung];
+export const schemaRegistry = [begehung, vorbegehung, belehrung, belehrungKarel];

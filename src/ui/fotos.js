@@ -114,7 +114,9 @@ async function fotosVerarbeiten(files) {
 // ---------- Belehrung: Visualisierungszeilen ----------
 
 function visZeileHinzufuegen(btn) {
-  const container = btn.closest('.tab').querySelector('.visContainer');
+  // Im Karel-Protokoll hat jeder Themenblock (.vis-gruppe) seine eigene
+  // Piktogramm-Liste; sonst die (einzige) Liste des Reiters.
+  const container = (btn.closest('.vis-gruppe') || btn.closest('.tab')).querySelector('.visContainer');
   const z = document.createElement('div');
   z.className = 'vis-zeile';
   z.innerHTML =

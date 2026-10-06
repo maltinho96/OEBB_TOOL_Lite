@@ -51,13 +51,18 @@ function dateinameBauen(tab) {
 
   if (typ === 'protokoll') {
     const nr = sauber(feld('nummer')) || 'XX';
-    return datum + '_' + nr + '.ÖBB_Protokoll_' + ort + '.html';
+    return datum + '_' + nr + '.Protokoll_' + ort + '.html';
   }
   if (typ === 'vorbegehung') {
     const nrV = sauber(feld('nummer'));
     return datum + (nrV ? '_' + nrV + '.Vorbegehungsprotokoll_' : '_Vorbegehungsprotokoll_') + ort + '.html';
   }
   if (typ === 'belehrung') return datum + '_Belehrungsprotokoll_' + ort + '.html';
+  // Wie die Word-Vorlage: JJMMTT_Belehrungsprotokoll_TIEFBAUFIRMA_AUSBAUGEBIET
+  if (typ === 'belehrung-karel') {
+    const firma = sauber(feld('tiefbaufirma')) || 'Tiefbaufirma';
+    return datum + '_Belehrungsprotokoll_' + firma + '_' + ort + '.html';
+  }
   return datum + '_OEBB_Protokoll.html';
 }
 

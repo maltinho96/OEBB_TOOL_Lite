@@ -33,7 +33,7 @@ export function nutzerSetzen(name) {
 // leer ist. So wird ein geladenes oder schon ausgefülltes Protokoll nicht
 // überschrieben. Wird via tabWechselHook aus main.js registriert.
 export function baubegleiterVorbelegen(id) {
-  if (!['tab-protokoll', 'tab-vorbegehung'].includes(id)) return;
+  if (!['tab-protokoll', 'tab-vorbegehung', 'tab-belehrung-karel'].includes(id)) return;
   const name = aktuellerNutzer();
   if (!name) return;
   const tab = document.getElementById(id);
