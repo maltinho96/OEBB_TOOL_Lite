@@ -31,7 +31,7 @@ import { projektwahlInit, projektwahlBeiAnzeige } from './ui/projektwahl.js';
 import { markierenInit } from './ui/markieren.js';
 import { baubegleiterVorbelegen } from './ui/team.js';
 
-import { htmlExportInit } from './export/html-export.js';
+import { htmlExportInit, druckTitelInit } from './export/html-export.js';
 import { htmlImportInit } from './export/html-import.js';
 import { xlsxExportInit } from './export/xlsx-export.js';
 
@@ -67,6 +67,7 @@ function start() {
   tabsInit();
   werkzeugeInit();
   htmlExportInit();
+  druckTitelInit();
   htmlImportInit();
   xlsxExportInit();
 

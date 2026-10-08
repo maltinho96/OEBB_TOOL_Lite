@@ -8,6 +8,7 @@
 import { baueMeta, metaSerialisieren } from '../core/meta.js';
 import { htmlVorlage } from './html-vorlage.js';
 import { bildElementeEinbetten } from '../core/bilder.js';
+import { PROTOKOLL_TABS } from '../config/konstanten.js';
 
 // Aktuell sichtbarer Protokoll-Tab.
 function aktiverTab() {
@@ -35,35 +36,38 @@ function zustandSichern(scope) {
   });
 }
 
-// Vorschlagsdateiname nach Protokolltyp, Begehungsdatum (oder heute) und Ort.
+// Vorschlagsdateiname (für "Speichern unter…" und als PDF-Name beim Drucken):
+//   JJMMTT_NN.ÖBB_Protokoll_Ort      z. B. 260930_06.ÖBB_Protokoll_Potsdam_Westliche_Vorstadt
+// Datum = heutiger Tag (Tag der Erstellung), NN = Protokollnummer, Ort aus
+// dem Protokoll; Leerzeichen werden zu Unterstrichen.
 function dateinameBauen(tab) {
   function feld(name) {
     const el = tab.querySelector('[data-feld=' + name + ']');
     return el ? (el.value || '').trim() : '';
   }
   function sauber(text) {
-    return text.replace(/[\\/:*?"<>|]+/g, '').replace(/\s+/g, '-');
+    return text.replace(/[\\/:*?"<>|]+/g, '').trim().replace(/\s+/g, '_');
   }
-  const d = feld('datum');
-  const datum = d ? d.slice(2).replace(/-/g, '') : new Date().toISOString().slice(2, 10).replace(/-/g, '');
+  // Heutiges Datum in Ortszeit (toISOString wäre UTC und kurz nach
+  // Mitternacht noch "gestern").
+  const h = new Date();
+  const datum = String(h.getFullYear()).slice(2) +
+    String(h.getMonth() + 1).padStart(2, '0') + String(h.getDate()).padStart(2, '0');
+  // Einstellige Nummern zweistellig: 6 -> 06.
+  const roh = sauber(feld('nummer'));
+  const nr = /^\d$/.test(roh) ? '0' + roh : roh;
   const ort = sauber(feld('ort')) || 'Ort';
   const typ = tab.id.replace('tab-', '');
 
-  if (typ === 'protokoll') {
-    const nr = sauber(feld('nummer')) || 'XX';
-    return datum + '_' + nr + '.Protokoll_' + ort + '.html';
-  }
-  if (typ === 'vorbegehung') {
-    const nrV = sauber(feld('nummer'));
-    return datum + (nrV ? '_' + nrV + '.Vorbegehungsprotokoll_' : '_Vorbegehungsprotokoll_') + ort + '.html';
-  }
-  if (typ === 'belehrung') return datum + '_Belehrungsprotokoll_' + ort + '.html';
+  if (typ === 'protokoll') return datum + '_' + (nr || 'XX') + '.ÖBB_Protokoll_' + ort + '.html';
+  if (typ === 'vorbegehung') return datum + (nr ? '_' + nr + '.' : '_') + 'ÖBB_Vorbegehungsprotokoll_' + ort + '.html';
+  if (typ === 'belehrung') return datum + '_ÖBB_Belehrungsprotokoll_' + ort + '.html';
   // Wie die Word-Vorlage: JJMMTT_Belehrungsprotokoll_TIEFBAUFIRMA_AUSBAUGEBIET
   if (typ === 'belehrung-karel') {
     const firma = sauber(feld('tiefbaufirma')) || 'Tiefbaufirma';
     return datum + '_Belehrungsprotokoll_' + firma + '_' + ort + '.html';
   }
-  return datum + '_OEBB_Protokoll.html';
+  return datum + '_ÖBB_Protokoll.html';
 }
 
 // Meta-Objekt aus den Formularfeldern des aktiven Tabs bauen.
@@ -137,5 +141,23 @@ export async function alsHtmlSpeichern() {
 export function htmlExportInit() {
   document.querySelectorAll('[data-aktion="speichern"]').forEach((btn) => {
     btn.addEventListener('click', alsHtmlSpeichern);
+  });
+}
+
+// PDF-Dateiname beim Drucken: Chrome schlägt bei "Als PDF speichern" den
+// Seitentitel als Dateinamen vor. Direkt vor dem Drucken (Knopf oder Strg+P)
+// wird der Titel deshalb auf denselben Namen gesetzt wie bei "Speichern
+// unter…" (ohne .html), danach wieder auf den Firmennamen zurückgestellt.
+export function druckTitelInit() {
+  let vorher = null;
+  window.addEventListener('beforeprint', () => {
+    const tab = document.querySelector('.tab.aktiv');
+    if (!tab || !PROTOKOLL_TABS.includes(tab.id)) return;
+    vorher = document.title;
+    document.title = dateinameBauen(tab).replace(/\.html$/, '');
+  });
+  window.addEventListener('afterprint', () => {
+    if (vorher !== null) document.title = vorher;
+    vorher = null;
   });
 }
