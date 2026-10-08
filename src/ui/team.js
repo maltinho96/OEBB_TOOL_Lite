@@ -104,3 +104,18 @@ export function teamInit(section) {
     }
   });
 }
+
+// Beim Öffnen eines Protokoll-Reiters den Namen der aktuellen Person ins
+// Feld "Ökologische*r Baubegleiter*in" setzen – aber NUR, wenn es noch
+// leer ist. So wird ein geladenes oder schon ausgefülltes Protokoll nicht
+// überschrieben. Wird via tabWechselHook aus main.js registriert (UI-Aufgabe, deshalb hier
+// und nicht in core/nutzer.js).
+export function baubegleiterVorbelegen(id) {
+  if (!['tab-protokoll', 'tab-vorbegehung', 'tab-belehrung-karel'].includes(id)) return;
+  const name = aktuellerNutzer();
+  if (!name) return;
+  const tab = document.getElementById(id);
+  if (!tab) return;
+  const feld = tab.querySelector('[data-feld="baubegleiter"]');
+  if (feld && !feld.value.trim()) feld.value = name;
+}

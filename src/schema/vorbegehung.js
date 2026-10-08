@@ -67,7 +67,7 @@ ${logo()}
 
 ${uebersichtsplan()}
 
-${fotodokumentation('Je 2 Fotos ergeben eine Abbildung (umschaltbar auf 1 Bild) · Kartenausschnitt wird automatisch vom Übersichtsplan übernommen')}
+${fotodokumentation('Je 2 Fotos ergeben eine Abbildung (umschaltbar auf 1 Bild) · Fotos mit GPS-Daten erscheinen automatisch auf der Karte über dem Block · Foto anklicken, um Stellen rot einzukreisen')}
 
 ${abschlussFusszeile()}
 `,

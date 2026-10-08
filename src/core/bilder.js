@@ -47,7 +47,7 @@ export async function bildElementeEinbetten(root) {
           reader.readAsDataURL(blob);
         });
         img.src = dataUrl;
-      } catch (e) {
+      } catch {
         // Bild nicht erreichbar - Referenz bleibt bestehen, kein Abbruch
         // des gesamten Exports wegen eines einzelnen fehlenden Bildes.
       }

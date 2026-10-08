@@ -7,7 +7,7 @@
 //  - Übernommen werden Textfelder, Checkboxen, Radios, Selects und die
 //    contenteditable-Textblöcke (rechtliche Grundlagen, Visualisierungs-
 //    texte, Bestätigung).
-//  - NICHT übernommen werden Fotos, Übersichtsplan und Unterschriften –
+//  - NICHT übernommen werden Fotos (samt Karten) und Unterschriften –
 //    die sollen im Folgeprotokoll neu gesetzt werden, nicht veraltet
 //    mitwandern.
 //  - Der Ziel-Reiter wird aus dem eingebetteten protokollMeta-Block
@@ -64,7 +64,7 @@ function felderUebernehmen(quelle, ziel) {
   qs.forEach((el, i) => { if (zs[i]) zs[i].value = el.value; });
 
   // contenteditable-Textblöcke (Vis-Texte, rechtliche Grundlagen,
-  // Bestätigung) – aber KEINE Bildfelder (plan-bild/vis-bild/unterschrift).
+  // Bestätigung) – aber KEINE Bildfelder (vis-bild/unterschrift).
   const qe = quelle.querySelectorAll('[contenteditable]');
   const ze = ziel.querySelectorAll('[contenteditable]');
   // Nur Text übernehmen, kein HTML: eine geladene (fremde) Datei könnte sonst

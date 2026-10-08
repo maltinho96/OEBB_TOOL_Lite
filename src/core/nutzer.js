@@ -13,7 +13,7 @@ const SCHLUESSEL = 'oebb_aktueller_nutzer';
 export function aktuellerNutzer() {
   try {
     return localStorage.getItem(SCHLUESSEL) || '';
-  } catch (e) {
+  } catch {
     return '';
   }
 }
@@ -22,22 +22,8 @@ export function nutzerSetzen(name) {
   try {
     if (name) localStorage.setItem(SCHLUESSEL, name);
     else localStorage.removeItem(SCHLUESSEL);
-  } catch (e) {
+  } catch {
     // localStorage nicht verfuegbar (z. B. privater Modus) - dann bleibt
     // die Auswahl eben nur fuer diese Sitzung im Feld stehen.
   }
-}
-
-// Beim Öffnen eines Protokoll-Reiters den Namen der aktuellen Person ins
-// Feld "Ökologische*r Baubegleiter*in" setzen – aber NUR, wenn es noch
-// leer ist. So wird ein geladenes oder schon ausgefülltes Protokoll nicht
-// überschrieben. Wird via tabWechselHook aus main.js registriert.
-export function baubegleiterVorbelegen(id) {
-  if (!['tab-protokoll', 'tab-vorbegehung', 'tab-belehrung-karel'].includes(id)) return;
-  const name = aktuellerNutzer();
-  if (!name) return;
-  const tab = document.getElementById(id);
-  if (!tab) return;
-  const feld = tab.querySelector('[data-feld="baubegleiter"]');
-  if (feld && !feld.value.trim()) feld.value = name;
 }

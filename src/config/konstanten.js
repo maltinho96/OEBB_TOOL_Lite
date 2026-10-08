@@ -20,7 +20,6 @@ export const LOCK_STATUS_VERZOEGERUNG_MS = 400;
 // Maximale Kantenlänge (px) beim Verkleinern von Bildern vor dem Einbetten.
 export const BILD_MAX = {
   foto: 1600,          // Fotos in der Dokumentation
-  plan: 1800,          // Übersichtsplan / Kartenausschnitt
   visualisierung: 1800,// Belehrung: Visualisierungsbilder
   unterschrift: 600,   // Unterschriftenfelder
 };

@@ -1,7 +1,7 @@
 // Projekt-Auswahl oben in jedem Protokoll (nur am Bildschirm, nicht im
 // Druck). Wählt man ein Projekt aus der Datenbank:
 //   - Projekt-Name und Projektnummer werden ins Protokoll übernommen,
-//   - der Auftraggeber nur, wenn das Feld noch leer ist,
+//   - Auftraggeber und Ort nur, wenn das Feld noch leer ist,
 //   - die Flächen (Shapes) des Projekts erscheinen im Übersichtsplan und
 //     in den Karten über den Foto-Blöcken (ui/fotokarte.js).
 //
@@ -74,6 +74,7 @@ function projektUebernehmen(tab, pid) {
     feldSetzen(tab, '[data-feld="projekt"]', p.name);
     feldSetzen(tab, '[data-feld="projektnummer"]', p.projektnummer);
     feldSetzen(tab, '[data-feld="auftraggeber-fuss"]', p.infos && p.infos.auftraggeber, true);
+    feldSetzen(tab, '[data-feld="ort"]', p.ort, true);
   }
   karteAktualisieren(tab);
 }

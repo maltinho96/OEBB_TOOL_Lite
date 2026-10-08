@@ -21,7 +21,7 @@ export async function gpsAusDatei(file) {
         lng: Math.round(daten.longitude * 1e5) / 1e5,
       };
     }
-  } catch (e) {
+  } catch {
     // Kein EXIF / Parser-Fehler / kein GPS – alles unkritisch.
   }
   return null;

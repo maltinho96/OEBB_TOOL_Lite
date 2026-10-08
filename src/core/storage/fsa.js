@@ -59,7 +59,7 @@ export async function waehleGrundordner() {
     grundOrdner = await window.showDirectoryPicker({ mode: 'readwrite' });
     await idbSetzen('grundOrdner', grundOrdner);
     return grundOrdner;
-  } catch (e) {
+  } catch {
     return null; // abgebrochen
   }
 }
@@ -87,7 +87,7 @@ export async function waehleProjektordner(id) {
     projektOrdnerCache[id] = h;
     await idbSetzen('projektOrdner:' + id, h);
     return h;
-  } catch (e) {
+  } catch {
     return null; // abgebrochen
   }
 }
@@ -104,7 +104,7 @@ export async function dateiLesen(ordner, name) {
     const fh = await ordner.getFileHandle(name);
     const f = await fh.getFile();
     return await f.text();
-  } catch (e) {
+  } catch {
     return null; // fehlt
   }
 }
@@ -120,14 +120,14 @@ export async function dateiSchreiben(ordner, name, text) {
 export async function unterordnerHolen(ordner, name) {
   try {
     return await ordner.getDirectoryHandle(name, { create: true });
-  } catch (e) {
+  } catch {
     return null;
   }
 }
 export async function dateiLoeschen(ordner, name) {
   try {
     await ordner.removeEntry(name);
-  } catch (e) {
+  } catch {
     // schon weg oder nie da gewesen - kein Fehler
   }
 }
@@ -156,7 +156,7 @@ export async function scanneHtmlDateien(ordner) {
           const f = await eintrag.getFile();
           const kopf = await f.slice(0, 200000).text();
           treffer.push({ pfad: pfad + eintrag.name, kopf, geaendert: f.lastModified });
-        } catch (err) { /* Datei ueberspringen */ }
+        } catch { /* Datei ueberspringen */ }
       } else if (eintrag.kind === 'directory' && tiefe < 3) {
         await rekursiv(eintrag, pfad + eintrag.name + '/', tiefe + 1);
       }

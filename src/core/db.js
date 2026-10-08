@@ -65,7 +65,7 @@ async function lockFreigeben(ordner) {
 // Rohtext -> geparste, migrierte DB-Struktur (immer mit .projekte).
 export function dbAusText(text) {
   let db = null;
-  try { db = JSON.parse(text); } catch (e) { db = null; }
+  try { db = JSON.parse(text); } catch { db = null; }
   if (!db) db = {};
   if (!db.projekte) db.projekte = {};
 
@@ -121,7 +121,7 @@ async function monatsSicherung(ordner, db) {
     const vorhanden = await dateiLesen(backupOrdner, name);
     if (vorhanden != null) return;
     await dateiSchreiben(backupOrdner, name, JSON.stringify(db, null, 1));
-  } catch (e) {
+  } catch {
     // Sicherung fehlgeschlagen (z. B. keine Schreibrechte im Unterordner) -
     // das eigentliche Speichern laeuft trotzdem weiter.
   }

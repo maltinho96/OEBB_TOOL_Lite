@@ -92,7 +92,7 @@ input[type=checkbox], input[type=radio]{width:17px; height:17px; accent-color:#1
 .projektwahl-hinweis{font-size:11.5px; color:#777;}
 .einklapp-hinweis{color:#666; font-size:11px; margin-left:8px;}
 .plankarte{margin:6px 0 10px;}
-.plankarte-map{height:320px; border:1px solid #999; border-radius:4px;}
+.plankarte-map{width:100%; max-width:718px; height:320px; margin:0 auto; border:1px solid #999; border-radius:4px;}
 .plankarte-hinweis{font-size:11px; color:#888; margin:4px 0 8px; font-style:italic;}
 /* Fußzeilen-Vorschau am Bildschirm: Datum | Auftrag | Seite. */
 .dok-fusszeile{
@@ -113,7 +113,7 @@ input[type=checkbox], input[type=radio]{width:17px; height:17px; accent-color:#1
     -2px 0 0 #fff, 2px 0 0 #fff, 0 -2px 0 #fff, 0 2px 0 #fff;
 }
 .abb-bilder{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:8px; justify-content:center;}
-.abb-bilder img{border:1px solid #999; width:auto; height:auto;}
+.abb-bilder img{border:1px solid #999; width:auto; height:auto; cursor:pointer;}
 .abb.modus-2 .abb-bilder img{max-width:calc(50% - 6px); max-height:520px;}
 .abb.modus-1 .abb-bilder{flex-direction:column; align-items:center;}
 .abb.modus-1 .abb-bilder img{max-width:78%; max-height:560px;}
@@ -126,14 +126,6 @@ input[type=checkbox], input[type=radio]{width:17px; height:17px; accent-color:#1
 }
 .dropzone.aktiv{border-color:#2e7d32; background:#eef7ee; color:#2e7d32;}
 
-.plan-bild{text-align:center; cursor:pointer;}
-.plan-bild img{max-width:100%; border:1px solid #999; display:inline-block;}
-.plan-bild:empty::before{
-  content:"🗺 Klicken und Übersichtsplan-Bild einfügen";
-  color:#999; font-size:12px;
-  display:flex; align-items:center; justify-content:center;
-  min-height:80px; border:1px dashed #aaa; border-radius:4px;
-}
 .plan-text{min-height:32px; border-bottom:1px dotted #aaa; padding:2px 4px; margin-top:6px;}
 
 .unterschrift-feld{min-height:60px; cursor:pointer;}
@@ -156,26 +148,11 @@ input[type=checkbox], input[type=radio]{width:17px; height:17px; accent-color:#1
 .bestaetigung{background:var(--blau); border:1px solid var(--rahmen); padding:8px 10px; font-weight:600; margin-top:14px;}
 
 /* ---------- Startseite / Dashboard ---------- */
-.start-titel{color:var(--firma); font-size:24px; margin:10px 0 4px;}
-.protokollwahl{display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:14px; margin:14px 0;}
 .dashboard{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-start;}
-.dash-links{flex:1 1 300px; min-width:280px;}
-.dash-rechts{flex:1 1 360px; min-width:300px;}
 .dash-zahlen{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;}
 .dash-kachel{flex:1 1 90px; border:1px solid #ccc; border-radius:8px; padding:10px; text-align:center; background:#fafafa;}
 .dash-kachel b{display:block; font-size:20px; color:var(--firma);}
 .dash-kachel span{font-size:11px; color:#666;}
-.dash-projekt{border:1px solid #ddd; border-radius:8px; padding:8px 10px; margin:6px 0; cursor:pointer; background:#fdfdfd;}
-.dash-projekt:hover{border-color:var(--firma);}
-.dash-projekt .dp-name{font-weight:700;}
-.dash-projekt .dp-detail{font-size:11.5px; color:#666;}
-.protokollkarte{
-  flex:1 1 220px; border:1px solid #bbb; border-radius:10px; padding:16px; cursor:pointer;
-  background:#fdfdfd;
-}
-.protokollkarte:hover{border-color:var(--firma); box-shadow:0 2px 8px rgba(0,0,0,.08);}
-.protokollkarte h3{margin:0 0 6px; color:var(--firma); font-size:15px;}
-.protokollkarte p{margin:0; font-size:12px; color:#555;}
 
 /* ---------- Navigation / Werkzeugleiste ---------- */
 .werkzeuge{
@@ -241,3 +218,16 @@ h2.c-blau{color:#2a6f97;}
 .kb-kontakte td.label:not([colspan]){width:70px;}
 .kb-hinweise{white-space:pre-wrap; line-height:1.45; padding:2px 0;}
 .kb-kenntnis td.label > input{display:block; margin-top:4px;}
+
+/* ---------- Fotos markieren (ui/markieren.js) ---------- */
+.mk-editor{position:fixed; inset:0; z-index:10000; background:rgba(20,20,20,.88);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:16px;}
+.mk-editor[hidden]{display:none;}
+.mk-flaeche{display:flex; align-items:center; justify-content:center; max-width:100%; min-height:0;}
+.mk-editor canvas{max-width:92vw; max-height:calc(100vh - 110px); cursor:crosshair; touch-action:none;
+  background:#fff; box-shadow:0 4px 24px rgba(0,0,0,.5);}
+.mk-leiste{display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center;}
+.mk-hinweis{color:#ddd; font-size:13px; margin-right:8px;}
+.mk-leiste button{font:inherit; font-size:13px; padding:6px 14px; border-radius:6px; border:1px solid #888; background:#f4f4f4; cursor:pointer;}
+.mk-leiste button:disabled{opacity:.45; cursor:default;}
+.mk-leiste .mk-fertig{background:#e00000; border-color:#e00000; color:#fff; font-weight:600;}

@@ -12,7 +12,7 @@ export function metaAusText(text) {
   if (!m) return null;
   try {
     return JSON.parse(m[1]);
-  } catch (e) {
+  } catch {
     return null;
   }
 }

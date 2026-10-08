@@ -19,18 +19,18 @@ function aktiverTab() {
   return document.querySelector('.tab.aktiv');
 }
 
-// Zielelement für den nächsten Einzelbild-Upload (Unterschrift/Plan/Vis).
+// Zielelement für den nächsten Einzelbild-Upload (Unterschrift/Vis-Bild).
 let zielEinzelbild = null;
-let einzelbildMax = 1800;
+let einzelbildMax = BILD_MAX.visualisierung;
 
-// Zielblock für "Foto zu diesem Block" bzw. "eigener Kartenausschnitt".
+// Zielblock für "＋ Foto" (weiteres Foto in einen bestehenden Block).
 let zielBlock = null;
 
-// ---------- Einzelbildfelder (Unterschrift, Übersichtsplan, Vis-Bild) ----------
+// ---------- Einzelbildfelder (Unterschrift, Vis-Bild) ----------
 
 function einzelbildWaehlen(el, typ) {
   zielEinzelbild = el;
-  einzelbildMax = typ === 'unterschrift' ? BILD_MAX.unterschrift : BILD_MAX.plan;
+  einzelbildMax = typ === 'unterschrift' ? BILD_MAX.unterschrift : BILD_MAX.visualisierung;
 }
 
 async function einzelbildEinsetzen(file) {
@@ -70,6 +70,7 @@ async function fotoMitGps(file) {
   const url = await bildAlsDataUrl(file, BILD_MAX.foto, BILD_QUALITAET);
   const img = document.createElement('img');
   img.src = url;
+  img.title = 'Klicken, um Stellen rot einzukreisen';
   if (gps) {
     img.dataset.lat = gps.lat;
     img.dataset.lng = gps.lng;
@@ -103,7 +104,7 @@ async function fotosVerarbeiten(files) {
     if (i % 2 === 0) block = neuerAbbBlock();
     try {
       block.querySelector('.abb-bilder').appendChild(await fotoMitGps(liste[i]));
-    } catch (err) {
+    } catch {
       alert('Bild konnte nicht gelesen werden: ' + liste[i].name);
     }
   }
@@ -150,7 +151,7 @@ export function fotosInit(root) {
     document.body.appendChild(blockFotoInput);
   }
 
-  // Einzelbildfelder (Unterschrift/Übersichtsplan/Vis) per Klick.
+  // Einzelbildfelder (Unterschrift/Vis) per Klick.
   root.querySelectorAll('[data-einzelbild]').forEach((el) => {
     el.addEventListener('click', () => {
       einzelbildWaehlen(el, el.dataset.einzelbild);

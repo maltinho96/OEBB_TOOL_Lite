@@ -7,7 +7,6 @@
 // Spaeter: hier per Umgebungserkennung zwischen fsa.js und tauri.js waehlen.
 
 export {
-  fsaVerfuegbar,
   waehleGrundordner,
   grundordnerHolen,
   gespeicherterGrundordner,
