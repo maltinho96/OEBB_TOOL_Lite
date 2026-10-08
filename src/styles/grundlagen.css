@@ -91,6 +91,8 @@ input[type=checkbox], input[type=radio]{width:17px; height:17px; accent-color:#1
 .projektwahl select{font:inherit; padding:3px 6px; max-width:420px;}
 .projektwahl-hinweis{font-size:11.5px; color:#777;}
 .einklapp-hinweis{color:#666; font-size:11px; margin-left:8px;}
+.unterkopf{display:flex; align-items:center; justify-content:space-between; gap:12px;}
+.unterkopf .cb{margin-right:0; font-size:12px;}
 .plankarte{margin:6px 0 10px;}
 .plankarte-map{width:100%; max-width:718px; height:320px; margin:0 auto; border:1px solid #999; border-radius:4px;}
 .plankarte-hinweis{font-size:11px; color:#888; margin:4px 0 8px; font-style:italic;}

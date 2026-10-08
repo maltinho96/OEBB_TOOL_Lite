@@ -15,6 +15,7 @@
 
 import { metaAusText } from '../core/meta.js';
 import { tabZeigen } from '../ui/tabs.js';
+import { einklappenAktualisieren } from '../ui/einklappen.js';
 
 // typ (aus protokollMeta) -> Reiter-Id
 const TYP_ZU_TAB = {
@@ -53,10 +54,16 @@ function felderUebernehmen(quelle, ziel) {
     }
   });
 
-  // Checkboxen / Radios
-  const qc = quelle.querySelectorAll('input[type=checkbox],input[type=radio]');
-  const zc = ziel.querySelectorAll('input[type=checkbox],input[type=radio]');
-  qc.forEach((el, i) => { if (zc[i]) zc[i].checked = el.hasAttribute('checked') || el.checked; });
+  // Checkboxen / Radios. Die Unterpunkt-Haken (data-unterklapp) werden
+  // getrennt zugeordnet, damit ältere Protokolle ohne diese Haken nicht
+  // alle folgenden Häkchen um eine Position verschieben.
+  const NORMAL = 'input[type=checkbox]:not([data-unterklapp]),input[type=radio]';
+  const UNTER = 'input[data-unterklapp]';
+  [NORMAL, UNTER].forEach((selektor) => {
+    const qc = quelle.querySelectorAll(selektor);
+    const zc = ziel.querySelectorAll(selektor);
+    qc.forEach((el, i) => { if (zc[i]) zc[i].checked = el.hasAttribute('checked') || el.checked; });
+  });
 
   // Selects
   const qs = quelle.querySelectorAll('select');
@@ -94,6 +101,10 @@ async function protokollLaden(file) {
   tabZeigen(zielTabId);
   const ziel = document.getElementById(zielTabId);
   felderUebernehmen(quelle, ziel);
+  // Aufgeklappt/eingeklappt passend zu den geladenen Häkchen darstellen und
+  // abhängige Anzeigen (z. B. Fußzeile mit Auftraggeber) auffrischen.
+  einklappenAktualisieren(ziel);
+  ziel.querySelectorAll('[data-feld]').forEach((el) => el.dispatchEvent(new Event('input', { bubbles: true })));
 
   // Nummer im Titel ist meist die des geladenen Protokolls – als Hinweis
   // kurz melden, dass sie fürs Folgeprotokoll angepasst werden sollte.

@@ -26,7 +26,7 @@ export function logo() {
 // data-dropzone wird in ui/fotos.js verdrahtet (Stufe 4).
 export function fotodokumentation(kleingedrucktes) {
   return (
-    '<h2 class="c-grau">Fotodokumentation</h2>' +
+    '<h2 class="c-grau fotodoku-titel">Fotodokumentation</h2>' +
     '<div class="fotoContainer"></div>' +
     '<div class="dropzone kein-druck" data-dropzone>' +
     '📷 Fotos hierher ziehen oder klicken zum Auswählen<br>' +

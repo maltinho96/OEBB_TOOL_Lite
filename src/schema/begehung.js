@@ -97,7 +97,7 @@ ${logo()}
 <h2 class="c-pink">Arten- und Habitatschutz</h2>
 <table class="form" data-schutzblock>
   <tr class="bg-pink"><td colspan="6"><span class="cb"><b>Begehung ohne Beanstandung:</b> <input type="checkbox" data-einklapp checked></span> <span class="einklapp-hinweis kein-druck"></span></td></tr>
-  <tr class="bg-pink"><td colspan="6" class="label">Vogelschutz</td></tr>
+  <tr class="bg-pink" data-unterkopf><td colspan="6"><span class="unterkopf"><b>Vogelschutz</b><span class="cb">ohne Beanstandung: <input type="checkbox" data-unterklapp checked></span></span></td></tr>
   <tr class="bg-pink-h"><td colspan="6"><span class="cb"><b>Bauzeitenregelung eingehalten:</b> <input type="checkbox"></span></td></tr>
   <tr class="bg-pink-h">
     <td colspan="4"><span class="cb"><b>Baufeldfreimachung durch Besatzkontrolle:</b> <input type="checkbox"></span></td>
@@ -109,7 +109,7 @@ ${logo()}
     <td colspan="2"><span class="cb"><b>Baumbrüter:</b> <input type="checkbox"></span></td>
   </tr>
   <tr class="bg-pink-h"><td colspan="6" class="label">Kommentar:<textarea rows="2"></textarea></td></tr>
-  <tr class="bg-pink"><td colspan="6" class="label">Amphibien- und Reptilienschutz</td></tr>
+  <tr class="bg-pink" data-unterkopf><td colspan="6"><span class="unterkopf"><b>Amphibien- und Reptilienschutz</b><span class="cb">ohne Beanstandung: <input type="checkbox" data-unterklapp checked></span></span></td></tr>
   <tr class="bg-pink-h"><td colspan="6"><span class="cb"><b>Bauzeitenregelung eingehalten:</b> <input type="checkbox"></span></td></tr>
   <tr class="bg-pink-h">
     <td colspan="4"><span class="cb"><b>Baufeldfreimachung durch Besatzkontrolle:</b> <input type="checkbox"></span></td>
@@ -124,14 +124,14 @@ ${logo()}
     <td colspan="4"><span class="zeile"><b>Ursache:</b> <input type="text"></span></td>
   </tr>
   <tr class="bg-pink-h"><td colspan="6" class="label">Kommentar:<textarea rows="2"></textarea></td></tr>
-  <tr class="bg-pink"><td colspan="6" class="label">Fledermausschutz</td></tr>
+  <tr class="bg-pink" data-unterkopf><td colspan="6"><span class="unterkopf"><b>Fledermausschutz</b><span class="cb">ohne Beanstandung: <input type="checkbox" data-unterklapp checked></span></span></td></tr>
   <tr class="bg-pink-h">
     <td colspan="4"><span class="cb"><b>Kontrolle gefordert:</b> <input type="checkbox"></span></td>
     <td colspan="2"><span class="cb"><b>Positivbefund:</b> <input type="checkbox"></span></td>
   </tr>
   <tr class="bg-pink-h"><td colspan="6" class="label">Umzusetzende Maßnahmen:<textarea rows="2"></textarea></td></tr>
   <tr class="bg-pink-h"><td colspan="6" class="label">Kommentar:<textarea rows="2"></textarea></td></tr>
-  <tr class="bg-pink"><td colspan="6" class="label">Habitatschutz</td></tr>
+  <tr class="bg-pink" data-unterkopf><td colspan="6"><span class="unterkopf"><b>Habitatschutz</b><span class="cb">ohne Beanstandung: <input type="checkbox" data-unterklapp checked></span></span></td></tr>
   <tr class="bg-pink-h">
     <td colspan="2"><span class="cb"><b>Schutzgebiete vorhanden:</b> <input type="checkbox"></span></td>
     <td colspan="4"><span class="zeile"><b>Name Schutzgebiet/e:</b> <input type="text"></span></td>
