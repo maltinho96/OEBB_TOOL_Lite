@@ -71,7 +71,7 @@ ${logo()}
 <h1>Belehrungsprotokoll der ökologischen Baubegleitung</h1>
 
 <table class="form">
-  <tr class="bg-blau"><td class="label" style="width:220px">Leitungsinhabende Firma:</td><td><input type="text"></td></tr>
+  <tr class="bg-blau"><td class="label" style="width:220px">Leitungsinhabende Firma:</td><td><input type="text" data-feld="auftraggeber-fuss"></td></tr>
   <tr class="bg-blau-h"><td class="label">Aufgrabende Firma:</td><td><input type="text"></td></tr>
   <tr class="bg-blau"><td class="label">Projekt:</td><td><textarea rows="2" data-feld="projekt"></textarea></td></tr>
 </table>

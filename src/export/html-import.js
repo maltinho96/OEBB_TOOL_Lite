@@ -32,6 +32,11 @@ const TYP_ZU_TAB = {
 // robust genug, weil die Templates fest sind und sich Quelle/Ziel exakt
 // entsprechen.
 function felderUebernehmen(quelle, ziel) {
+  // Ältere Begehungsprotokolle hatten im Baumschutz noch die Wurzel-Tabelle
+  // (9 Textfelder). Sie gibt es nicht mehr – vorher entfernen, sonst
+  // verrutschen alle folgenden Textfelder um 9 Positionen.
+  quelle.querySelectorAll('.wurzeltab').forEach((t) => t.remove());
+
   // Einzeilige Eingabefelder: der gespeicherte Wert steht im value-Attribut
   // (so schreibt es zustandSichern beim Export).
   ['input[type=text]', 'input[type=date]', 'input[type=tel]', 'input[type=email]'].forEach((selektor) => {

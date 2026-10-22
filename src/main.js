@@ -31,6 +31,7 @@ import { projektwahlInit, projektwahlBeiAnzeige } from './ui/projektwahl.js';
 import { markierenInit } from './ui/markieren.js';
 import { bausteineInit, bausteineBeiAnzeige } from './ui/bausteine.js';
 import { baubegleiterVorbelegen } from './ui/team.js';
+import { kartenbildInit } from './ui/kartenbild.js';
 
 import { htmlExportInit, druckTitelInit } from './export/html-export.js';
 import { htmlImportInit } from './export/html-import.js';
@@ -58,6 +59,7 @@ function start() {
   projektwahlInit();
   markierenInit(app);
   bausteineInit(app);
+  kartenbildInit();
 
   tabWechselHook(karteBeiAnzeigeAktualisieren);
   tabWechselHook(stundenBeiAnzeigeAktualisieren);

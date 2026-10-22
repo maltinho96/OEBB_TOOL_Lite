@@ -56,14 +56,8 @@ textarea.gross{min-height:220px;}
 input[type=checkbox], input[type=radio]{width:17px; height:17px; accent-color:#1a1a1a;}
 .cb{display:inline-flex; align-items:center; gap:6px; margin-right:14px; font-weight:400;}
 .cb b{font-weight:700;}
-
-.wurzeltab td{text-align:left;}
-.wurzeltab .kopf{writing-mode:vertical-rl; transform:rotate(180deg); font-weight:700; font-size:11px; text-align:center; width:26px; padding:4px 2px;}
-.wurzeltab input[type=text]{width:52px; text-align:center;}
-
 .prio{display:flex; gap:28px; justify-content:center; align-items:center; padding:4px 0;}
 .prio-hinweis{text-align:center; font-weight:700; font-size:12px;}
-.fusz{font-size:10.5px; margin:4px 0 0;}
 
 /* ---------- Fotodokumentation ---------- */
 .abb{
@@ -74,10 +68,8 @@ input[type=checkbox], input[type=radio]{width:17px; height:17px; accent-color:#1
 .abb-kopf button{font:inherit; font-size:11px; padding:3px 9px; cursor:pointer; border:1px solid #888; border-radius:4px; background:#fff;}
 .abb-kopf button.entfernen{color:#a00; border-color:#a00; margin-left:auto;}
 .abb-karte{margin-bottom:8px;}
-/* Karte über dem Foto-Block, 3:1. Feste Pixelmaße (718 x 239 px = 190 x
-   63 mm), damit Bildschirm und Druck exakt denselben Ausschnitt zeigen –
-   Leaflet zeichnet beim Drucken nicht neu, eine andere Breite würde den
-   Ausschnitt verschieben. */
+/* Karte über dem Foto-Block, 3:1 (718 x 239 px = 190 x 63 mm im Druck).
+   Gedruckt wird ein Bild genau dieses Ausschnitts (ui/kartenbild.js). */
 .abb-karte-map{width:100%; max-width:718px; height:239px; margin:0 auto; border:1px solid #999; border-radius:4px;}
 .foto-marker{
   background:#1f6fd6; color:#fff; font-weight:700; font-size:11px;
@@ -96,6 +88,9 @@ input[type=checkbox], input[type=radio]{width:17px; height:17px; accent-color:#1
 .unterkopf .cb{margin-right:0; font-size:12px;}
 .plankarte{margin:6px 0 10px;}
 .plankarte-map{width:100%; max-width:718px; height:320px; margin:0 auto; border:1px solid #999; border-radius:4px;}
+/* Druckbild der Karte (ui/kartenbild.js): am Bildschirm unsichtbar, im
+   Druck und in gespeicherten Protokoll-Dateien statt der Karte. */
+.karte-druckbild{display:none;}
 .plankarte-hinweis{font-size:11px; color:#888; margin:4px 0 8px; font-style:italic;}
 /* Fußzeilen-Vorschau am Bildschirm: Datum | Auftrag | Seite. */
 .dok-fusszeile{

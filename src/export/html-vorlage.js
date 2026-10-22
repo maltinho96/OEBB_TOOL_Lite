@@ -10,12 +10,14 @@
 import grundlagenCss from '../styles/grundlagen.css?raw';
 import themesCss from '../styles/themes.css?raw';
 import druckCss from '../styles/druck.css?raw';
+import leafletCss from 'leaflet/dist/leaflet.css?raw';
 
 // firmaKlasse: 'firma-greens' | 'firma-ing'
 // titel: <title>-Text
 // bodyHtml: HTML des aktiven Protokoll-Reiters (bereits mit Werten gefüllt)
 // metaScriptTag: fertiges <script id="protokollMeta">…</script>-Tag
-export function htmlVorlage({ firmaKlasse, titel, bodyHtml, metaScriptTag }) {
+// fussCss: @page-Regel der Fußzeile (aus ui/fusszeile.js), fest eingebaut
+export function htmlVorlage({ firmaKlasse, titel, bodyHtml, metaScriptTag, fussCss }) {
   return `<!DOCTYPE html>
 <html lang="de" class="${firmaKlasse}">
 <head>
@@ -26,6 +28,10 @@ export function htmlVorlage({ firmaKlasse, titel, bodyHtml, metaScriptTag }) {
 ${grundlagenCss}
 ${themesCss}
 ${druckCss}
+${leafletCss}
+/* Gespeicherte Datei: Karten sind feste Bilder (ui/kartenbild.js). */
+@media screen{ .hat-druckbild > .karte-druckbild{display:block; width:100%; max-width:718px; margin:0 auto; border:1px solid #999; border-radius:4px;} }
+${fussCss || ''}
 </style>
 </head>
 <body>

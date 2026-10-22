@@ -29,6 +29,9 @@ export function osmEbene() {
   return L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '© OpenStreetMap-Mitwirkende',
+    // Kacheln mit CORS laden, damit ui/kartenbild.js sie für das
+    // Druckbild auf ein Canvas zeichnen darf (OSM erlaubt das).
+    crossOrigin: true,
   });
 }
 

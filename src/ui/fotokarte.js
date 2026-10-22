@@ -10,6 +10,9 @@
 // in ui/fotos.js). Welche Shapes gezeichnet werden, bestimmt das im
 // Protokoll gewählte Projekt (tab.dataset.projektId, ui/projektwahl.js).
 //
+// Gedruckt (und gespeichert) wird nicht die lebende Karte, sondern ein
+// Bild davon – siehe ui/kartenbild.js.
+//
 // karteAktualisieren(tab) nach JEDER Änderung aufrufen (Foto rein/raus,
 // Projekt gewählt, Reiter angezeigt) – es baut alles neu auf, dadurch
 // stimmen Karten und Nummern immer.
@@ -18,6 +21,7 @@ import L from 'leaflet';
 import { KARTE_START } from '../config/konstanten.js';
 import { osmEbene } from './karte.js';
 import { dbHolen } from '../core/zustand.js';
+import { druckbildAnmelden, druckbildPlanen } from './kartenbild.js';
 
 const GRUPPEN_ABSTAND_M = 50;   // Übersicht: ab hier neues Rechteck
 const MIN_KASTEN_M = 45;        // Übersicht: Mindest-Kantenlänge
@@ -86,7 +90,7 @@ function karteErzeugen(div) {
     scrollWheelZoom: false,
   }).setView([KARTE_START.lat, KARTE_START.lng], KARTE_START.zoom);
   karte.attributionControl.setPrefix('');
-  osmEbene().addTo(karte);
+  druckbildAnmelden(karte, osmEbene().addTo(karte));
   return karte;
 }
 
@@ -158,6 +162,7 @@ function uebersichtAktualisieren(tab) {
     e.karte.invalidateSize();
     if (ecken.length) e.karte.fitBounds(L.latLngBounds(ecken), { padding: [30, 30], maxZoom: 17 });
     else e.karte.setView([KARTE_START.lat, KARTE_START.lng], KARTE_START.zoom);
+    druckbildPlanen(e.karte);
   };
   ausschnitt();
   setTimeout(ausschnitt, 150); // falls der Reiter gerade erst sichtbar wurde
@@ -210,6 +215,7 @@ function blockKarteAktualisieren(block, flaechen, nummerVon) {
     e.karte.invalidateSize();
     if (punkte.length === 1) e.karte.setView(punkte[0], 18);
     else e.karte.fitBounds(L.latLngBounds(punkte), { padding: [40, 40], maxZoom: 18 });
+    druckbildPlanen(e.karte);
   };
   ausschnitt();
   setTimeout(ausschnitt, 150);

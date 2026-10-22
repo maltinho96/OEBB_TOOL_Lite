@@ -9,6 +9,8 @@ import { baueMeta, metaSerialisieren } from '../core/meta.js';
 import { htmlVorlage } from './html-vorlage.js';
 import { bildElementeEinbetten } from '../core/bilder.js';
 import { PROTOKOLL_TABS } from '../config/konstanten.js';
+import { druckbilderJetzt } from '../ui/kartenbild.js';
+import { fussStilText } from '../ui/fusszeile.js';
 
 // Aktuell sichtbarer Protokoll-Tab.
 function aktiverTab() {
@@ -97,7 +99,13 @@ export async function alsHtmlSpeichern() {
   }
 
   zustandSichern(tab);
-  await bildElementeEinbetten(tab);
+  // Gespeichert wird eine Kopie: die lebenden Karten bleiben unangetastet.
+  // Karten, für die ein Druckbild existiert, werden in der Kopie durch das
+  // Bild ersetzt (spart die vielen Kachel-Bilder und läuft ohne Leaflet).
+  druckbilderJetzt(tab);
+  const kopie = tab.cloneNode(true);
+  kopie.querySelectorAll('.hat-druckbild > .leaflet-container').forEach((k) => k.remove());
+  await bildElementeEinbetten(kopie);
   const meta = metaAusTab(tab);
   const metaScriptTag =
     '<script type="application/json" id="protokollMeta">' + metaSerialisieren(meta) + '</script>';
@@ -106,8 +114,9 @@ export async function alsHtmlSpeichern() {
   const inhalt = htmlVorlage({
     firmaKlasse,
     titel: meta.projekt || meta.typ,
-    bodyHtml: tab.outerHTML,
+    bodyHtml: kopie.outerHTML,
     metaScriptTag,
+    fussCss: fussStilText(),
   });
   const vorschlag = dateinameBauen(tab);
 

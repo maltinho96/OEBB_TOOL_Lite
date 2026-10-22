@@ -68,6 +68,13 @@ function druckStilSchreiben() {
     '} }';
 }
 
+// Aktuelle @page-Regel als Text – für gespeicherte Protokoll-Dateien, die
+// ohne die App laufen und die Fußzeile deshalb fest eingebaut brauchen.
+export function fussStilText() {
+  druckStilSchreiben();
+  return document.getElementById('druckFussStil').textContent;
+}
+
 function aktualisieren(tab) {
   if (tab) vorschauFuellen(tab);
   druckStilSchreiben();

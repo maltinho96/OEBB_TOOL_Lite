@@ -16,11 +16,13 @@
   .dok-fusszeile{display:none !important;}
   /* Graue Beispieltexte (placeholder) nie mitdrucken. */
   ::placeholder{color:transparent !important;}
-  .plankarte{page-break-inside:avoid; margin:4px 0 8px;}
-  /* Gleiche Pixelmaße wie am Bildschirm (718 x 320 px = 190 x 84,7 mm),
-     sonst verrutscht der Kartenausschnitt beim Drucken. */
+  .plankarte{page-break-inside:avoid; break-inside:avoid; margin:4px 0 8px;}
+  /* Karten werden als festes Bild gedruckt (ui/kartenbild.js) – das
+     sieht in jedem Browser gleich aus. Nur falls es (noch) kein Bild gibt,
+     wird die lebende Karte gedruckt. */
+  .hat-druckbild > .leaflet-container{display:none !important;}
+  .hat-druckbild > .karte-druckbild{display:block; width:190mm; max-width:100%; height:auto; margin:0 auto; border:1px solid #999;}
   .plankarte-map{width:190mm; max-width:100%; height:84.7mm; border:1px solid #999;}
-  .bereich-nummer{color:#1f6fd6 !important; background:none !important; border:none !important;}
   @page{size:A4; margin:12mm 10mm 16mm;}
   body{background:#fff; font-size:11px;}
   table.form td{padding:3px 6px;}
@@ -41,11 +43,18 @@
   .unterschrift-feld:empty::before, .vis-bild:empty::before, .abb-text:empty::before{content:none;}
   .zusammen{page-break-inside:avoid; break-inside:avoid;}
   .abb{page-break-inside:avoid; break-inside:avoid; border:none; background:none; padding:0; margin-bottom:8px;}
-  h2{page-break-after:avoid; break-after:avoid;}
-  .vis-zeile{page-break-inside:avoid;}
-  /* Karte über dem Block: 190 x 63 mm (3:1), gleiche Pixel wie am Bildschirm. */
+  /* Überschrift nie allein am Seitenende. break-after:avoid reicht nur in
+     Chrome; Firefox ignoriert es. Deshalb zusätzlich: Die Überschrift
+     reserviert unsichtbar Platz für den Anfang des folgenden Kastens
+     (::after mit Höhe X und Rand −X). Passt das nicht mehr auf die Seite,
+     rutscht die Überschrift mit auf die nächste – in jedem Browser. */
+  h2{page-break-after:avoid; break-after:avoid; page-break-inside:avoid; break-inside:avoid;}
+  h2::after{content:""; display:block; height:30mm; margin-bottom:-30mm;}
+  /* Vor den Piktogrammen: Platz für die erste (hohe) Bildzeile. */
+  h2:has(+ .visContainer)::after{height:95mm; margin-bottom:-95mm;}
+  .vis-zeile{page-break-inside:avoid; break-inside:avoid;}
+  .abb-karte{margin-bottom:6px;}
   .abb-karte-map{width:190mm; max-width:100%; height:63mm; border:1px solid #999;}
-  .foto-marker{background:#1f6fd6 !important; color:#fff !important;}
   .abb-bilder{display:flex; flex-wrap:wrap; gap:10px; justify-content:center;}
   /* Jede Abbildung (Mini-Karte + Fotos + Unterschrift) auf eine eigene
      Seite; die Fotos füllen den restlichen Platz. Nutzbare Seitenhöhe:
