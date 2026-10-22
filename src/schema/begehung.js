@@ -40,7 +40,6 @@ ${logo()}
 <h2 class="c-gruen">Baumschutz</h2>
 <table class="form" data-schutzblock data-schutzblock-gruppe="baumschutz">
   <tr class="bg-gruen"><td><span class="cb"><b>Begehung ohne Beanstandung:</b> <input type="checkbox" data-einklapp checked></span> <span class="einklapp-hinweis kein-druck"></span></td></tr>
-  <tr class="bg-gruen-h"><td class="label">Feinst- und Feinwurzelflächenverlust m²: <input type="text" style="width:90px"></td></tr>
 </table>
 <table class="form" data-schutzblock-anhang="baumschutz">
   <tr class="bg-gruen"><td><span class="cb"><b>Schutzabstände wurden eingehalten:</b> <input type="checkbox"></span></td></tr>

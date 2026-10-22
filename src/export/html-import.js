@@ -34,8 +34,12 @@ const TYP_ZU_TAB = {
 function felderUebernehmen(quelle, ziel) {
   // Ältere Begehungsprotokolle hatten im Baumschutz noch die Wurzel-Tabelle
   // (9 Textfelder). Sie gibt es nicht mehr – vorher entfernen, sonst
-  // verrutschen alle folgenden Textfelder um 9 Positionen.
+  // verrutschen alle folgenden Textfelder.
   quelle.querySelectorAll('.wurzeltab').forEach((t) => t.remove());
+  // Ebenso die frühere Zeile "Feinst- und Feinwurzelflächenverlust m²".
+  quelle.querySelectorAll('tr').forEach((tr) => {
+    if (/Feinwurzelflächenverlust/.test(tr.textContent)) tr.remove();
+  });
 
   // Einzeilige Eingabefelder: der gespeicherte Wert steht im value-Attribut
   // (so schreibt es zustandSichern beim Export).
