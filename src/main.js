@@ -14,7 +14,6 @@ import './styles/druck.css';
 // ---------------------------------------------------------------------
 //  Module
 // ---------------------------------------------------------------------
-import { FIRMEN } from './config/firmen.js';
 import { schemaRegistry } from './schema/index.js';
 
 import { formularInit } from './ui/formular.js';
@@ -53,7 +52,7 @@ function start() {
   stundenTabInit(app);
 
   fotosInit(app);
-  firmaInit(document.getElementById('firmenSelect'), FIRMEN);
+  firmaInit();
   einklappenInit(app);
   fusszeileInit();
   projektwahlInit();

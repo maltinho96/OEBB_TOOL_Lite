@@ -3,19 +3,11 @@
 // Wiederkehrende Muster (Textfeld, Checkbox-Zeile, Foto-Abschnitt) kannst
 // du spaeter nach Bedarf ergaenzen, ohne die Templates umzubauen.
 
-import { FIRMEN } from '../config/firmen.js';
-
-// Firmen-Logo. Die Bilder liegen NICHT im Repo, sondern im Grundordner
-// (logo-<firma-id>.svg/.png/.jpg, z. B. logo-ing.png) und werden von
-// ui/logo.js eingesetzt, sobald der Grundordner verbunden ist. So kann jede
-// Firma ihr eigenes Logo verwenden. Welches Logo sichtbar ist, steuert
-// themes.css über die firma-Klasse am <html>.
+// Firmen-Logo. Das Bild liegt NICHT im Repo, sondern im Grundordner
+// (Unterordner logos/, Dateiname steht in firmen.txt) und wird von
+// ui/firma.js eingesetzt, sobald der Grundordner verbunden ist.
 export function logo() {
-  return (
-    '<span class="logo">' +
-    FIRMEN.map((f) => '<img class="lg-' + f.id + '" alt="' + f.name + ' Logo">').join('') +
-    '</span>'
-  );
+  return '<span class="logo"><img alt="Logo"></span>';
 }
 
 // Standard-Fotodokumentationsblock (Container + Dropzone).

@@ -1,10 +1,4 @@
-/* Firmen-Themes: setzen --firma (Akzentfarbe) und --firma-name (Druckfuß).
-   Die Klasse (firma-greens / firma-ing) sitzt am <html>-Element und wird
-   in ui/firma.js umgeschaltet. */
+/* Firmenfarbe: --firma (Akzentfarbe). Standardwert hier; die gewählte
+   Firma überschreibt ihn am <html> (ui/firma.js, Farbe aus firmen.txt). */
 
-html.firma-greens{ --firma:#12b296; --firma-name:"NET-TEC GREENgineers GmbH"; }
-html.firma-ing{    --firma:#1f3864; --firma-name:"NET-TEC Ingenieurgesellschaft mbH"; }
-
-/* Logo je Firma ein-/ausblenden (Bilder aus dem Grundordner, ui/logo.js) */
-html.firma-greens .logo .lg-greens{display:block;}
-html.firma-ing    .logo .lg-ing{display:block;}
+:root{ --firma:#1f3864; }

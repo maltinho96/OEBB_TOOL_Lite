@@ -12,18 +12,18 @@ import themesCss from '../styles/themes.css?raw';
 import druckCss from '../styles/druck.css?raw';
 import leafletCss from 'leaflet/dist/leaflet.css?raw';
 
-// firmaKlasse: 'firma-greens' | 'firma-ing'
+// firmenFarbe: Akzentfarbe der gewählten Firma (z. B. #1f3864)
 // titel: <title>-Text
 // bodyHtml: HTML des aktiven Protokoll-Reiters (bereits mit Werten gefüllt)
 // metaScriptTag: fertiges <script id="protokollMeta">…</script>-Tag
 // fussCss: @page-Regel der Fußzeile (aus ui/fusszeile.js), fest eingebaut
-export function htmlVorlage({ firmaKlasse, titel, bodyHtml, metaScriptTag, fussCss }) {
+export function htmlVorlage({ firmenFarbe, titel, bodyHtml, metaScriptTag, fussCss }) {
   return `<!DOCTYPE html>
-<html lang="de" class="${firmaKlasse}">
+<html lang="de" style="--firma:${firmenFarbe}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${titel}</title>
+<title>${String(titel).replace(/[<>&]/g, '')}</title>
 <style>
 ${grundlagenCss}
 ${themesCss}

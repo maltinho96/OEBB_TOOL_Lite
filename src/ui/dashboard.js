@@ -9,7 +9,7 @@ import { grundordnerHolen, waehleGrundordner, gespeicherterGrundordner } from '.
 import { dbLesen } from '../core/db.js';
 import { dbSetzen, dbHolen } from '../core/zustand.js';
 import { logo } from '../schema/felder.js';
-import { logosLaden } from './logo.js';
+import { firmenLaden } from './firma.js';
 import { teamAnzeigen, teamInit } from './team.js';
 import { shapefilesInit } from './shapefiles.js';
 import {
@@ -43,9 +43,10 @@ danach genügt dort „Scannen“.</p>
 <p style="font-size:11.5px; color:#777;">Ordner-Verknüpfungen merkt sich der Browser pro Person (Chromium/Chrome/Edge);
 Kolleginnen verknüpfen die Ordner bei der ersten Nutzung einmal selbst.
 Bei gleichzeitigem Schreiben gewinnt die zuletzt speichernde Person.</p>
-<p style="font-size:11.5px; color:#777;">Firmenlogos liegen im Grundordner: <code>logo-ing.svg</code> bzw.
-<code>logo-greens.svg</code> (auch .png oder .jpg). Eigene Logo-Datei dort ablegen – fertig.
-<span id="logoStatus" class="kein-druck" style="display:block; margin-top:2px;"></span></p>
+<p style="font-size:11.5px; color:#777;">Firmen stehen im Grundordner in <code>firmen.txt</code>
+(je Zeile: <code>Firmenname | Logo-Datei | Farbe</code>), die Logos im Unterordner <code>logos</code>.
+Fehlt die Datei, legt die App sie beim Verbinden mit den Standard-Firmen an.
+<span id="logoStatus" class="kein-druck" style="display:block; margin-top:2px; white-space:pre-line;"></span></p>
 
 <h3 style="margin:16px 0 4px; font-size:13px; color:#555;">Team (für Verantwortliche in Projekten)</h3>
 <p class="kein-druck" style="display:flex; gap:6px; align-items:center;">
@@ -176,13 +177,9 @@ async function uebersichtAktualisieren(interaktiv) {
   }
   if (bereich) bereich.style.display = '';
   if (status) status.textContent = '✅ verknüpft: ' + ordner.name;
-  const logos = await logosLaden(ordner);
+  const firmenStatus = await firmenLaden(ordner);
   const logoStatus = document.getElementById('logoStatus');
-  if (logoStatus) {
-    logoStatus.textContent = logos.length
-      ? 'Firmenlogos gefunden: ' + logos.join(', ')
-      : 'Keine Firmenlogos im Grundordner gefunden – siehe Hinweis oben.';
-  }
+  if (logoStatus) logoStatus.textContent = firmenStatus.join('\n');
   if (knopf) knopf.textContent = '📂 Anderen Grundordner wählen';
   const db = await dbLesen(ordner);
   dbSetzen(db);

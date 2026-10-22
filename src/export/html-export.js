@@ -11,6 +11,7 @@ import { bildElementeEinbetten } from '../core/bilder.js';
 import { PROTOKOLL_TABS } from '../config/konstanten.js';
 import { druckbilderJetzt } from '../ui/kartenbild.js';
 import { fussStilText } from '../ui/fusszeile.js';
+import { aktuelleFirma } from '../ui/firma.js';
 
 // Aktuell sichtbarer Protokoll-Tab.
 function aktiverTab() {
@@ -80,9 +81,7 @@ function metaAusTab(tab) {
   }
   return baueMeta({
     typ: tab.id.replace('tab-', ''),
-    firma: document.documentElement.classList.contains('firma-ing')
-      ? 'NET-TEC Ingenieurgesellschaft mbH'
-      : 'NET-TEC GREENgineers GmbH',
+    firma: aktuelleFirma().name,
     nummer: feld('nummer'),
     projekt: feld('projekt'),
     projektnummer: feld('projektnummer'),
@@ -109,10 +108,9 @@ export async function alsHtmlSpeichern() {
   const meta = metaAusTab(tab);
   const metaScriptTag =
     '<script type="application/json" id="protokollMeta">' + metaSerialisieren(meta) + '</script>';
-  const firmaKlasse = document.documentElement.classList.contains('firma-ing') ? 'firma-ing' : 'firma-greens';
 
   const inhalt = htmlVorlage({
-    firmaKlasse,
+    firmenFarbe: aktuelleFirma().farbe,
     titel: meta.projekt || meta.typ,
     bodyHtml: kopie.outerHTML,
     metaScriptTag,

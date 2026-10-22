@@ -21,7 +21,7 @@ body{
   min-height:70vh;
 }
 .logo{float:right; margin:-6px 0 8px 12px;}
-.logo img{width:180px; height:auto; display:none;}
+.logo img{width:180px; height:auto; display:block;}
 .logo img:not([src]){display:none !important;} /* Logo (noch) nicht geladen */
 h1{font-size:21px; margin:0 0 16px; color:var(--firma);}
 h1 .nr{display:inline-block; width:56px;}
