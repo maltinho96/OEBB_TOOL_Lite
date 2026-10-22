@@ -1,0 +1,29 @@
+// Codespaces-Einstellungen für das ÖBB-Tool.
+// Wichtigster Punkt: Bei jedem Öffnen holt sich der Codespace den neuesten
+// Stand aus GitHub (git pull) und installiert geänderte Pakete nach.
+{
+  "name": "OEBB_TOOL_Lite",
+  // Dasselbe Standard-Image, das Codespaces ohnehin nimmt (Node ist drin).
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+
+  // Jedes Mal, wenn du den Codespace öffnest:
+  //  1. neuesten Stand holen – nur "vorspulen" (--ff-only): Hast du selbst
+  //     ungespeicherte/ungepushte Änderungen, wird NICHTS überschrieben,
+  //     es kommt nur ein Hinweis.
+  //  2. Pakete abgleichen (schnell, wenn sich nichts geändert hat).
+  "postAttachCommand": "git pull --ff-only || echo '⚠ Automatisches Aktualisieren übersprungen – bitte Änderungen erst committen/pushen oder git pull --no-rebase --no-edit ausführen.'; npm install --no-audit --no-fund",
+
+  // Vorschau-Port der App (npm run dev)
+  "forwardPorts": [5173],
+  "portsAttributes": { "5173": { "label": "ÖBB-Tool (Vorschau)" } },
+
+  "customizations": {
+    "vscode": {
+      "settings": {
+        // Zeigt auch während der Arbeit regelmäßig an, ob es Neues auf GitHub gibt.
+        "git.autofetch": true,
+        "git.autofetchPeriod": 120
+      }
+    }
+  }
+}
