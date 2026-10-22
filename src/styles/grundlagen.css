@@ -263,3 +263,12 @@ select.az-wahl{display:block; margin-top:3px; font:inherit; font-size:11.5px; pa
 .kb-leer-hinweis{display:none; font-size:11px; font-weight:400; color:#999; font-style:italic;}
 .kb-thema.leer .kb-leer-hinweis{display:inline;}
 @media print{ .kb-thema.leer{display:none !important;} }
+/* Support-Reiter */
+.support-form{max-width:760px;}
+.support-form input[type=text], .support-form textarea, .support-form select{width:100%; box-sizing:border-box; font:inherit;}
+.support-form .cb{margin-right:18px;}
+.support-liste td{font-size:12px;}
+.support-liste .sp-text{white-space:pre-wrap; min-width:220px;}
+.support-liste .sp-browser{font-size:10.5px; color:#999; margin-top:3px;}
+.support-liste tr.sp-erledigt td{color:#888;}
+.support-liste select{font:inherit; font-size:11.5px; padding:2px;}

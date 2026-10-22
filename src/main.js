@@ -32,6 +32,7 @@ import { bausteineInit, bausteineBeiAnzeige } from './ui/bausteine.js';
 import { baubegleiterVorbelegen } from './ui/team.js';
 import { kartenbildInit } from './ui/kartenbild.js';
 import { mailInit } from './ui/mail.js';
+import { supportTabInit, supportBeiAnzeige } from './ui/support.js';
 
 import { htmlExportInit, druckTitelInit } from './export/html-export.js';
 import { htmlImportInit } from './export/html-import.js';
@@ -51,6 +52,7 @@ function start() {
   uebersichtTabInit(app);
   karteTabInit(app);
   stundenTabInit(app);
+  supportTabInit(app);
 
   fotosInit(app);
   firmaInit();
@@ -69,6 +71,7 @@ function start() {
   tabWechselHook(projektwahlBeiAnzeige);
   tabWechselHook(fusszeileBeiAnzeige);
   tabWechselHook(bausteineBeiAnzeige);
+  tabWechselHook(supportBeiAnzeige);
 
   tabsInit();
   werkzeugeInit();
