@@ -47,7 +47,7 @@ function neuZeichnenUndAnzeigen() {
   }
 }
 
-export async function flaechenHinzufuegen(files) {
+async function flaechenHinzufuegen(files) {
   if (!files || !files.length) return;
   try {
     const neue = await shapefilesEinlesen(files);
@@ -58,7 +58,7 @@ export async function flaechenHinzufuegen(files) {
   }
 }
 
-export function flaechenEntfernen(idx) {
+function flaechenEntfernen(idx) {
   flaechen.splice(idx, 1);
   neuZeichnenUndAnzeigen();
 }

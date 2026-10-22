@@ -57,7 +57,7 @@ export function teamAnzeigen(vorbelegtHaupt, vorbelegtZweit) {
   }
 }
 
-export async function mitarbeiterHinzufuegen() {
+async function mitarbeiterHinzufuegen() {
   const feld = document.getElementById('teamNeuerName');
   const name = feld.value.trim();
   if (!name) return;
@@ -72,7 +72,7 @@ export async function mitarbeiterHinzufuegen() {
   teamAnzeigen();
 }
 
-export async function mitarbeiterEntfernen(idx) {
+async function mitarbeiterEntfernen(idx) {
   const ordner = await grundordnerHolen(true);
   if (!ordner) return;
   const db = await dbAendern(ordner, (db) => {

@@ -12,3 +12,12 @@ dist/
 .idea/
 .DS_Store
 *.local
+
+# Echte Arbeitsdaten nie ins (öffentliche) Repo – falls der Grundordner
+# versehentlich im Projektordner liegt.
+oebb_datenbank.json
+oebb_datenbank.lock
+oebb_*.json
+backups/
+firmen.txt
+logos/

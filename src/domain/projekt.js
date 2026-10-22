@@ -87,4 +87,6 @@ export function verteilerListe(p) {
   return p && Array.isArray(p.verteiler) ? p.verteiler : [];
 }
 
-export const EMAIL_MUSTER = /^[^\s@;,]+@[^\s@;,]+\.[^\s@;,]+$/;
+// Bewusst streng: keine Zeichen wie ? & = , ; – die könnten in einem
+// mailto:-Link zusätzliche Empfänger oder Felder einschleusen.
+export const EMAIL_MUSTER = /^[A-Za-z0-9._%+'-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;

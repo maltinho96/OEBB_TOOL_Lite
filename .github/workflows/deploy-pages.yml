@@ -33,7 +33,7 @@ jobs:
           node-version: 22
 
       - name: Abhängigkeiten installieren
-        run: npm ci --legacy-peer-deps
+        run: npm ci
 
       - name: Build erzeugen
         run: npm run build

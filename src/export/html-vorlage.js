@@ -6,6 +6,11 @@
 // ist aber funktional dasselbe – eine Datei, die man doppelklicken und
 // offline ansehen kann, inklusive des eingebetteten Metadaten-Scripts
 // für den späteren Scan durch die App.
+//
+// Sicherheit: Die Datei darf keinerlei Skripte ausführen (CSP default-src
+// 'none'). Selbst wenn jemand Schadcode in ein Feld schreibt, läuft er beim
+// Öffnen der Datei nicht. Der Metadaten-Block ist reines JSON und wird nur
+// gelesen, nie ausgeführt.
 
 import grundlagenCss from '../styles/grundlagen.css?raw';
 import themesCss from '../styles/themes.css?raw';
@@ -23,6 +28,7 @@ export function htmlVorlage({ firmenFarbe, titel, bodyHtml, metaScriptTag, fussC
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: https://tile.openstreetmap.org; style-src 'unsafe-inline'; font-src data:">
 <title>${String(titel).replace(/[<>&]/g, '')}</title>
 <style>
 ${grundlagenCss}

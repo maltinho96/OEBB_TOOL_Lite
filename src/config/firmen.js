@@ -16,7 +16,7 @@
 // Die erste Firma ist beim Start ausgewählt. Zeilen mit # sind Kommentare.
 // Gibt es keine firmen.txt, gelten die STANDARD_FIRMEN unten.
 
-export const STANDARD_FARBE = '#1f3864';
+const STANDARD_FARBE = '#1f3864';
 
 export const STANDARD_FIRMEN = [
   { name: 'NET-TEC Ingenieurgesellschaft mbH', logo: 'logo-ing.svg', farbe: '#1f3864' },

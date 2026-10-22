@@ -4,6 +4,7 @@
 // Originalgetreu portiert.
 
 import { esc, statusText } from '../core/util.js';
+import { TYP_NAMEN } from '../config/konstanten.js';
 import { grundordnerHolen } from '../core/storage/index.js';
 import { dbLesen, dbAendern } from '../core/db.js';
 import { dbSetzen, dbHolen } from '../core/zustand.js';
@@ -95,7 +96,7 @@ async function stundenTabAnzeigen(interaktiv) {
   sel.innerHTML = ids
     .map((pid) => {
       const p = db.projekte[pid];
-      return '<option value="' + pid + '">' + esc(p.name || p.projektnummer || pid) + '</option>';
+      return '<option value="' + esc(pid) + '">' + esc(p.name || p.projektnummer || pid) + '</option>';
     })
     .join('');
   if (vorher && db.projekte[vorher]) sel.value = vorher;
@@ -145,7 +146,6 @@ function stTabRendern() {
     return;
   }
   const p = db.projekte[pid];
-  const typNamen = { protokoll: 'Protokoll', vorbegehung: 'Vorbegehung', belehrung: 'Belehrung (altes Format)', 'belehrung-karel': 'Belehrung' };
   const dateien = Object.keys(p.eintraege)
     .map((k) => { const e = p.eintraege[k]; e.datei = k; return e; })
     .sort((a, b) => (a.datum || '').localeCompare(b.datum || '') || a.datei.localeCompare(b.datei));
@@ -166,7 +166,7 @@ function stTabRendern() {
     const su = stundenSumme(e);
     summe += su;
     html += '<tr class="bg-blau-h"><td colspan="3" style="font-weight:700">' +
-      '<span class="st-status">' + statusIcon(e) + '</span> ' + (typNamen[e.typ] || esc(e.typ)) +
+      '<span class="st-status">' + statusIcon(e) + '</span> ' + (TYP_NAMEN[e.typ] || esc(e.typ)) +
       (e.nummer ? ' Nr. ' + esc(e.nummer) : '') + (dat ? ' · Begehung am ' + dat : '') +
       ' <span style="font-weight:400;color:#666">(' + esc(e.datei) + ')</span>' +
       '</td>' +
@@ -254,7 +254,7 @@ function exProjekteFuellen() {
   sel.innerHTML = ids
     .map((pid) => {
       const p = db.projekte[pid];
-      return '<option value="' + pid + '">' + esc(p.name || p.projektnummer || pid) + '</option>';
+      return '<option value="' + esc(pid) + '">' + esc(p.name || p.projektnummer || pid) + '</option>';
     })
     .join('');
   if (vorher && db.projekte[vorher]) sel.value = vorher;
@@ -267,7 +267,7 @@ export function exMonateFuellen() {
   const db = dbHolen();
   if (!db || !db.projekte[pid]) { sel.innerHTML = ''; return; }
   const monate = Object.keys(nachMonat(projektStundenzeilen(db.projekte[pid]))).sort();
-  sel.innerHTML = monate.map((m) => '<option value="' + m + '">' + monatsName(m) + '</option>').join('') +
+  sel.innerHTML = monate.map((m) => '<option value="' + esc(m) + '">' + esc(monatsName(m)) + '</option>').join('') +
     (monate.length > 1 ? '<option value="alle">Alle Monate</option>' : '');
   if (monate.length) sel.value = monate[monate.length - 1];
   exVorschau();
@@ -290,14 +290,13 @@ export function exVorschau() {
 }
 
 // Baut den Druck-/Vorschau-HTML-Block eines Stundenzettels (ein Monat).
-// Wird auch vom PDF-Export (export/xlsx-export.js, Stufe 5) wiederverwendet.
-export function zettelBlock(p, einst, mkey, mz) {
+function zettelBlock(p, einst, mkey, mz) {
   if (!mz.length) return '';
   const summe = mz.reduce((a, z) => a + z.std, 0);
   let html = '<div class="sz-block">' +
     '<div class="sz-kopf">' + esc(einst.adresse1 || '') + '<br>' + esc(einst.adresse2 || '') +
     (einst.kundennr ? '<br>Kundennummer: ' + esc(einst.kundennr) : '') + '</div>' +
-    '<div class="sz-titel">Stundennachweis – ' + esc(p.name || '') + ' – ' + monatsName(mkey) + '</div>' +
+    '<div class="sz-titel">Stundennachweis – ' + esc(p.name || '') + ' – ' + esc(monatsName(mkey)) + '</div>' +
     '<div class="sz-kopf">' +
     (einst.leistungsnr ? 'Leistungsnummer: ' + esc(einst.leistungsnr) + ' &nbsp;·&nbsp; ' : '') +
     (einst.lfdnr ? 'Lfd. Nr. (Stundenverrechnungssatz Ingenieurkräfte): ' + esc(einst.lfdnr) : '') + '</div>' +
@@ -310,7 +309,7 @@ export function zettelBlock(p, einst, mkey, mz) {
 
   mz.forEach((z, i) => {
     const d = z.datum ? z.datum.split('-').reverse().join('.') : '';
-    const rest = '<td class="mitte">' + z.std + '</td><td>' + d + '</td><td>' + esc(z.beschreibung) + '</td>';
+    const rest = '<td class="mitte">' + z.std + '</td><td>' + esc(d) + '</td><td>' + esc(z.beschreibung) + '</td>';
     if (i === 0) {
       html += '<tr><td class="mitte" rowspan="' + mz.length + '">1</td>' +
         '<td rowspan="' + mz.length + '">' + esc(smNummer(p)) + '</td>' +

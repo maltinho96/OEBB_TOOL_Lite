@@ -5,15 +5,11 @@
 // Anhänge kann mailto: nicht mitgeben – das PDF legt man selbst dazu.
 
 import { dbHolen } from '../core/zustand.js';
+import { feldWert } from '../core/util.js';
 import { aktuellerNutzer } from '../core/nutzer.js';
 import { verteilerListe, EMAIL_MUSTER } from '../domain/projekt.js';
 import { mailBetreff, mailText } from '../domain/mailtext.js';
 import { aktuelleFirma } from './firma.js';
-
-function feld(tab, name) {
-  const el = tab.querySelector('[data-feld="' + name + '"]');
-  return el ? (el.value || '').trim() : '';
-}
 
 // Bereiche "mit Beanstandung" (Haken "ohne Beanstandung" entfernt), bei
 // Arten- und Habitatschutz mit den betroffenen Unterpunkten.
@@ -42,7 +38,7 @@ function projektInfo(tab, name) {
 
 function empfaenger(tab, typ) {
   if (typ === 'belehrung-karel') {
-    const m = feld(tab, 'bauleitung-email');
+    const m = feldWert(tab, 'bauleitung-email');
     return { adressen: EMAIL_MUSTER.test(m) ? [m] : [], fehlt: 'Keine gültige E-Mail der Bauleitung im Protokoll eingetragen.' };
   }
   const db = dbHolen();
@@ -57,15 +53,15 @@ function mailVorbereiten(tab) {
   const typ = tab.id.replace('tab-', '');
   const daten = {
     typ,
-    nummer: feld(tab, 'nummer'),
-    datum: feld(tab, 'datum'),
-    auftraggeber: feld(tab, 'auftraggeber-fuss'),
-    ort: feld(tab, 'ort'),
-    landkreis: feld(tab, 'landkreis') || projektInfo(tab, 'landkreis'),
-    projekt: feld(tab, 'projekt').split('\n')[0].trim(),
-    aktenzeichen: feld(tab, 'aktenzeichen').split(/\s*\n\s*/).filter(Boolean).join(', '),
+    nummer: feldWert(tab, 'nummer'),
+    datum: feldWert(tab, 'datum'),
+    auftraggeber: feldWert(tab, 'auftraggeber-fuss'),
+    ort: feldWert(tab, 'ort'),
+    landkreis: feldWert(tab, 'landkreis') || projektInfo(tab, 'landkreis'),
+    projekt: feldWert(tab, 'projekt').split('\n')[0].trim(),
+    aktenzeichen: feldWert(tab, 'aktenzeichen').split(/\s*\n\s*/).filter(Boolean).join(', '),
     abweichungen: abweichungen(tab),
-    absender: feld(tab, 'baubegleiter') || aktuellerNutzer(),
+    absender: feldWert(tab, 'baubegleiter') || aktuellerNutzer(),
     firma: aktuelleFirma().name,
   };
   const { adressen, fehlt } = empfaenger(tab, typ);

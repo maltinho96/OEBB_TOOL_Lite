@@ -8,10 +8,7 @@
 //   absender, firma,
 // }
 
-function datumDeutsch(iso) {
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');
-  return m ? m[3] + '.' + m[2] + '.' + m[1] : '';
-}
+import { datumDeutsch } from '../core/util.js';
 
 function nummerText(nr) {
   const n = String(nr || '').trim();

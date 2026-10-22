@@ -1,64 +1,70 @@
-oebb-app/
-├── .gitignore                   # node_modules/, dist/
-├── .nvmrc
-├── package.json                 # deps: leaflet, xlsx  |  scripts: dev, build
-├── vite.config.js
-├── index.html                   # nur Mount-Gerüst
+oebb-app/   (Stand: Oktober 2026)
+├── .github/workflows/deploy-pages.yml   # Push auf beta-neu -> Build -> GitHub Pages
+├── .gitignore                   # node_modules, dist, echte Arbeitsdaten (Datenbank, logos, firmen.txt …)
+├── .nvmrc                       # Node 22
+├── package.json                 # leaflet, exifr, shpjs, xlsx-js-style | dev, build, preview
+├── vite.config.js               # Pfad für GitHub Pages, Node-Polyfills für shpjs, CSP im Build
+├── index.html                   # Werkzeugleiste + Mount-Punkt
 │
 ├── public/assets/
-│   ├── logo-greens.svg
-│   └── logo-ing.svg
+│   ├── belehrung_bilder/        # Piktogramme des Belehrungsprotokolls
+│   └── logo-*.svg               # Vorlagen zum Herunterladen (die App nimmt die Logos aus dem Grundordner)
 │
 └── src/
     ├── main.js                  # importiert alles, verdrahtet die App
     │
-    ├── config/
-    │   ├── firmen.js
-    │   └── konstanten.js
+    ├── config/                  # reine Daten
+    │   ├── firmen.js            # Standard-Firmen + Aufbau von firmen.txt
+    │   ├── konstanten.js        # Bildgrößen, Reiter, Typnamen …
+    │   └── textbausteine.js     # Knöpfe mit Mustertexten im Belehrungsprotokoll
     │
-    ├── core/
-    │   ├── storage/
-    │   │   ├── index.js         # Fassade
-    │   │   └── fsa.js           # Browser-Backend (später kommt tauri.js daneben)
-    │   ├── db.js
-    │   ├── meta.js
-    │   └── bilder.js
+    ├── core/                    # Technik ohne Fachlogik
+    │   ├── storage/index.js     # Speicher-Fassade (nur hierüber importieren)
+    │   ├── storage/fsa.js       # Ordnerzugriff im Browser (File System Access API)
+    │   ├── db.js                # oebb_datenbank.json lesen/schreiben, Sperre, Monatssicherung
+    │   ├── zustand.js           # zuletzt gelesene Datenbank
+    │   ├── meta.js              # Metadaten-Block in gespeicherten Protokollen
+    │   ├── bilder.js            # Bilder verkleinern / einbetten
+    │   ├── exif.js              # GPS aus Fotos
+    │   ├── shapefile.js         # Shapefiles -> GeoJSON
+    │   ├── nutzer.js            # "Ich bin" (pro Browser)
+    │   └── util.js              # esc, datumDeutsch, feldWert, aktiverTab, statusText
     │
-    ├── domain/
-    │   ├── protokoll.js
-    │   ├── projekt.js
-    │   └── stunden.js
+    ├── domain/                  # Fachlogik ohne Oberfläche
+    │   ├── projekt.js           # Projekte, Scannen, Aktenzeichen, Verteiler
+    │   ├── stunden.js           # Stundenrechnung
+    │   └── mailtext.js          # Betreff/Text der Begleit-Mail
     │
-    ├── schema/
-    │   ├── index.js
-    │   ├── felder.js
+    ├── schema/                  # HTML der Protokolle
+    │   ├── index.js             # Liste aller Protokolltypen
+    │   ├── felder.js            # gemeinsame Bausteine (Logo, Fotodoku, Plan, Mail-Knopf, Fußzeile)
     │   ├── begehung.js
     │   ├── vorbegehung.js
-    │   └── belehrung.js
+    │   ├── belehrung-karel.js   # das Belehrungsprotokoll
+    │   └── visualisierung.js    # Piktogramm-Zeilen
     │
-    ├── content/
-    │   ├── rechtsgrundlagen.json
-    │   ├── festlegungen.json
-    │   └── textbausteine.json
-    │
-    ├── ui/
-    │   ├── tabs.js
-    │   ├── firma.js
-    │   ├── formular.js
-    │   ├── fotos.js
-    │   ├── karte.js
-    │   ├── projektformular.js
+    ├── ui/                      # Oberfläche
+    │   ├── tabs.js, formular.js, werkzeuge.js
+    │   ├── dashboard.js         # Reiter Übersicht + Projekte
+    │   ├── projektformular.js, projektlisten.js, shapefiles.js, team.js
+    │   ├── projektwahl.js       # Projekt-/Aktenzeichen-Auswahl im Protokoll
+    │   ├── firma.js             # firmen.txt, Logos, Farbe
+    │   ├── fotos.js, markieren.js, fotokarte.js, kartenbild.js, karte.js
+    │   ├── einklappen.js, bausteine.js, fusszeile.js, mail.js
     │   ├── stundentabelle.js
-    │   └── dashboard.js
+    │   └── support.js
     │
     ├── export/
-    │   ├── html-export.js
-    │   ├── html-vorlage.js
-    │   └── xlsx-export.js
+    │   ├── html-export.js       # Speichern unter… / PDF-Dateiname
+    │   ├── html-vorlage.js      # eigenständige Protokolldatei (ohne Skripte)
+    │   ├── html-import.js       # Protokoll laden (Korrigieren / Folgeprotokoll)
+    │   └── xlsx-export.js       # Stundennachweis
     │
     └── styles/
-        ├── grundlagen.css
-        ├── themes.css
-        ├── formular.css
-        ├── karte.css
-        └── druck.css
+        ├── grundlagen.css, themes.css, karte.css, druck.css
+
+Grundordner (bei euch, NICHT im Repo):
+├── firmen.txt                   # Firmenname | Logo-Datei | Farbe
+├── logos/                       # Logo-Dateien
+├── oebb_datenbank.json          # Projekte, Team, Stunden, Support-Meldungen
+└── backups/                     # eine Sicherung pro Monat

@@ -50,7 +50,7 @@ export function tabZeigen(id) {
 }
 
 // Springt zum zuletzt aktiven Protokoll-Reiter (Knopf "📄 Protokolle").
-export function protokolleZeigen() {
+function protokolleZeigen() {
   tabZeigen(letzterProtokollTab);
 }
 

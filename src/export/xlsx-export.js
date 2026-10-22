@@ -5,7 +5,7 @@
 // Original eingebettete Kopie derselben Bibliothek (kommt jetzt aus npm).
 
 import * as XLSX from 'xlsx-js-style';
-import { statusText } from '../core/util.js';
+import { esc, statusText } from '../core/util.js';
 import { grundordnerHolen } from '../core/storage/index.js';
 import { dbLesen } from '../core/db.js';
 import { dbSetzen, dbHolen } from '../core/zustand.js';
@@ -154,7 +154,7 @@ function monatDialog(p) {
   const el = monatDialogElement();
   const sel = document.getElementById('monatDialogSelect');
   sel.innerHTML = '<option value="alle">Alle Monate</option>' +
-    monate.map((m) => `<option value="${m}">${monatsName(m)}</option>`).join('');
+    monate.map((m) => `<option value="${esc(m)}">${esc(monatsName(m))}</option>`).join('');
   sel.value = monate[monate.length - 1];
   el.style.display = 'flex';
   return new Promise((res) => { monatDialogAufloeser = res; });

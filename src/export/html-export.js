@@ -12,11 +12,7 @@ import { PROTOKOLL_TABS } from '../config/konstanten.js';
 import { druckbilderJetzt } from '../ui/kartenbild.js';
 import { fussStilText } from '../ui/fusszeile.js';
 import { aktuelleFirma } from '../ui/firma.js';
-
-// Aktuell sichtbarer Protokoll-Tab.
-function aktiverTab() {
-  return document.querySelector('.tab.aktiv');
-}
+import { feldWert, aktiverTab } from '../core/util.js';
 
 // Live-Werte (Inputs/Textareas/Checkboxen/Selects) als Attribute im DOM
 // festschreiben, damit sie beim outerHTML-Export erhalten bleiben.
@@ -44,10 +40,7 @@ function zustandSichern(scope) {
 // Datum = heutiger Tag (Tag der Erstellung), NN = Protokollnummer, Ort aus
 // dem Protokoll; Leerzeichen werden zu Unterstrichen.
 function dateinameBauen(tab) {
-  function feld(name) {
-    const el = tab.querySelector('[data-feld=' + name + ']');
-    return el ? (el.value || '').trim() : '';
-  }
+  const feld = (name) => feldWert(tab, name);
   function sauber(text) {
     return text.replace(/[\\/:*?"<>|]+/g, '').trim().replace(/\s+/g, '_');
   }
@@ -74,10 +67,7 @@ function dateinameBauen(tab) {
 
 // Meta-Objekt aus den Formularfeldern des aktiven Tabs bauen.
 function metaAusTab(tab) {
-  function feld(name) {
-    const el = tab.querySelector('[data-feld=' + name + ']');
-    return el ? (el.value || '').trim() : '';
-  }
+  const feld = (name) => feldWert(tab, name);
   return baueMeta({
     typ: tab.id.replace('tab-', ''),
     firma: aktuelleFirma().name,
@@ -89,7 +79,7 @@ function metaAusTab(tab) {
   });
 }
 
-export async function alsHtmlSpeichern() {
+async function alsHtmlSpeichern() {
   const tab = aktiverTab();
   if (!tab || !PROTOKOLL_TABS.includes(tab.id)) {
     alert('Bitte zuerst einen Protokoll-Reiter öffnen (Begehung/Vorbegehung/Belehrung).');
@@ -157,7 +147,7 @@ export function htmlExportInit() {
 export function druckTitelInit() {
   let vorher = null;
   window.addEventListener('beforeprint', () => {
-    const tab = document.querySelector('.tab.aktiv');
+    const tab = aktiverTab();
     if (!tab || !PROTOKOLL_TABS.includes(tab.id)) return;
     vorher = document.title;
     document.title = dateinameBauen(tab).replace(/\.html$/, '');

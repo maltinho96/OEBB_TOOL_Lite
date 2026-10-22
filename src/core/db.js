@@ -63,7 +63,7 @@ async function lockFreigeben(ordner) {
 }
 
 // Rohtext -> geparste, migrierte DB-Struktur (immer mit .projekte).
-export function dbAusText(text) {
+function dbAusText(text) {
   let db = null;
   try { db = JSON.parse(text); } catch { db = null; }
   if (!db) db = {};
@@ -100,7 +100,7 @@ export async function dbLesen(ordner) {
 }
 
 // DB in den Grundordner schreiben (eingerueckt, wie im Original).
-export async function dbSchreiben(ordner, db) {
+async function dbSchreiben(ordner, db) {
   await schreibeDbText(ordner, JSON.stringify(db, null, 1));
 }
 

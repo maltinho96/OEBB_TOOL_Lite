@@ -40,4 +40,12 @@ export const MONATE = [
 // Alle Protokoll-Reiter (ids aus schema/*.js). Zentral hier, damit Reiter-
 // Umschaltung, Projekt-Auswahl und Fußzeile dieselbe Liste nutzen – ein
 // neuer Protokolltyp muss nur hier und in schema/index.js eingetragen werden.
+// Anzeigenamen der Protokolltypen (aus den Metadaten gespeicherter Dateien).
+export const TYP_NAMEN = {
+  protokoll: 'Protokoll',
+  vorbegehung: 'Vorbegehung',
+  'belehrung-karel': 'Belehrung',
+  belehrung: 'Belehrung (altes Format)',
+};
+
 export const PROTOKOLL_TABS = ['tab-protokoll', 'tab-vorbegehung', 'tab-belehrung-karel'];

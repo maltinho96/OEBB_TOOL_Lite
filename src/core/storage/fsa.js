@@ -38,7 +38,7 @@ let grundOrdner = null;
 const projektOrdnerCache = {};
 
 // ---------- Verfuegbarkeit / Rechte ----------
-export function fsaVerfuegbar() {
+function fsaVerfuegbar() {
   if (window.showDirectoryPicker) return true;
   alert('Dieser Browser unterstuetzt die Ordner-Freigabe (File System Access API) nicht.\nBitte Chromium, Chrome oder Edge verwenden.');
   return false;

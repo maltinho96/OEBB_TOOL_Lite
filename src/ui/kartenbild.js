@@ -13,6 +13,8 @@
 // gespeicherten Datei) erscheint stattdessen das Bild – gesteuert über die
 // Klasse .hat-druckbild an der Hülle (siehe druck.css).
 
+import { aktiverTab } from '../core/util.js';
+
 const AUFLOESUNG = 2;        // doppelte Pixeldichte → scharf im Druck
 const QUALITAET = 0.85;      // JPEG
 const karten = new WeakMap(); // Karten-Container -> Leaflet-Karte
@@ -205,5 +207,5 @@ export function druckbilderJetzt(root) {
 // Vor jedem Drucken (Knopf oder Strg+P) die Bilder des sichtbaren Reiters
 // frisch zeichnen – synchron, damit der Browser sie schon mitdruckt.
 export function kartenbildInit() {
-  window.addEventListener('beforeprint', () => druckbilderJetzt(document.querySelector('.tab.aktiv')));
+  window.addEventListener('beforeprint', () => druckbilderJetzt(aktiverTab()));
 }

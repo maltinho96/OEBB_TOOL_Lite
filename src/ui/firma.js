@@ -33,7 +33,7 @@ function logosEinsetzen() {
 
 // Wählt die Firma Nr. i: Farbe, Logo, Auswahlfeld und Seitentitel (der
 // Browser zeigt den Titel als Fenster-/Tab-Namen).
-export function firmaSetzen(i) {
+function firmaSetzen(i) {
   aktuell = Math.max(0, Math.min(firmen.length - 1, Number(i) || 0));
   const f = aktuelleFirma();
   document.documentElement.style.setProperty('--firma', f.farbe);

@@ -7,6 +7,7 @@
 // nur noch ein und kümmert sich um Laden/Rendern der Übersicht.
 
 import { esc, statusText } from '../core/util.js';
+import { TYP_NAMEN } from '../config/konstanten.js';
 import { grundordnerHolen, waehleGrundordner, gespeicherterGrundordner } from '../core/storage/index.js';
 import { dbLesen } from '../core/db.js';
 import { dbSetzen, dbHolen } from '../core/zustand.js';
@@ -238,7 +239,6 @@ function uebersichtRendern(db) {
     ziel.innerHTML = '<p>Keine Projekte mit diesem Status. <button class="ordner-knopf" data-aktion="filter-alle">Alle anzeigen</button></p>';
     return;
   }
-  const typNamen = { protokoll: 'Protokoll', vorbegehung: 'Vorbegehung', belehrung: 'Belehrung (altes Format)', 'belehrung-karel': 'Belehrung' };
   const statusLabel = { aktuell: '▶ Aktuell', geplant: '🕓 Geplant', abgeschlossen: '✔ Abgeschlossen' };
   let html = '<table class="uebersicht"><tr>' +
     '<th>Projekt</th><th>Projektnummer</th><th>Ort</th><th>Status</th><th>Prot.</th><th>Vorb.</th><th>Bel.</th>' +
@@ -256,13 +256,13 @@ function uebersichtRendern(db) {
       stdSumme += stundenSumme(e);
     });
     const monate = Object.keys(nachMonat(projektStundenzeilen(p))).sort();
-    const monatOpts = monate.map((m) => '<option value="' + m + '">' + monatsName(m) + '</option>').join('');
+    const monatOpts = monate.map((m) => '<option value="' + esc(m) + '">' + esc(monatsName(m)) + '</option>').join('');
     const liste = dateien
       .sort((a, b) => (b.geaendert || 0) - (a.geaendert || 0))
       .map((d) => {
         const dat = d.datum ? new Date(d.datum).toLocaleDateString('de-DE') : '';
         const su = stundenSumme(d);
-        return '<li>' + statusIcon(d) + ' ' + esc(d.datei) + ' – ' + (typNamen[d.typ] || esc(d.typ)) +
+        return '<li>' + statusIcon(d) + ' ' + esc(d.datei) + ' – ' + (TYP_NAMEN[d.typ] || esc(d.typ)) +
           (d.nummer ? ' Nr. ' + esc(d.nummer) : '') +
           (dat ? ', Begehung am ' + dat : '') +
           (su > 0 ? ' – <b>' + su + ' Std.</b>' : ' – <i>noch keine Stunden → Reiter „🕒 Stunden“</i>') + '</li>';
@@ -296,22 +296,22 @@ function uebersichtRendern(db) {
       '<td class="mitte">' + z.belehrung + '</td>' +
       '<td class="mitte"><b>' + stdSumme + '</b></td>' +
       '<td class="kein-druck"><div class="projekt-aktionen">' +
-      (monate.length ? '<select id="mon_' + pid + '"><option value="alle">Alle Monate</option>' + monatOpts + '</select>' +
-        '<button class="ordner-knopf" data-aktion="stundenzettel-drucken" data-pid="' + pid + '">🖨</button>' +
-        '<button class="ordner-knopf" data-aktion="projekt-exportieren" data-pid="' + pid + '">📥 xlsx</button>'
+      (monate.length ? '<select id="mon_' + esc(pid) + '"><option value="alle">Alle Monate</option>' + monatOpts + '</select>' +
+        '<button class="ordner-knopf" data-aktion="stundenzettel-drucken" data-pid="' + esc(pid) + '">🖨</button>' +
+        '<button class="ordner-knopf" data-aktion="projekt-exportieren" data-pid="' + esc(pid) + '">📥 xlsx</button>'
         : '<i style="font-size:11px">noch keine Stunden</i>') +
       '</div></td>' +
       '<td class="kein-druck"><div class="projekt-aktionen">' +
-      '<button class="ordner-knopf" data-aktion="projekt-scannen" data-pid="' + pid + '">🔍 Scannen</button>' +
-      '<button class="ordner-knopf" data-aktion="projekt-ordner-verknuepfen" data-pid="' + pid + '" title="Protokollordner wählen / ändern">📂</button>' +
-      '<button class="ordner-knopf" data-aktion="projekt-bearbeiten" data-pid="' + pid + '">✎</button>' +
+      '<button class="ordner-knopf" data-aktion="projekt-scannen" data-pid="' + esc(pid) + '">🔍 Scannen</button>' +
+      '<button class="ordner-knopf" data-aktion="projekt-ordner-verknuepfen" data-pid="' + esc(pid) + '" title="Protokollordner wählen / ändern">📂</button>' +
+      '<button class="ordner-knopf" data-aktion="projekt-bearbeiten" data-pid="' + esc(pid) + '">✎</button>' +
       ((p.status || 'aktuell') === 'abgeschlossen'
-        ? '<button class="ordner-knopf" data-aktion="projekt-reaktivieren" data-pid="' + pid + '">↩ Reaktivieren</button>'
+        ? '<button class="ordner-knopf" data-aktion="projekt-reaktivieren" data-pid="' + esc(pid) + '">↩ Reaktivieren</button>'
         : (p.status === 'geplant'
-          ? '<button class="ordner-knopf" data-aktion="projekt-starten" data-pid="' + pid + '">▶ Starten</button>'
+          ? '<button class="ordner-knopf" data-aktion="projekt-starten" data-pid="' + esc(pid) + '">▶ Starten</button>'
           : '') +
-          '<button class="ordner-knopf" data-aktion="projekt-abschliessen" data-pid="' + pid + '">✔ Abschließen</button>') +
-      '<button class="ordner-knopf" style="color:#a00" data-aktion="projekt-loeschen" data-pid="' + pid + '">✕</button>' +
+          '<button class="ordner-knopf" data-aktion="projekt-abschliessen" data-pid="' + esc(pid) + '">✔ Abschließen</button>') +
+      '<button class="ordner-knopf" style="color:#a00" data-aktion="projekt-loeschen" data-pid="' + esc(pid) + '">✕</button>' +
       '</div></td></tr>';
   });
   html += '</table>';

@@ -12,12 +12,13 @@
 // neu geschrieben (Eingabe in Datum/Auftraggeber, Reiterwechsel, Firma).
 
 import { PROTOKOLL_TABS } from '../config/konstanten.js';
+import { datumDeutsch, aktiverTab } from '../core/util.js';
 
-function datumDeutsch(iso) {
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');
-  if (m) return m[3] + '.' + m[2] + '.' + m[1];
+// Datum des Protokolls, sonst heute.
+function fussDatum(iso) {
+  if (datumDeutsch(iso)) return datumDeutsch(iso);
   const d = new Date();
-  return String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + d.getFullYear();
+  return datumDeutsch(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'));
 }
 
 function daten(tab) {
@@ -25,16 +26,18 @@ function daten(tab) {
   const dt = tab.querySelector('[data-feld="datum"]');
   const auftraggeber = ag ? ag.value.trim() : '';
   return {
-    datum: datumDeutsch(dt ? dt.value : ''),
+    datum: fussDatum(dt ? dt.value : ''),
     text: auftraggeber
       ? 'Ökologische Baubegleitung im Auftrag der „' + auftraggeber + '“'
       : 'Ökologische Baubegleitung',
   };
 }
 
-// Text sicher als CSS-Zeichenkette ("…") schreiben.
+// Text sicher als CSS-Zeichenkette ("…") schreiben. "<" wird als CSS-Escape
+// geschrieben, weil die Regel in gespeicherten Dateien in einem <style>-Tag
+// steht – ein "</style>" im Auftraggeber-Namen dürfte es nicht beenden.
 function cssText(s) {
-  return '"' + String(s).replace(/[\r\n]+/g, ' ').replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+  return '"' + String(s).replace(/[\r\n]+/g, ' ').replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/</g, '\\3c ') + '"';
 }
 
 function vorschauFuellen(tab) {
@@ -54,7 +57,7 @@ function druckStilSchreiben() {
     stil.id = 'druckFussStil';
     document.head.appendChild(stil);
   }
-  const aktiv = document.querySelector('.tab.aktiv');
+  const aktiv = aktiverTab();
   const istProtokoll = aktiv && PROTOKOLL_TABS.includes(aktiv.id);
   const d = istProtokoll ? daten(aktiv) : { datum: '', text: '' };
   const farbe = getComputedStyle(document.documentElement).getPropertyValue('--firma').trim() || '#333';

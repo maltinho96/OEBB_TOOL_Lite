@@ -11,13 +11,9 @@ import { bildAlsDataUrl } from '../core/bilder.js';
 import { BILD_MAX, BILD_QUALITAET } from '../config/konstanten.js';
 import { gpsAusDatei } from '../core/exif.js';
 import { karteAktualisieren } from './fotokarte.js';
+import { aktiverTab } from '../core/util.js';
 
 // ---------- Hilfsfunktionen ----------
-
-// Aktuell sichtbarer Protokoll-Tab (der einzige mit .tab.aktiv).
-function aktiverTab() {
-  return document.querySelector('.tab.aktiv');
-}
 
 // Zielelement für den nächsten Einzelbild-Upload (Unterschrift/Vis-Bild).
 let zielEinzelbild = null;
