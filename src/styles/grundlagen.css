@@ -29,8 +29,13 @@ h1 .nr input{font-size:21px; font-weight:700; width:48px; border:none; text-alig
 h2{font-size:14px; margin:22px 0 6px; letter-spacing:.02em;}
 h2.c-gruen{color:#2e7d32;} h2.c-pink{color:#ad1f7e;} h2.c-orange{color:#c05f10;} h2.c-gelb{color:#8f8f00;} h2.c-grau{color:#555;}
 
-table.form{width:100%; border-collapse:collapse; margin-bottom:4px;}
-table.form td{border:1px solid var(--rahmen); padding:5px 8px; vertical-align:top;}
+/* Rahmen bewusst OHNE border-collapse: Bei "collapse" liegt der äußere
+   Rand halb außerhalb der Tabelle, und Firefox schneidet diese Hälfte beim
+   Drucken teils ab (fehlende untere Linie). So liegt jede Linie vollständig
+   in ihrem Kasten: Tabelle oben/links, jede Zelle rechts/unten. */
+table.form{width:100%; border-collapse:separate; border-spacing:0; margin-bottom:4px;
+  border-top:1px solid var(--rahmen); border-left:1px solid var(--rahmen);}
+table.form td{border-right:1px solid var(--rahmen); border-bottom:1px solid var(--rahmen); padding:5px 8px; vertical-align:top;}
 td.label{font-weight:700; white-space:nowrap;}
 .zeile{display:flex; align-items:center; gap:6px;}
 .zeile b{white-space:nowrap;}
