@@ -3,6 +3,8 @@
 // anhängen; erneuter Klick = wieder herausnehmen. Bereits enthaltene
 // Bausteine sind am Knopf mit ✓ markiert.
 //
+// Leere Themenblöcke werden nicht gedruckt (Klasse .leer).
+//
 // Die Auflagen-Felder wachsen mit ihrem Inhalt (Höhe = Inhalt), damit beim
 // Drucken nichts abgeschnitten wird – ein <textarea> druckt nur seine
 // sichtbare Höhe.
@@ -19,6 +21,12 @@ function hoeheAnpassen(ta) {
   if (!ta.offsetParent) return; // unsichtbar (anderer Reiter) – später
   ta.style.height = 'auto';
   ta.style.height = ta.scrollHeight + 2 + 'px';
+}
+
+// Leerer Block = keine Auflagen zu diesem Thema -> im Druck weglassen.
+function leerMarkieren(ta) {
+  const block = ta.closest('.kb-thema');
+  if (block) block.classList.toggle('leer', !ta.value.trim());
 }
 
 function knoepfeAktualisieren(ta) {
@@ -47,12 +55,14 @@ function umschalten(knopf) {
   }
   hoeheAnpassen(ta);
   knoepfeAktualisieren(ta);
+  leerMarkieren(ta);
 }
 
 function alleAuffrischen(root) {
   (root || document).querySelectorAll('textarea[data-thema]').forEach((ta) => {
     hoeheAnpassen(ta);
     knoepfeAktualisieren(ta);
+    leerMarkieren(ta);
   });
 }
 
@@ -72,6 +82,7 @@ export function bausteineInit(root) {
     if (e.target.matches && e.target.matches('textarea[data-thema]')) {
       hoeheAnpassen(e.target);
       knoepfeAktualisieren(e.target);
+      leerMarkieren(e.target);
     }
   });
   alleAuffrischen(root);

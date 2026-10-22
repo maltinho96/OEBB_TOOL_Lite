@@ -16,6 +16,8 @@ import { esc } from '../core/util.js';
 // Umweltbehörde" im Original: farbige Überschrift + ein farbiges Textfeld.
 // data-thema identifiziert das Feld eindeutig (auch fürs "Protokoll laden",
 // unabhängig von der Reihenfolge der Blöcke).
+// Bleibt das Feld leer (z. B. keine Auflagen zum Wasser), wird der ganze
+// Block nicht gedruckt (Klasse .leer, gesetzt in ui/bausteine.js).
 function thema(key, titel, farbe) {
   const bausteine = TEXTBAUSTEINE[key] || [];
   const knoepfe = bausteine.length
@@ -23,8 +25,10 @@ function thema(key, titel, farbe) {
         `<button type="button" data-aktion="baustein" data-thema="${key}" data-idx="${i}" title="${esc(b.text)}">${esc(b.kurz)}</button>`).join('')}</div>`
     : '';
   return `
-<h2 class="c-${farbe}">${titel}</h2>
-<table class="form"><tr class="bg-${farbe}-h"><td><textarea class="kb-auflagen" data-thema="${key}"></textarea>${knoepfe}</td></tr></table>`;
+<div class="kb-thema leer">
+<h2 class="c-${farbe}">${titel}<span class="kb-leer-hinweis kein-druck"> – leer, wird nicht gedruckt</span></h2>
+<table class="form"><tr class="bg-${farbe}-h"><td><textarea class="kb-auflagen" data-thema="${key}"></textarea>${knoepfe}</td></tr></table>
+</div>`;
 }
 
 export const belehrungKarel = {
