@@ -12,6 +12,7 @@ export {
   gespeicherterGrundordner,
   waehleProjektordner,
   projektOrdnerHolen,
+  gespeicherterProjektordner,
   leseDbText,
   schreibeDbText,
   dateiLesen,

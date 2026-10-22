@@ -14,7 +14,7 @@ ${logo()}
 
 <table class="form">
   <tr class="bg-blau"><td class="label" style="width:220px">Auftraggeber:</td><td><input type="text" data-feld="auftraggeber-fuss"></td></tr>
-  <tr class="bg-blau-h"><td class="label">Tiefbauunternehmen:</td><td><input type="text"></td></tr>
+  <tr class="bg-blau-h"><td class="label">Baufirma:</td><td><input type="text" data-feld="baufirma"></td></tr>
   <tr class="bg-blau"><td class="label">Projekt:</td><td><textarea rows="3" data-feld="projekt"></textarea></td></tr>
 </table>
 
@@ -24,7 +24,7 @@ ${logo()}
     <td class="label" style="width:120px">Datum:</td><td style="width:200px"><input type="date" data-feld="datum"></td>
     <td class="label" style="width:60px">Ort:</td><td><input type="text" data-feld="ort"></td>
   </tr>
-  <tr class="bg-grau-h"><td class="label">Landkreis:</td><td colspan="3"><input type="text"></td></tr>
+  <tr class="bg-grau-h"><td class="label">Landkreis:</td><td colspan="3"><input type="text" data-feld="landkreis"></td></tr>
   <tr class="bg-grau">
     <td class="label">Straße:</td><td colspan="2"><input type="text"></td>
     <td><span class="zeile"><b>Hausnummer/n:</b> <input type="text" style="width:80px"></span></td>

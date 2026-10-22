@@ -34,6 +34,12 @@ function abweichungen(tab) {
   return liste;
 }
 
+function projektInfo(tab, name) {
+  const db = dbHolen();
+  const p = tab.dataset.projektId && db && db.projekte ? db.projekte[tab.dataset.projektId] : null;
+  return (p && p.infos && p.infos[name]) || '';
+}
+
 function empfaenger(tab, typ) {
   if (typ === 'belehrung' || typ === 'belehrung-karel') {
     const m = feld(tab, 'bauleitung-email');
@@ -55,6 +61,7 @@ function mailVorbereiten(tab) {
     datum: feld(tab, 'datum'),
     auftraggeber: feld(tab, 'auftraggeber-fuss'),
     ort: feld(tab, 'ort'),
+    landkreis: feld(tab, 'landkreis') || projektInfo(tab, 'landkreis'),
     projekt: feld(tab, 'projekt').split('\n')[0].trim(),
     aktenzeichen: feld(tab, 'aktenzeichen').split(/\s*\n\s*/).filter(Boolean).join(', '),
     abweichungen: abweichungen(tab),

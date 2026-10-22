@@ -11,7 +11,7 @@
 import L from 'leaflet';
 import { statusText } from '../core/util.js';
 import { KARTE_START } from '../config/konstanten.js';
-import { grundordnerHolen, waehleProjektordner, projektOrdnerHolen } from '../core/storage/index.js';
+import { grundordnerHolen, waehleProjektordner, projektOrdnerHolen, gespeicherterProjektordner } from '../core/storage/index.js';
 import { dbAendern } from '../core/db.js';
 import { dbSetzen, dbHolen } from '../core/zustand.js';
 import { nadelIcon, osmEbene } from './karte.js';
@@ -71,7 +71,7 @@ function nadelEntfernen() {
 // ---------- Formular öffnen/schließen/leeren ----------
 
 function formularLeeren() {
-  ['npName', 'npNummer', 'npOrt', 'npAuftraggeber', 'npAnsprechpartner', 'npAnsprechpartnerTelefon', 'npAnsprechpartnerEmail', 'npLandkreis', 'npNotizen', 'npStart', 'npEnde'].forEach((id) => {
+  ['npName', 'npNummer', 'npOrt', 'npAuftraggeber', 'npBaufirma', 'npAnsprechpartner', 'npAnsprechpartnerTelefon', 'npAnsprechpartnerEmail', 'npLandkreis', 'npNotizen', 'npStart', 'npEnde'].forEach((id) => {
     document.getElementById(id).value = '';
   });
   document.getElementById('npStatus').value = 'aktuell';
@@ -85,6 +85,8 @@ function formularLeeren() {
   if (na) na.style.display = '';
   const t = document.getElementById('npTitel');
   if (t) t.textContent = 'Neues Projekt anlegen';
+  // Beim Anlegen wird der Ordner ohnehin abgefragt – Zeile nur beim Bearbeiten.
+  document.getElementById('npOrdnerZeile').style.display = 'none';
 }
 
 function projektFormularOeffnen() {
@@ -122,6 +124,7 @@ export function projektBearbeiten(pid) {
   document.getElementById('npAnsprechpartner').value = i.ansprechpartner || '';
   document.getElementById('npAnsprechpartnerTelefon').value = i.ansprechpartnerTelefon || '';
   document.getElementById('npAnsprechpartnerEmail').value = i.ansprechpartnerEmail || '';
+  document.getElementById('npBaufirma').value = i.baufirma || '';
   document.getElementById('npLandkreis').value = i.landkreis || '';
   listenFuellen(aktenzeichenListe(p), verteilerListe(p));
   document.getElementById('npNotizen').value = i.notizen || '';
@@ -129,10 +132,30 @@ export function projektBearbeiten(pid) {
   else nadelEntfernen();
   flaechenLaden(p.flaechen);
   bearbeitePid = pid;
+  ordnerAnzeigen(pid);
   document.getElementById('npKnopfText').textContent = '💾 Änderungen speichern';
   const t2 = document.getElementById('npTitel');
   if (t2) t2.textContent = 'Projekt bearbeiten';
   document.getElementById('npAbbrechen').style.display = '';
+}
+
+// Zeile "Protokollordner" im Bearbeiten-Formular: Name des verknüpften Ordners.
+async function ordnerAnzeigen(pid) {
+  const zeile = document.getElementById('npOrdnerZeile');
+  const name = document.getElementById('npOrdnerName');
+  zeile.style.display = '';
+  const h = await gespeicherterProjektordner(pid);
+  name.textContent = h ? '📁 ' + h.name : 'noch keiner verknüpft';
+}
+
+async function ordnerAendern() {
+  if (!bearbeitePid) return;
+  const pid = bearbeitePid;
+  const h = await waehleProjektordner(pid);
+  if (!h) return;
+  await ordnerAnzeigen(pid);
+  statusText('Protokollordner geändert: ' + h.name + ' – wird gescannt …');
+  await projektScannenUndSpeichern(pid);
 }
 
 // ---------- Anlegen / Ordner verknüpfen / Löschen / Scannen / Status ----------
@@ -166,6 +189,7 @@ async function projektAnlegen() {
       ansprechpartner: document.getElementById('npAnsprechpartner').value.trim(),
       ansprechpartnerTelefon: document.getElementById('npAnsprechpartnerTelefon').value.trim(),
       ansprechpartnerEmail: document.getElementById('npAnsprechpartnerEmail').value.trim(),
+      baufirma: document.getElementById('npBaufirma').value.trim(),
       landkreis: document.getElementById('npLandkreis').value.trim(),
       // Haupt-Aktenzeichen zusätzlich als Text (für ältere Auswertungen).
       aktenzeichen: hauptAktenzeichen({ aktenzeichen }),
@@ -265,6 +289,7 @@ export function projektformularInit(section) {
       case 'nadel-entfernen': nadelEntfernen(); break;
       case 'projekt-anlegen': projektAnlegen(); break;
       case 'bearbeiten-abbrechen': bearbeitenAbbrechen(); break;
+      case 'projekt-ordner-aendern': ordnerAendern(); break;
     }
   });
 }

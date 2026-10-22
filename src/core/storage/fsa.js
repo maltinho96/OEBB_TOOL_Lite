@@ -101,6 +101,12 @@ export async function waehleProjektordner(id) {
     return null;
   }
 }
+// Gespeicherter Projektordner (nur für die Anzeige des Namens) – ohne
+// Berechtigungs-Nachfrage.
+export async function gespeicherterProjektordner(id) {
+  if (projektOrdnerCache[id]) return projektOrdnerCache[id];
+  return await idbHolen('projektOrdner:' + id).catch(() => null);
+}
 export async function projektOrdnerHolen(id, interaktiv) {
   const h = await handleHolen('projektOrdner:' + id, projektOrdnerCache[id], interaktiv);
   if (h) projektOrdnerCache[id] = h;

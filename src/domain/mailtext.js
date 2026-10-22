@@ -3,7 +3,7 @@
 //
 // d = {
 //   typ: 'protokoll' | 'vorbegehung' | 'belehrung' | 'belehrung-karel',
-//   nummer, datum (JJJJ-MM-TT), auftraggeber, ort, projekt, aktenzeichen,
+//   nummer, datum (JJJJ-MM-TT), auftraggeber, ort, landkreis, projekt, aktenzeichen,
 //   abweichungen: ['Baumschutz', 'Arten- und Habitatschutz: Fledermausschutz', …],
 //   absender, firma,
 // }
@@ -24,14 +24,15 @@ function bauvorhaben(d) {
   return 'zum Bauvorhaben' + (d.auftraggeber ? ' der ' + d.auftraggeber : '') + (d.ort ? ' in ' + d.ort : '');
 }
 
+// "06. Protokoll zur ökologischen Baubegleitung in Potsdam, Landkreis X"
 export function mailBetreff(d) {
   const titel = {
-    protokoll: nummerText(d.nummer) + 'Protokoll ökologische Baubegleitung',
-    vorbegehung: 'Vorbegehungsprotokoll ökologische Baubegleitung',
-    belehrung: 'Belehrungsprotokoll ökologische Baubegleitung',
-    'belehrung-karel': 'Belehrungsprotokoll ökologische Baubegleitung',
-  }[d.typ] || 'Protokoll ökologische Baubegleitung';
-  return [titel, d.projekt || d.ort, datumDeutsch(d.datum)].filter(Boolean).join(' – ');
+    vorbegehung: nummerText(d.nummer) + 'Vorbegehungsprotokoll',
+    belehrung: 'Belehrungsprotokoll',
+    'belehrung-karel': 'Belehrungsprotokoll',
+  }[d.typ] || nummerText(d.nummer) + 'Protokoll';
+  const orte = [d.ort, d.landkreis && d.landkreis !== d.ort ? d.landkreis : ''].filter(Boolean).join(', ');
+  return titel + ' zur ökologischen Baubegleitung' + (orte ? ' in ' + orte : '');
 }
 
 export function mailText(d) {

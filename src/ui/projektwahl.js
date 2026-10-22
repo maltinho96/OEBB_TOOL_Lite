@@ -1,7 +1,8 @@
 // Projekt-Auswahl oben in jedem Protokoll (nur am Bildschirm, nicht im
 // Druck). Wählt man ein Projekt aus der Datenbank:
 //   - Projekt-Name und Projektnummer werden ins Protokoll übernommen,
-//   - Auftraggeber, Ort und Haupt-Aktenzeichen nur, wenn das Feld noch
+//   - Auftraggeber, Ort, Baufirma, Landkreis und Haupt-Aktenzeichen nur,
+//     wenn das Feld noch
 //     leer ist; neben dem Aktenzeichen-Feld erscheint eine Auswahl aller
 //     Aktenzeichen des Projekts (mit Kommentar), um das passende zu wählen,
 //   - die Flächen (Shapes) des Projekts erscheinen im Übersichtsplan und
@@ -78,6 +79,9 @@ function projektUebernehmen(tab, pid) {
     feldSetzen(tab, '[data-feld="projektnummer"]', p.projektnummer);
     feldSetzen(tab, '[data-feld="auftraggeber-fuss"]', p.infos && p.infos.auftraggeber, true);
     feldSetzen(tab, '[data-feld="ort"]', p.ort, true);
+    feldSetzen(tab, '[data-feld="baufirma"]', p.infos && p.infos.baufirma, true);
+    feldSetzen(tab, '[data-feld="tiefbaufirma"]', p.infos && p.infos.baufirma, true);
+    feldSetzen(tab, '[data-feld="landkreis"]', p.infos && p.infos.landkreis, true);
     feldSetzen(tab, '[data-feld="aktenzeichen"]', hauptAktenzeichen(p), true);
   }
   azAuswahl(tab, p);

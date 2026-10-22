@@ -103,6 +103,10 @@ ${logo()}
     <div style="font-size:11px; color:#666; margin-top:3px;">.shp, .dbf und .prj gemeinsam auswählen (Strg+Klick). Mehrere Shapes auf einmal gehen auch.</div>
     <div id="npFlaechenListe" style="font-size:11.5px; margin-top:6px;"></div>
   </td></tr>
+  <tr class="bg-grau-h" id="npOrdnerZeile" style="display:none"><td class="label">Protokollordner:</td><td>
+    <span id="npOrdnerName" style="margin-right:8px;"></span>
+    <button type="button" class="ordner-knopf klein" data-aktion="projekt-ordner-aendern">📂 Ordner ändern</button>
+  </td></tr>
   <tr class="bg-grau-h"><td class="label">Status:</td><td>
     <select id="npStatus">
       <option value="aktuell">▶ Aktuell</option>
@@ -119,6 +123,7 @@ ${logo()}
     <select id="npZweitverantwortlich"></select>
   </td></tr>
   <tr class="bg-grau-h"><td class="label">Auftraggeber <small>(optional)</small>:</td><td><input type="text" id="npAuftraggeber"></td></tr>
+  <tr class="bg-grau-h"><td class="label">Baufirma <small>(optional)</small>:</td><td><input type="text" id="npBaufirma" placeholder="ausführende Tiefbaufirma"></td></tr>
   <tr class="bg-grau-h"><td class="label">Ansprechpartner (AG) <small>(optional)</small>:</td><td><input type="text" id="npAnsprechpartner" placeholder="Name"></td></tr>
   <tr class="bg-grau-h"><td class="label">Telefon Ansprechpartner <small>(optional)</small>:</td><td><input type="tel" id="npAnsprechpartnerTelefon"></td></tr>
   <tr class="bg-grau-h"><td class="label">E-Mail Ansprechpartner <small>(optional)</small>:</td><td><input type="email" id="npAnsprechpartnerEmail"></td></tr>
@@ -269,11 +274,12 @@ function uebersichtRendern(db) {
       (dateien.length ? '<ul class="datei-liste">' + liste + '</ul>' : '<p style="font-size:11.5px">Noch keine Protokolle – „Scannen“ klicken.</p>') + '</details></td>' +
       '<td>' + esc(p.projektnummer) + '</td>' +
       '<td>' + esc(p.ort) + (p.lat != null ? ' <span title="' + p.lat + ', ' + p.lng + '">📍</span>' : '') +
-      (p.infos && (p.infos.auftraggeber || p.infos.landkreis || p.infos.ansprechpartner) || aktenzeichenListe(p).length || verteilerListe(p).length || p.hauptverantwortlich || p.start || p.ende
+      (p.infos && (p.infos.auftraggeber || p.infos.baufirma || p.infos.landkreis || p.infos.ansprechpartner) || aktenzeichenListe(p).length || verteilerListe(p).length || p.hauptverantwortlich || p.start || p.ende
         ? '<div style="font-size:11px;color:#666">' +
           (p.infos && p.infos.auftraggeber ? 'AG: ' + esc(p.infos.auftraggeber) + ' ' : '') +
           (p.infos && p.infos.ansprechpartner ? '· AP: ' + esc(p.infos.ansprechpartner) +
             (p.infos.ansprechpartnerTelefon ? ' (Tel. ' + esc(p.infos.ansprechpartnerTelefon) + ')' : '') + ' ' : '') +
+          (p.infos && p.infos.baufirma ? '· Baufirma: ' + esc(p.infos.baufirma) + ' ' : '') +
           (p.infos && p.infos.landkreis ? '· LK ' + esc(p.infos.landkreis) + ' ' : '') +
           azText(p) +
           (verteilerListe(p).length ? '· ✉ ' + verteilerListe(p).length + ' im Verteiler ' : '') +
@@ -297,7 +303,7 @@ function uebersichtRendern(db) {
       '</div></td>' +
       '<td class="kein-druck"><div class="projekt-aktionen">' +
       '<button class="ordner-knopf" data-aktion="projekt-scannen" data-pid="' + pid + '">🔍 Scannen</button>' +
-      '<button class="ordner-knopf" data-aktion="projekt-ordner-verknuepfen" data-pid="' + pid + '">📂</button>' +
+      '<button class="ordner-knopf" data-aktion="projekt-ordner-verknuepfen" data-pid="' + pid + '" title="Protokollordner wählen / ändern">📂</button>' +
       '<button class="ordner-knopf" data-aktion="projekt-bearbeiten" data-pid="' + pid + '">✎</button>' +
       ((p.status || 'aktuell') === 'abgeschlossen'
         ? '<button class="ordner-knopf" data-aktion="projekt-reaktivieren" data-pid="' + pid + '">↩ Reaktivieren</button>'
