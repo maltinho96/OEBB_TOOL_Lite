@@ -52,6 +52,14 @@ async function handleHolen(schluessel, zwischenspeicher, interaktiv) {
   return p === 'granted' ? h : null;
 }
 
+// Ordner-Dialog: Abbrechen ist kein Fehler; alles andere (z. B. der Browser
+// lehnt den Dialog ab) wird gemeldet statt still zu scheitern.
+function dialogFehler(e) {
+  if (e && e.name === 'AbortError') return;
+  alert('Der Ordner-Dialog konnte nicht geöffnet werden' + (e && e.message ? ':\n' + e.message : '.') +
+    '\n\nBitte noch einmal auf den Knopf klicken.');
+}
+
 // ---------- Grundordner ----------
 export async function waehleGrundordner() {
   if (!fsaVerfuegbar()) return null;
@@ -59,8 +67,9 @@ export async function waehleGrundordner() {
     grundOrdner = await window.showDirectoryPicker({ mode: 'readwrite' });
     await idbSetzen('grundOrdner', grundOrdner);
     return grundOrdner;
-  } catch {
-    return null; // abgebrochen
+  } catch (e) {
+    dialogFehler(e);
+    return null;
   }
 }
 export async function grundordnerHolen(interaktiv) {
@@ -87,8 +96,9 @@ export async function waehleProjektordner(id) {
     projektOrdnerCache[id] = h;
     await idbSetzen('projektOrdner:' + id, h);
     return h;
-  } catch {
-    return null; // abgebrochen
+  } catch (e) {
+    dialogFehler(e);
+    return null;
   }
 }
 export async function projektOrdnerHolen(id, interaktiv) {

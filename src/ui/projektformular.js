@@ -175,6 +175,17 @@ async function projektAnlegen() {
   const neuId = bearbeitePid || neueProjektId();
   const warBearbeitung = !!bearbeitePid;
 
+  // Neues Projekt: den Protokollordner ZUERST wählen lassen. Der Browser
+  // öffnet den Ordner-Dialog nur direkt nach einem Klick – nach dem
+  // Speichern (das auf Netzlaufwerken ein paar Sekunden dauern kann) wäre
+  // diese Frist abgelaufen und der Dialog ginge nicht mehr auf.
+  let protokollOrdner = null;
+  if (!warBearbeitung) {
+    statusText('Bitte den Protokollordner des Projekts wählen …');
+    protokollOrdner = await waehleProjektordner(neuId);
+    if (!protokollOrdner) statusText('Kein Protokollordner gewählt – später in der Tabelle über 📂 verknüpfen.');
+  }
+
   const ordner = await grundordnerHolen(true);
   if (!ordner) { statusText('Bitte zuerst den Grundordner festlegen.'); return; }
   const db = await dbAendern(ordner, (db) => {
@@ -185,7 +196,7 @@ async function projektAnlegen() {
 
   formularLeeren();
   projektFormularSchliessen();
-  if (!warBearbeitung) await projektOrdnerVerknuepfen(neuId, true);
+  if (protokollOrdner) await projektScannenUndSpeichern(neuId);
 }
 
 export async function projektOrdnerVerknuepfen(id, danachScannen) {
