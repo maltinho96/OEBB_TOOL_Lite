@@ -3,21 +3,17 @@
 // Wiederkehrende Muster (Textfeld, Checkbox-Zeile, Foto-Abschnitt) kannst
 // du spaeter nach Bedarf ergaenzen, ohne die Templates umzubauen.
 
-// Firmen-Logo. Verweist auf die Asset-Dateien in public/assets/ (statt
-// wie im Original riesige Base64-Strings). Welches Logo sichtbar ist,
-// steuert themes.css ueber die firma-Klasse am <html>.
-//
-// import.meta.env.BASE_URL statt eines fest verdrahteten "/assets/..."-
-// Pfads: lokal ist das "/", auf GitHub Pages "/OEBB_TOOL_Lite/" (siehe
-// vite.config.js "base"). Ohne das wuerden die Logos unter Pages ins
-// Leere zeigen (Pfad relativ zur Domain-Wurzel statt zum Unterordner).
-const BASIS = import.meta.env.BASE_URL;
+import { FIRMEN } from '../config/firmen.js';
 
+// Firmen-Logo. Die Bilder liegen NICHT im Repo, sondern im Grundordner
+// (logo-<firma-id>.svg/.png/.jpg, z. B. logo-ing.png) und werden von
+// ui/logo.js eingesetzt, sobald der Grundordner verbunden ist. So kann jede
+// Firma ihr eigenes Logo verwenden. Welches Logo sichtbar ist, steuert
+// themes.css über die firma-Klasse am <html>.
 export function logo() {
   return (
     '<span class="logo">' +
-    '<img class="lg-greens" src="' + BASIS + 'assets/logo-greens.svg" alt="NET-TEC GREENgineers Logo">' +
-    '<img class="lg-ing" src="' + BASIS + 'assets/logo-ing.svg" alt="NET-TEC Ingenieurgesellschaft Logo">' +
+    FIRMEN.map((f) => '<img class="lg-' + f.id + '" alt="' + f.name + ' Logo">').join('') +
     '</span>'
   );
 }

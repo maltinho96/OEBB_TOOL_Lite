@@ -29,6 +29,7 @@ import { einklappenInit } from './ui/einklappen.js';
 import { fusszeileInit, fusszeileBeiAnzeige } from './ui/fusszeile.js';
 import { projektwahlInit, projektwahlBeiAnzeige } from './ui/projektwahl.js';
 import { markierenInit } from './ui/markieren.js';
+import { bausteineInit, bausteineBeiAnzeige } from './ui/bausteine.js';
 import { baubegleiterVorbelegen } from './ui/team.js';
 
 import { htmlExportInit, druckTitelInit } from './export/html-export.js';
@@ -56,6 +57,7 @@ function start() {
   fusszeileInit();
   projektwahlInit();
   markierenInit(app);
+  bausteineInit(app);
 
   tabWechselHook(karteBeiAnzeigeAktualisieren);
   tabWechselHook(stundenBeiAnzeigeAktualisieren);
@@ -63,6 +65,7 @@ function start() {
   tabWechselHook(baubegleiterVorbelegen);
   tabWechselHook(projektwahlBeiAnzeige);
   tabWechselHook(fusszeileBeiAnzeige);
+  tabWechselHook(bausteineBeiAnzeige);
 
   tabsInit();
   werkzeugeInit();

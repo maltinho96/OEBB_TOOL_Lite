@@ -5,6 +5,6 @@
 html.firma-greens{ --firma:#12b296; --firma-name:"NET-TEC GREENgineers GmbH"; }
 html.firma-ing{    --firma:#1f3864; --firma-name:"NET-TEC Ingenieurgesellschaft mbH"; }
 
-/* Logo je Firma ein-/ausblenden (Bilder in public/assets/) */
+/* Logo je Firma ein-/ausblenden (Bilder aus dem Grundordner, ui/logo.js) */
 html.firma-greens .logo .lg-greens{display:block;}
 html.firma-ing    .logo .lg-ing{display:block;}

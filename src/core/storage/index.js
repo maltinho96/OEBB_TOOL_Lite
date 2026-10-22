@@ -15,6 +15,7 @@ export {
   leseDbText,
   schreibeDbText,
   dateiLesen,
+  dateiAlsDataUrl,
   dateiSchreiben,
   dateiLoeschen,
   unterordnerHolen,

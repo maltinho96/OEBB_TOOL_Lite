@@ -19,13 +19,14 @@ export const LOCK_STATUS_VERZOEGERUNG_MS = 400;
 
 // Maximale Kantenlänge (px) beim Verkleinern von Bildern vor dem Einbetten.
 export const BILD_MAX = {
-  foto: 1600,          // Fotos in der Dokumentation
+  foto: 1400,          // Fotos in der Dokumentation (reicht für ~220 dpi im Druck)
   visualisierung: 1800,// Belehrung: Visualisierungsbilder
   unterschrift: 600,   // Unterschriftenfelder
 };
 
-// JPEG-Qualität beim Einbetten.
-export const BILD_QUALITAET = 0.85;
+// JPEG-Qualität beim Einbetten. 0,8 ist optisch kaum von 0,85 zu unterscheiden,
+// spart aber zusammen mit 1400 px rund 30 % Dateigröße pro Foto.
+export const BILD_QUALITAET = 0.8;
 
 // Startansicht der Karte (Brandenburg).
 export const KARTE_START = { lat: 52.4, lng: 12.95, zoom: 9 };

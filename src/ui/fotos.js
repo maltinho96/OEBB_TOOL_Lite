@@ -44,8 +44,7 @@ async function einzelbildEinsetzen(file) {
 
 // ---------- Abbildungs-Blöcke (Fotodokumentation, 1/2 Bilder) ----------
 
-function neuerAbbBlock() {
-  const container = aktiverTab().querySelector('.fotoContainer');
+function neuerAbbBlock(container = aktiverTab().querySelector('.fotoContainer')) {
   if (!container) return null;
   const block = document.createElement('div');
   block.className = 'abb modus-2';
@@ -217,5 +216,82 @@ export function fotosInit(root) {
     abbNummerieren();
     karteAktualisieren(zielBlock.closest('.tab'));
     e.target.value = '';
+  });
+}
+
+// ---------- Fotos aus einem gespeicherten Protokoll übernehmen ----------
+// Für "Protokoll laden" im Korrektur-Modus. Die Blöcke werden neu aufgebaut
+// (nicht als HTML kopiert), und nur eingebettete Bilder (data:image/…) werden
+// übernommen – eine geladene Datei kann so kein fremdes Markup und keine
+// externen Bildquellen einschleusen. Die Fotos werden nicht neu kodiert,
+// es geht also keine Qualität verloren.
+const DATA_BILD = /^data:image\/(jpeg|png|webp);base64,/;
+
+// Text eines (geladenen, nicht angezeigten) Elements mit Zeilenumbrüchen:
+// <br> und Absatz-Elemente werden zu \n. Liest nur Textknoten, übernimmt
+// also kein Markup.
+export function textMitUmbruechen(el) {
+  let out = '';
+  const lauf = (knoten) => {
+    knoten.childNodes.forEach((k) => {
+      if (k.nodeType === 3) out += k.data;
+      else if (k.nodeName === 'BR') out += '\n';
+      else if (k.nodeType === 1) {
+        if (/^(DIV|P)$/.test(k.nodeName) && out && !out.endsWith('\n')) out += '\n';
+        lauf(k);
+      }
+    });
+  };
+  lauf(el);
+  return out.replace(/\n+$/, '');
+}
+
+export function fotosUebernehmen(quelle, ziel) {
+  const container = ziel.querySelector('.fotoContainer');
+  if (!container) return 0;
+  container.innerHTML = '';
+  let anzahl = 0;
+  quelle.querySelectorAll('.fotoContainer .abb').forEach((alt) => {
+    const bilder = Array.from(alt.querySelectorAll('.abb-bilder img'))
+      .filter((i) => DATA_BILD.test(i.getAttribute('src') || ''));
+    if (!bilder.length) return;
+    const block = neuerAbbBlock(container);
+    if (alt.classList.contains('modus-1')) {
+      block.classList.remove('modus-2');
+      block.classList.add('modus-1');
+    }
+    bilder.forEach((q) => {
+      const img = document.createElement('img');
+      img.src = q.getAttribute('src');
+      img.title = 'Klicken, um Stellen rot einzukreisen';
+      const lat = parseFloat(q.getAttribute('data-lat'));
+      const lng = parseFloat(q.getAttribute('data-lng'));
+      if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        img.dataset.lat = lat;
+        img.dataset.lng = lng;
+      }
+      block.querySelector('.abb-bilder').appendChild(img);
+      anzahl++;
+    });
+    const text = alt.querySelector('.abb-text');
+    if (text) block.querySelector('.abb-text').innerText = textMitUmbruechen(text);
+  });
+  abbNummerieren();
+  karteAktualisieren(ziel);
+  return anzahl;
+}
+
+// Unterschrift-Bilder positionsweise übernehmen (ebenfalls nur data:image).
+export function unterschriftenUebernehmen(quelle, ziel) {
+  const q = quelle.querySelectorAll('.unterschrift-feld');
+  const z = ziel.querySelectorAll('.unterschrift-feld');
+  q.forEach((feld, i) => {
+    const bild = feld.querySelector('img');
+    const src = bild && bild.getAttribute('src');
+    if (!z[i] || !src || !DATA_BILD.test(src)) return;
+    z[i].innerHTML = '';
+    const img = document.createElement('img');
+    img.src = src;
+    z[i].appendChild(img);
   });
 }

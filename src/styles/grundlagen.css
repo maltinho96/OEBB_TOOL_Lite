@@ -22,6 +22,7 @@ body{
 }
 .logo{float:right; margin:-6px 0 8px 12px;}
 .logo img{width:180px; height:auto; display:none;}
+.logo img:not([src]){display:none !important;} /* Logo (noch) nicht geladen */
 h1{font-size:21px; margin:0 0 16px; color:var(--firma);}
 h1 .nr{display:inline-block; width:56px;}
 h1 .nr input{font-size:21px; font-weight:700; width:48px; border:none; text-align:center; color:var(--firma);}
@@ -233,3 +234,12 @@ h2.c-blau{color:#2a6f97;}
 .mk-leiste button{font:inherit; font-size:13px; padding:6px 14px; border-radius:6px; border:1px solid #888; background:#f4f4f4; cursor:pointer;}
 .mk-leiste button:disabled{opacity:.45; cursor:default;}
 .mk-leiste .mk-fertig{background:#e00000; border-color:#e00000; color:#fff; font-weight:600;}
+
+/* ---------- Textbaustein-Knöpfe (Belehrung Karel, ui/bausteine.js) ---------- */
+.bausteine{display:flex; flex-wrap:wrap; gap:5px; margin-top:6px;}
+.bausteine button{font:inherit; font-size:11.5px; padding:3px 9px; border:1px solid #999; border-radius:12px;
+  background:rgba(255,255,255,.75); cursor:pointer; color:#333;}
+.bausteine button:hover{border-color:#333; background:#fff;}
+.bausteine button.benutzt{background:#fff; border-color:#2e7d32; color:#2e7d32;}
+.bausteine button.benutzt::before{content:"✓ ";}
+.kb-auflagen{overflow:hidden;}

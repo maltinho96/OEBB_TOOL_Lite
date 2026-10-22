@@ -7,15 +7,16 @@
 //  - Übernommen werden Textfelder, Checkboxen, Radios, Selects und die
 //    contenteditable-Textblöcke (rechtliche Grundlagen, Visualisierungs-
 //    texte, Bestätigung).
-//  - NICHT übernommen werden Fotos (samt Karten) und Unterschriften –
-//    die sollen im Folgeprotokoll neu gesetzt werden, nicht veraltet
-//    mitwandern.
+//  - Fotos und Unterschriften nur auf Nachfrage ("Korrigieren"). Beim
+//    Folgeprotokoll bleiben sie bewusst weg – dort kommen neue hinein.
 //  - Der Ziel-Reiter wird aus dem eingebetteten protokollMeta-Block
 //    erkannt (typ), nicht aus dem gerade offenen Reiter.
 
 import { metaAusText } from '../core/meta.js';
 import { tabZeigen } from '../ui/tabs.js';
 import { einklappenAktualisieren } from '../ui/einklappen.js';
+import { fotosUebernehmen, unterschriftenUebernehmen, textMitUmbruechen } from '../ui/fotos.js';
+import { karteAktualisieren } from '../ui/fotokarte.js';
 
 // typ (aus protokollMeta) -> Reiter-Id
 const TYP_ZU_TAB = {
@@ -41,9 +42,20 @@ function felderUebernehmen(quelle, ziel) {
     });
   });
 
-  // Textareas: der Wert steht als Textinhalt (so schreibt es zustandSichern).
-  const qt = quelle.querySelectorAll('textarea');
-  const zt = ziel.querySelectorAll('textarea');
+  // Auflagen-Felder im Belehrungsprotokoll "Karel" über ihre Themen-Kennung
+  // (data-thema) zuordnen, damit die Reihenfolge der Blöcke egal ist. Ältere
+  // Dateien ohne Kennung hatten die Reihenfolge ALT_THEMEN.
+  const ALT_THEMEN = ['arten', 'gehoelz', 'boden', 'wasser', 'sonstiges'];
+  quelle.querySelectorAll('textarea.kb-auflagen').forEach((el, i) => {
+    const thema = el.getAttribute('data-thema') || ALT_THEMEN[i];
+    const z = thema && ziel.querySelector('textarea[data-thema="' + thema + '"]');
+    if (z) z.value = el.value || el.textContent || '';
+  });
+
+  // Übrige Textareas positionsweise. Der Wert steht als Textinhalt (so
+  // schreibt es zustandSichern).
+  const qt = quelle.querySelectorAll('textarea:not(.kb-auflagen)');
+  const zt = ziel.querySelectorAll('textarea:not(.kb-auflagen)');
   qt.forEach((el, i) => {
     if (zt[i]) {
       // Beim Export steht der Text als Elementinhalt zwischen den Tags
@@ -76,7 +88,7 @@ function felderUebernehmen(quelle, ziel) {
   const ze = ziel.querySelectorAll('[contenteditable]');
   // Nur Text übernehmen, kein HTML: eine geladene (fremde) Datei könnte sonst
   // Skripte/Markup einschleusen. innerText erhält dabei die Zeilenumbrüche.
-  qe.forEach((el, i) => { if (ze[i]) ze[i].innerText = el.innerText || el.textContent || ''; });
+  qe.forEach((el, i) => { if (ze[i]) ze[i].innerText = textMitUmbruechen(el); });
 }
 
 async function protokollLaden(file) {
@@ -104,16 +116,35 @@ async function protokollLaden(file) {
   // Aufgeklappt/eingeklappt passend zu den geladenen Häkchen darstellen und
   // abhängige Anzeigen (z. B. Fußzeile mit Auftraggeber) auffrischen.
   einklappenAktualisieren(ziel);
-  ziel.querySelectorAll('[data-feld]').forEach((el) => el.dispatchEvent(new Event('input', { bubbles: true })));
+  ziel.querySelectorAll('[data-feld], textarea').forEach((el) => el.dispatchEvent(new Event('input', { bubbles: true })));
 
-  // Nummer im Titel ist meist die des geladenen Protokolls – als Hinweis
-  // kurz melden, dass sie fürs Folgeprotokoll angepasst werden sollte.
+  // Gewähltes Projekt (für die Flächen auf den Karten) mit übernehmen.
+  ziel.dataset.projektId = quelle.getAttribute('data-projekt-id') || '';
+
+  // Korrigieren oder Folgeprotokoll? Nur fragen, wenn die Datei Bilder hat.
+  const hatBilder = quelle.querySelector('.fotoContainer .abb-bilder img, .unterschrift-feld img');
+  const korrigieren = !!hatBilder && confirm(
+    'Wie soll das Protokoll geladen werden?\n\n' +
+    'OK = Protokoll KORRIGIEREN: Fotos und Unterschrift werden mit übernommen.\n' +
+    'Abbrechen = FOLGEPROTOKOLL: nur die Texte, ohne Fotos und Unterschrift.'
+  );
+
+  if (korrigieren) {
+    const n = fotosUebernehmen(quelle, ziel);
+    unterschriftenUebernehmen(quelle, ziel);
+    alert('Protokoll zum Korrigieren geladen (' + n + ' Fotos). Nach den Änderungen wieder speichern.');
+    return;
+  }
+
+  karteAktualisieren(ziel);
+  // Nummer im Titel ist meist die des geladenen Protokolls – fürs
+  // Folgeprotokoll markieren, damit sie gleich überschrieben werden kann.
   const nummerFeld = ziel.querySelector('[data-feld=nummer]');
   if (nummerFeld) {
     nummerFeld.focus();
     nummerFeld.select && nummerFeld.select();
   }
-  alert('Protokoll geladen. Fotos und Unterschrift wurden bewusst NICHT übernommen – bitte Nummer/Datum anpassen und neu speichern.');
+  alert('Als Folgeprotokoll geladen – ohne Fotos und Unterschrift. Bitte Nummer/Datum anpassen und neu speichern.');
 }
 
 export function htmlImportInit() {

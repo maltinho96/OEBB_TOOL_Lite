@@ -108,6 +108,21 @@ export async function dateiLesen(ordner, name) {
     return null; // fehlt
   }
 }
+// Bilddatei (z. B. Firmenlogo) als data:-URL lesen; null, wenn sie fehlt.
+export async function dateiAlsDataUrl(ordner, name) {
+  try {
+    const fh = await ordner.getFileHandle(name);
+    const f = await fh.getFile();
+    return await new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(r.result);
+      r.onerror = reject;
+      r.readAsDataURL(f);
+    });
+  } catch {
+    return null; // fehlt
+  }
+}
 export async function dateiSchreiben(ordner, name, text) {
   const fh = await ordner.getFileHandle(name, { create: true });
   const w = await fh.createWritable();

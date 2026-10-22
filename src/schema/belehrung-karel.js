@@ -3,17 +3,28 @@
 // Naturschutz"), Gestaltung wie das Original-Belehrungsprotokoll
 // (belehrung.js): farbige table.form-Blöcke, Beschriftung links, Feld
 // rechts, je Block eine farbige Überschrift darüber. Das Original bleibt
-// unverändert daneben bestehen. Alle Felder sind leer.
+// unverändert daneben bestehen. Alle Felder sind leer; unter jedem
+// Auflagen-Feld gibt es Knöpfe für Textbausteine (config/textbausteine.js,
+// eingefügt von ui/bausteine.js – die Knöpfe werden nicht gedruckt).
 
 import { logo, abschlussFusszeile } from './felder.js';
 import { visZeile, VIS_TEXTE } from './belehrung.js';
+import { TEXTBAUSTEINE } from '../config/textbausteine.js';
+import { esc } from '../core/util.js';
 
 // Auflagen-Block eines Themas – wie "Festlegungen der zuständigen
 // Umweltbehörde" im Original: farbige Überschrift + ein farbiges Textfeld.
-function thema(titel, farbe) {
+// data-thema identifiziert das Feld eindeutig (auch fürs "Protokoll laden",
+// unabhängig von der Reihenfolge der Blöcke).
+function thema(key, titel, farbe) {
+  const bausteine = TEXTBAUSTEINE[key] || [];
+  const knoepfe = bausteine.length
+    ? `<div class="bausteine kein-druck">${bausteine.map((b, i) =>
+        `<button type="button" data-aktion="baustein" data-thema="${key}" data-idx="${i}" title="${esc(b.text)}">${esc(b.kurz)}</button>`).join('')}</div>`
+    : '';
   return `
 <h2 class="c-${farbe}">${titel}</h2>
-<table class="form"><tr class="bg-${farbe}-h"><td><textarea class="kb-auflagen"></textarea></td></tr></table>`;
+<table class="form"><tr class="bg-${farbe}-h"><td><textarea class="kb-auflagen" data-thema="${key}"></textarea>${knoepfe}</td></tr></table>`;
 }
 
 export const belehrungKarel = {
@@ -72,11 +83,11 @@ ${logo()}
   <tr class="bg-grau"><td class="label">Aktenzeichen:</td><td colspan="3"><textarea rows="2"></textarea></td></tr>
 </table>
 
-${thema('Artenschutz', 'pink')}
-${thema('Gehölzschutz', 'gruen')}
-${thema('Bodenschutz', 'orange')}
-${thema('Gewässer- und Grundwasserschutz', 'blau')}
-${thema('Sonstige Auflagen', 'grau')}
+${thema('gehoelz', 'Gehölzschutz', 'gruen')}
+${thema('boden', 'Bodenschutz', 'orange')}
+${thema('arten', 'Artenschutz', 'pink')}
+${thema('wasser', 'Gewässer- und Grundwasserschutz', 'blau')}
+${thema('sonstiges', 'Sonstige Auflagen', 'grau')}
 
 <h2 class="c-grau">Visualisierung der geltenden Bestimmungen</h2>
 <div class="visContainer">${VIS_TEXTE.map((text, i) => visZeile(text, 'belehrung_bild_' + String(i + 1).padStart(2, '0') + '.png')).join('')}
