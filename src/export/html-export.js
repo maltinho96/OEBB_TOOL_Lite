@@ -92,7 +92,7 @@ function metaAusTab(tab) {
 
 export async function alsHtmlSpeichern() {
   const tab = aktiverTab();
-  if (!tab || !tab.id.startsWith('tab-') || ['tab-uebersicht', 'tab-karte', 'tab-stunden'].includes(tab.id)) {
+  if (!tab || !PROTOKOLL_TABS.includes(tab.id)) {
     alert('Bitte zuerst einen Protokoll-Reiter öffnen (Begehung/Vorbegehung/Belehrung).');
     return;
   }

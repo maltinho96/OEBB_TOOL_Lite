@@ -1,5 +1,7 @@
-// Übersicht-Reiter: HTML-Gerüst, Statistik-Kacheln, Projekttabelle,
-// Einrichtung (Grundordner). Das Projektformular selbst lebt in
+// Übersicht- und Projekte-Reiter.
+//  - Übersicht: Einrichtung (Grundordner, Firmen), Team, Verteiler.
+//  - Projekte: Statistik-Kacheln, Projektformular, Projekttabelle.
+// Das Projektformular selbst lebt in
 // ui/projektformular.js, die Team-Verwaltung in ui/team.js, die
 // Shapefile-Flächen in ui/shapefiles.js – diese Datei bindet alle drei
 // nur noch ein und kümmert sich um Laden/Rendern der Übersicht.
@@ -11,6 +13,7 @@ import { dbSetzen, dbHolen } from '../core/zustand.js';
 import { logo } from '../schema/felder.js';
 import { firmenLaden } from './firma.js';
 import { teamAnzeigen, teamInit } from './team.js';
+import { verteilerAnzeigen, verteilerInit } from './verteiler.js';
 import { shapefilesInit } from './shapefiles.js';
 import {
   projektformularInit,
@@ -29,13 +32,13 @@ function uebersichtTabHtml() {
   return `
 ${logo()}
 <h1>Übersicht</h1>
-<p style="margin-top:2px; color:#555">Protokolle, Projekte und Stundennachweise – alles in einer Datei, gemeinsam über den Grundordner.</p>
+<p style="margin-top:2px; color:#555">Protokolle, Projekte und Stundennachweise – gemeinsam über den Grundordner.</p>
 
 <h2 class="c-grau">Einrichtung</h2>
 <p>Der <b>Grundordner</b> ist der Ordner, in dem diese Anwendung und die gemeinsame Datenbank
 (<code>oebb_datenbank.json</code>) liegen. Beim ersten Start hier klicken – danach merkt sich der
-Browser die Verknüpfung. Jedes Projekt bekommt unten einmalig seinen Protokollordner verknüpft –
-danach genügt dort „Scannen“.</p>
+Browser die Verknüpfung. Jedes Projekt (Reiter „Projekte“) bekommt einmalig seinen Protokollordner
+verknüpft – danach genügt dort „Scannen“.</p>
 <p class="kein-druck">
   <button class="haupt-knopf" data-aktion="grundordner-festlegen">📂 Grundordner festlegen</button>
   <span id="grundordnerStatus" style="margin-left:10px; color:#555;">Noch nicht festgelegt.</span>
@@ -61,8 +64,22 @@ Fehlt die Datei, legt die App sie beim Verbinden mit den Standard-Firmen an.
   <span style="font-size:11.5px; color:#777;">– wird bei neuen Protokollen automatisch als Baubegleiter*in eingetragen.</span>
 </p>
 
+<h2 class="c-grau">Verteiler</h2>
+<p style="font-size:11.5px; color:#777; margin:0 0 4px;">Empfänger*innen der Protokolle. Gilt für alle im Team (liegt in der gemeinsamen Datenbank).</p>
+<div id="verteilerTabelle"></div>
+<p class="kein-druck" id="verteilerKnoepfe" style="display:none; margin-top:6px;">
+  <button class="ordner-knopf" data-aktion="verteiler-kopieren">📋 Adressen kopieren</button>
+  <button class="ordner-knopf" data-aktion="verteiler-mail">✉ Mail an alle</button>
+</p>
+`;
+}
+
+function projekteTabHtml() {
+  return `
+${logo()}
+<h1>Projekte</h1>
+<p id="projekteOhneOrdner" style="color:#555">Bitte zuerst in der <b>Übersicht</b> den Grundordner verbinden.</p>
 <div id="uebersichtProjekteBereich" style="display:none">
-<h2 class="c-grau">Projekte</h2>
 <div class="dash-zahlen" id="startZahlen"></div>
 <div class="aktionsleiste kein-druck">
   <button class="haupt-knopf" data-aktion="projekt-formular-oeffnen">＋ Neues Projekt anlegen</button>
@@ -160,6 +177,8 @@ async function uebersichtAktualisieren(interaktiv) {
   const bereich = document.getElementById('uebersichtProjekteBereich');
   const status = document.getElementById('grundordnerStatus');
   const knopf = document.querySelector('[data-aktion="grundordner-festlegen"]');
+  const hinweis = document.getElementById('projekteOhneOrdner');
+  if (hinweis) hinweis.style.display = ordner ? 'none' : '';
   if (!ordner) {
     if (bereich) bereich.style.display = 'none';
     // Handle gespeichert, aber Berechtigung (noch) nicht erteilt? Dann
@@ -186,6 +205,7 @@ async function uebersichtAktualisieren(interaktiv) {
   statusText(Object.keys(db.projekte).length + ' Projekte in der Datenbank (' + ordner.name + ').');
   neuZeichnen(db);
   teamAnzeigen();
+  verteilerAnzeigen();
 }
 
 function neuZeichnen(db) {
@@ -331,23 +351,30 @@ function startRendern(db) {
 
 // ---------- Initialisierung ----------
 
-export function uebersichtTabInit(mount) {
+function sectionAnlegen(mount, id, html, aktiv) {
   const section = document.createElement('section');
-  section.className = 'tab aktiv';
-  section.id = 'tab-uebersicht';
-  section.innerHTML = uebersichtTabHtml();
+  section.className = aktiv ? 'tab aktiv' : 'tab';
+  section.id = id;
+  section.innerHTML = html;
   mount.appendChild(section);
+  return section;
+}
 
-  // Untermodule verdrahten. Jedes hört selbst auf `section`, nur nach
+export function uebersichtTabInit(mount) {
+  const uebersicht = sectionAnlegen(mount, 'tab-uebersicht', uebersichtTabHtml(), true);
+  const projekte = sectionAnlegen(mount, 'tab-projekte', projekteTabHtml(), false);
+
+  // Untermodule verdrahten. Jedes hört selbst auf seine Section, nur nach
   // seinen eigenen data-aktion-Werten filternd – keine Überschneidung.
-  projektformularInit(section);
-  teamInit(section);
-  shapefilesInit(section);
+  teamInit(uebersicht);
+  verteilerInit(uebersicht);
+  projektformularInit(projekte);
+  shapefilesInit(projekte);
   // Wenn das Formular etwas an der DB ändert, hier neu zeichnen (statt
   // dass projektformular.js dashboard.js importieren müsste).
   setAufAenderung(neuZeichnen);
 
-  section.addEventListener('click', (e) => {
+  const klick = (e) => {
     const btn = e.target.closest('[data-aktion]');
     if (!btn) return;
     const pid = btn.dataset.pid;
@@ -368,9 +395,11 @@ export function uebersichtTabInit(mount) {
       }
       // stundenzettel-drucken / projekt-exportieren: verdrahtet in export/xlsx-export.js (Stufe 5)
     }
-  });
+  };
+  uebersicht.addEventListener('click', klick);
+  projekte.addEventListener('click', klick);
 
-  section.addEventListener('change', (e) => {
+  projekte.addEventListener('change', (e) => {
     if (e.target.id === 'projektStatusFilter') {
       const db = dbHolen();
       if (db) neuZeichnen(db);
@@ -378,8 +407,8 @@ export function uebersichtTabInit(mount) {
   });
 }
 
-// Wird beim Wechsel auf den Übersicht-Reiter aufgerufen (siehe ui/tabs.js
-// tabWechselHook) und beim ersten Laden der App (wie im Original).
+// Wird beim Wechsel auf den Übersicht- oder Projekte-Reiter aufgerufen
+// (siehe ui/tabs.js tabWechselHook) und beim ersten Laden der App.
 export function uebersichtBeiAnzeigeAktualisieren(id) {
-  if (id === 'tab-uebersicht') uebersichtAktualisieren(false);
+  if (id === 'tab-uebersicht' || id === 'tab-projekte') uebersichtAktualisieren(false);
 }

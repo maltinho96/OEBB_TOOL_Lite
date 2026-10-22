@@ -243,3 +243,8 @@ h2.c-blau{color:#2a6f97;}
 .bausteine button.benutzt{background:#fff; border-color:#2e7d32; color:#2e7d32;}
 .bausteine button.benutzt::before{content:"✓ ";}
 .kb-auflagen{overflow:hidden;}
+/* Verteiler (Übersicht) */
+table.verteiler{max-width:640px;}
+table.verteiler input{width:100%; box-sizing:border-box; font:inherit; padding:3px 5px;}
+table.verteiler td:last-child, table.verteiler th:last-child{width:44px;}
+.vt-weg{border:none; background:none; color:#a00; cursor:pointer; font-size:13px;}
