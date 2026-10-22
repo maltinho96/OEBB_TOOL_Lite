@@ -145,7 +145,7 @@ function stTabRendern() {
     return;
   }
   const p = db.projekte[pid];
-  const typNamen = { protokoll: 'Protokoll', vorbegehung: 'Vorbegehung', belehrung: 'Belehrung', 'belehrung-karel': 'Belehrung (Karel)' };
+  const typNamen = { protokoll: 'Protokoll', vorbegehung: 'Vorbegehung', belehrung: 'Belehrung (altes Format)', 'belehrung-karel': 'Belehrung' };
   const dateien = Object.keys(p.eintraege)
     .map((k) => { const e = p.eintraege[k]; e.datei = k; return e; })
     .sort((a, b) => (a.datum || '').localeCompare(b.datum || '') || a.datei.localeCompare(b.datei));

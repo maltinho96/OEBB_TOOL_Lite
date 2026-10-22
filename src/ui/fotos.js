@@ -111,24 +111,6 @@ async function fotosVerarbeiten(files) {
   karteAktualisieren(tab);
 }
 
-// ---------- Belehrung: Visualisierungszeilen ----------
-
-function visZeileHinzufuegen(btn) {
-  // Im Karel-Protokoll hat jeder Themenblock (.vis-gruppe) seine eigene
-  // Piktogramm-Liste; sonst die (einzige) Liste des Reiters.
-  const container = (btn.closest('.vis-gruppe') || btn.closest('.tab')).querySelector('.visContainer');
-  const z = document.createElement('div');
-  z.className = 'vis-zeile';
-  z.innerHTML =
-    '<div class="vis-bild" data-einzelbild="vis"></div>' +
-    '<div class="vis-text" contenteditable="true"></div>' +
-    '<button class="vis-entfernen kein-druck" data-aktion="vis-entfernen">✕</button>';
-  container.appendChild(z);
-  z.querySelectorAll('[data-einzelbild]').forEach((el) => {
-    el.addEventListener('click', () => einzelbildWaehlen(el, el.dataset.einzelbild));
-  });
-}
-
 // ---------- Initialisierung ----------
 
 export function fotosInit(root) {
@@ -201,9 +183,6 @@ export function fotosInit(root) {
         break;
       case 'vis-entfernen':
         btn.closest('.vis-zeile').remove();
-        break;
-      case 'vis-zeile-hinzu':
-        visZeileHinzufuegen(btn);
         break;
     }
   });

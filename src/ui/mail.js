@@ -1,7 +1,7 @@
 // Knopf "✉ Mail vorbereiten" am Ende jedes Protokolls: öffnet das
 // Mailprogramm (mailto:) mit Empfängern, Betreff und fertigem Text.
 //   - Begehung / Vorbegehung: an den Verteiler des gewählten Projekts
-//   - Belehrung (beide):       an die E-Mail der Bauleitung im Protokoll
+//   - Belehrung:               an die E-Mail der Bauleitung im Protokoll
 // Anhänge kann mailto: nicht mitgeben – das PDF legt man selbst dazu.
 
 import { dbHolen } from '../core/zustand.js';
@@ -41,7 +41,7 @@ function projektInfo(tab, name) {
 }
 
 function empfaenger(tab, typ) {
-  if (typ === 'belehrung' || typ === 'belehrung-karel') {
+  if (typ === 'belehrung-karel') {
     const m = feld(tab, 'bauleitung-email');
     return { adressen: EMAIL_MUSTER.test(m) ? [m] : [], fehlt: 'Keine gültige E-Mail der Bauleitung im Protokoll eingetragen.' };
   }

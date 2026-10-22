@@ -64,7 +64,6 @@ function dateinameBauen(tab) {
 
   if (typ === 'protokoll') return datum + '_' + (nr || 'XX') + '.ÖBB_Protokoll_' + ort + '.html';
   if (typ === 'vorbegehung') return datum + (nr ? '_' + nr + '.' : '_') + 'ÖBB_Vorbegehungsprotokoll_' + ort + '.html';
-  if (typ === 'belehrung') return datum + '_ÖBB_Belehrungsprotokoll_' + ort + '.html';
   // Wie die Word-Vorlage: JJMMTT_Belehrungsprotokoll_TIEFBAUFIRMA_AUSBAUGEBIET
   if (typ === 'belehrung-karel') {
     const firma = sauber(feld('tiefbaufirma')) || 'Tiefbaufirma';

@@ -22,7 +22,6 @@ import { karteAktualisieren } from '../ui/fotokarte.js';
 const TYP_ZU_TAB = {
   protokoll: 'tab-protokoll',
   vorbegehung: 'tab-vorbegehung',
-  belehrung: 'tab-belehrung',
   'belehrung-karel': 'tab-belehrung-karel',
 };
 
@@ -107,6 +106,11 @@ async function protokollLaden(file) {
   const text = await file.text();
   const meta = metaAusText(text);
   const zielTabId = (meta && TYP_ZU_TAB[meta.typ]) || null;
+  if (meta && meta.typ === 'belehrung') {
+    alert('Das ist ein Protokoll im alten Belehrungs-Format, das es nicht mehr gibt.\n' +
+      'Bitte das Belehrungsprotokoll neu anlegen.');
+    return;
+  }
   if (!zielTabId) {
     alert('Diese Datei sieht nicht wie ein bekanntes Protokoll aus (kein gültiger Protokoll-Typ gefunden).');
     return;

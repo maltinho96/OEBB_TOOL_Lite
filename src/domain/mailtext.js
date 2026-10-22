@@ -2,7 +2,7 @@
 // kein DOM – die Werte sammelt ui/mail.js aus dem Protokoll ein.
 //
 // d = {
-//   typ: 'protokoll' | 'vorbegehung' | 'belehrung' | 'belehrung-karel',
+//   typ: 'protokoll' | 'vorbegehung' | 'belehrung-karel',
 //   nummer, datum (JJJJ-MM-TT), auftraggeber, ort, landkreis, projekt, aktenzeichen,
 //   abweichungen: ['Baumschutz', 'Arten- und Habitatschutz: Fledermausschutz', …],
 //   absender, firma,
@@ -28,7 +28,6 @@ function bauvorhaben(d) {
 export function mailBetreff(d) {
   const titel = {
     vorbegehung: nummerText(d.nummer) + 'Vorbegehungsprotokoll',
-    belehrung: 'Belehrungsprotokoll',
     'belehrung-karel': 'Belehrungsprotokoll',
   }[d.typ] || nummerText(d.nummer) + 'Protokoll';
   const orte = [d.ort, d.landkreis && d.landkreis !== d.ort ? d.landkreis : ''].filter(Boolean).join(', ');
@@ -43,7 +42,7 @@ export function mailText(d) {
     einleitung = 'im Anhang übersende ich Ihnen das ' + nummerText(d.nummer) + 'Protokoll der Vorbegehung zur ökologischen Baubegleitung' +
       (am ? ', durchgeführt am ' + am : '') + ', ' + bauvorhaben(d) + '.';
     kern = 'Die im Vorbegehungsprotokoll festgelegten Maßnahmen sind von der Baufirma umzusetzen.';
-  } else if (d.typ === 'belehrung' || d.typ === 'belehrung-karel') {
+  } else if (d.typ === 'belehrung-karel') {
     einleitung = 'im Anhang übersende ich Ihnen das Belehrungsprotokoll zur ökologischen Baubegleitung' +
       (am ? ' vom ' + am : '') + ' ' + bauvorhaben(d) + '.';
     kern = 'Bitte beachten Sie die darin festgelegten Auflagen zum Naturschutz und geben Sie das Protokoll ' +

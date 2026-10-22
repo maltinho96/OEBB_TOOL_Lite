@@ -238,7 +238,7 @@ function uebersichtRendern(db) {
     ziel.innerHTML = '<p>Keine Projekte mit diesem Status. <button class="ordner-knopf" data-aktion="filter-alle">Alle anzeigen</button></p>';
     return;
   }
-  const typNamen = { protokoll: 'Protokoll', vorbegehung: 'Vorbegehung', belehrung: 'Belehrung', 'belehrung-karel': 'Belehrung (Karel)' };
+  const typNamen = { protokoll: 'Protokoll', vorbegehung: 'Vorbegehung', belehrung: 'Belehrung (altes Format)', 'belehrung-karel': 'Belehrung' };
   const statusLabel = { aktuell: '▶ Aktuell', geplant: '🕓 Geplant', abgeschlossen: '✔ Abgeschlossen' };
   let html = '<table class="uebersicht"><tr>' +
     '<th>Projekt</th><th>Projektnummer</th><th>Ort</th><th>Status</th><th>Prot.</th><th>Vorb.</th><th>Bel.</th>' +

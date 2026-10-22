@@ -1,14 +1,14 @@
-// Belehrungsprotokoll "Karel" – Inhalt nach der Word-Vorlage
-// YYMMDD_Belehrungsprotokoll_TIEFBAUFIRMA_AUSBAUGEBIET.docx ("Auflagen zum
-// Naturschutz"), Gestaltung wie das Original-Belehrungsprotokoll
-// (belehrung.js): farbige table.form-Blöcke, Beschriftung links, Feld
-// rechts, je Block eine farbige Überschrift darüber. Das Original bleibt
-// unverändert daneben bestehen. Alle Felder sind leer; unter jedem
+// Belehrungsprotokoll (Variante "Karel", inzwischen das einzige) – Inhalt
+// nach der Word-Vorlage YYMMDD_Belehrungsprotokoll_TIEFBAUFIRMA_AUSBAUGEBIET
+// ("Auflagen zum Naturschutz"): farbige table.form-Blöcke, Beschriftung
+// links, Feld rechts, je Block eine farbige Überschrift darüber. Die
+// interne Kennung bleibt "belehrung-karel", damit gespeicherte Protokolle
+// weiter erkannt werden. Alle Felder sind leer; unter jedem
 // Auflagen-Feld gibt es Knöpfe für Textbausteine (config/textbausteine.js,
 // eingefügt von ui/bausteine.js – die Knöpfe werden nicht gedruckt).
 
 import { logo, mailKnopf, abschlussFusszeile } from './felder.js';
-import { visZeile, VIS_TEXTE } from './belehrung.js';
+import { visZeile, VIS_TEXTE } from './visualisierung.js';
 import { TEXTBAUSTEINE } from '../config/textbausteine.js';
 import { esc } from '../core/util.js';
 
@@ -34,7 +34,7 @@ function thema(key, titel, farbe) {
 export const belehrungKarel = {
   id: 'tab-belehrung-karel',
   key: 'belehrung-karel',
-  label: '🎓 Belehrung (Karel)',
+  label: '🎓 Belehrungsprotokoll',
   html: () => `
 ${logo()}
 <h1>Auflagen zum Naturschutz</h1>
@@ -99,15 +99,6 @@ ${thema('sonstiges', 'Sonstige Auflagen', 'grau')}
 
 <h2 class="c-gelb">Hinweise</h2>
 <table class="form">
-<tr class="bg-gelb-h"><td>
-  <div class="kb-punkt">Bei länger offenbleibenden Gräben/Gruben ist mindestens eine der folgenden Artenschutzstrategien umzusetzen:</div>
-  <div class="kb-wahl">
-    <label class="cb"><input type="checkbox" checked> Anstellen von Brettern als Ausstiegshilfe</label>
-    <label class="cb"><input type="checkbox" checked> einseitige Abschrägung (ca. 45°) am Graben-/Grubenrand</label>
-    <label class="cb"><input type="checkbox" checked> Aufstellen eines geeigneten Schutzzauns</label>
-  </div>
-  <div class="kb-punkt">Vor dem Verfüllen der Gräben und Gruben sind diese auf das Vorhandensein von wildlebenden Arten zu prüfen.</div>
-</td></tr>
 <tr class="bg-gelb-h"><td><div class="kb-hinweise" contenteditable="true">Eine ökologische Baubegleitung ist für die gesamte Dauer des Vorhabens gefordert und hat die Baustelle regelmäßig zu begehen (mind. 1× pro Woche). Die Protokolle werden wöchentlich zusammengefasst durch die ÖBB an die UNB versandt.
 
 Bei einer ökologischen Baubegleitung handelt es sich um eine beratende Tätigkeit, das Verursacherprinzip bleibt davon unangetastet.
@@ -115,7 +106,7 @@ Bei einer ökologischen Baubegleitung handelt es sich um eine beratende Tätigke
 Der Bauleiter/Polier der beauftragten Tiefbaufirma ist dafür verantwortlich, alle ausführenden Arbeitskräfte der Baustelle (dies umfasst ebenfalls ggf. von der Tiefbaufirma beauftragte Subunternehmer) über sämtliche Punkte dieses Protokolls auf verständliche, auch sprachlich verständliche, und praxistaugliche Weise aufzuklären und zu sensibilisieren.</div></td></tr>
 <tr class="bg-gelb-h"><td>
   <div class="kb-punkt">Infoflyer „Baumschutz auf Baustellen“ an die Bauleitung in folgenden Sprachen übergeben:</div>
-  <div class="kb-wahl kb-sprachen">
+  <div class="kb-sprachen">
     <label class="cb"><input type="checkbox" checked> Deutsch</label>
     <label class="cb"><input type="checkbox"> Rumänisch</label>
     <label class="cb"><input type="checkbox"> Polnisch</label>
