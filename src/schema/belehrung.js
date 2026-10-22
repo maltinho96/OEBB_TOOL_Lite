@@ -6,7 +6,7 @@
 // data-Hooks: vis-bild -> data-einzelbild="vis", ✕ -> data-aktion="vis-entfernen",
 //             ＋ Zeile -> data-aktion="vis-zeile-hinzu" (verdrahtet in ui/fotos.js).
 
-import { logo, abschlussFusszeile } from './felder.js';
+import { logo, mailKnopf, abschlussFusszeile } from './felder.js';
 
 // import.meta.env.BASE_URL: lokal "/", auf GitHub Pages "/OEBB_TOOL_Lite/",
 // spaeter unter Tauri entsprechend – siehe felder.js logo() fuer denselben Trick.
@@ -73,7 +73,8 @@ ${logo()}
 <table class="form">
   <tr class="bg-blau"><td class="label" style="width:220px">Leitungsinhabende Firma:</td><td><input type="text" data-feld="auftraggeber-fuss"></td></tr>
   <tr class="bg-blau-h"><td class="label">Aufgrabende Firma:</td><td><input type="text"></td></tr>
-  <tr class="bg-blau"><td class="label">Projekt:</td><td><textarea rows="2" data-feld="projekt"></textarea></td></tr>
+  <tr class="bg-blau"><td class="label">E-Mail Bauleiter*in:</td><td><input type="email" data-feld="bauleitung-email"></td></tr>
+  <tr class="bg-blau-h"><td class="label">Projekt:</td><td><textarea rows="2" data-feld="projekt"></textarea></td></tr>
 </table>
 
 <h2 class="c-grau">Geltungsbereich und Adressat*innen des Belehrungsprotokolls</h2>
@@ -91,7 +92,7 @@ ${logo()}
     <td class="label" colspan="2">Teilnehmende:<textarea rows="3"></textarea></td>
     <td class="label" colspan="2">Adressiert an:<textarea rows="3"></textarea></td>
   </tr>
-  <tr class="bg-grau"><td class="label" colspan="2">Geltendes naturschutzrechtliches Aktenzeichen:</td><td colspan="2"><input type="text"></td></tr>
+  <tr class="bg-grau"><td class="label" colspan="2">Geltendes naturschutzrechtliches Aktenzeichen:</td><td colspan="2"><input type="text" data-feld="aktenzeichen"></td></tr>
   <tr class="bg-grau-h"><td class="label">Projektnummer:</td><td colspan="3"><input type="text" data-feld="projektnummer"></td></tr>
 </table>
 
@@ -121,6 +122,8 @@ Ich verpflichte mich, diese Bestimmungen bei der Ausführung der Bauarbeiten str
   </tr>
 </table>
 </div>
+
+${mailKnopf('an die Bauleitung (E-Mail oben)')}
 
 ${abschlussFusszeile()}
 `,

@@ -7,7 +7,7 @@
 // Auflagen-Feld gibt es Knöpfe für Textbausteine (config/textbausteine.js,
 // eingefügt von ui/bausteine.js – die Knöpfe werden nicht gedruckt).
 
-import { logo, abschlussFusszeile } from './felder.js';
+import { logo, mailKnopf, abschlussFusszeile } from './felder.js';
 import { visZeile, VIS_TEXTE } from './belehrung.js';
 import { TEXTBAUSTEINE } from '../config/textbausteine.js';
 import { esc } from '../core/util.js';
@@ -61,7 +61,7 @@ ${logo()}
     <td class="label">Telefon:</td><td><input type="tel"></td>
   </tr>
   <tr class="bg-grau">
-    <td class="label">E-Mail:</td><td><input type="email"></td>
+    <td class="label">E-Mail:</td><td><input type="email" data-feld="bauleitung-email"></td>
     <td class="label">E-Mail:</td><td><input type="email"></td>
   </tr>
 </table>
@@ -80,7 +80,7 @@ ${logo()}
     <td class="label">E-Mail:</td><td colspan="3"><input type="email"></td>
   </tr>
   <tr class="bg-grau-h"><td class="label">Zuständige Naturschutzbehörde:</td><td colspan="3"><textarea rows="2"></textarea></td></tr>
-  <tr class="bg-grau"><td class="label">Aktenzeichen:</td><td colspan="3"><textarea rows="2"></textarea></td></tr>
+  <tr class="bg-grau"><td class="label">Aktenzeichen:</td><td colspan="3"><textarea rows="2" data-feld="aktenzeichen"></textarea></td></tr>
 </table>
 
 ${thema('gehoelz', 'Gehölzschutz', 'gruen')}
@@ -116,6 +116,8 @@ Der Bauleiter/Polier der beauftragten Tiefbaufirma ist dafür verantwortlich, al
   </tr>
 </table>
 </div>
+
+${mailKnopf('an die Bauleitung (E-Mail oben)')}
 
 ${abschlussFusszeile()}
 `,

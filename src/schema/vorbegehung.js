@@ -1,6 +1,6 @@
 // Vorbegehungsprotokoll. HTML originalgetreu; Logos/onclick angepasst.
 
-import { logo, fotodokumentation, uebersichtsplan, abschlussFusszeile } from './felder.js';
+import { logo, fotodokumentation, uebersichtsplan, mailKnopf, abschlussFusszeile } from './felder.js';
 
 export const vorbegehung = {
   id: 'tab-vorbegehung',
@@ -31,7 +31,7 @@ ${logo()}
     <td class="label" colspan="2">Teilnehmende:<textarea rows="3"></textarea></td>
     <td class="label" colspan="2">Adressiert an:<textarea rows="3"></textarea></td>
   </tr>
-  <tr class="bg-grau"><td class="label" colspan="2">Geltendes naturschutzrechtliches Aktenzeichen:</td><td colspan="2"><input type="text"></td></tr>
+  <tr class="bg-grau"><td class="label" colspan="2">Geltendes naturschutzrechtliches Aktenzeichen:</td><td colspan="2"><input type="text" data-feld="aktenzeichen"></td></tr>
   <tr class="bg-grau-h"><td class="label">Projektnummer:</td><td colspan="3"><input type="text" data-feld="projektnummer"></td></tr>
 </table>
 
@@ -68,6 +68,8 @@ ${logo()}
 ${uebersichtsplan()}
 
 ${fotodokumentation('Je 2 Fotos ergeben eine Abbildung (umschaltbar auf 1 Bild) · Fotos mit GPS-Daten erscheinen automatisch auf der Karte über dem Block · Foto anklicken, um Stellen rot einzukreisen')}
+
+${mailKnopf('an den Verteiler des Projekts')}
 
 ${abschlussFusszeile()}
 `,

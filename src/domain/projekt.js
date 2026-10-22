@@ -62,3 +62,29 @@ export function eintraegeZusammenfuehren(projekt, neu) {
     projekt.eintraege[datei] = neu[datei];
   });
 }
+
+// ---------- Aktenzeichen und Verteiler je Projekt ----------
+//
+// p.aktenzeichen: [{ az, kommentar, haupt }]  – höchstens eins mit haupt
+// p.verteiler:    [{ name, email }]
+// Ältere Projekte hatten nur ein einzelnes infos.aktenzeichen (Text); das
+// gilt dann als Haupt-Aktenzeichen.
+
+export function aktenzeichenListe(p) {
+  if (!p) return [];
+  if (Array.isArray(p.aktenzeichen)) return p.aktenzeichen;
+  const alt = p.infos && p.infos.aktenzeichen;
+  return alt ? [{ az: alt, kommentar: '', haupt: true }] : [];
+}
+
+export function hauptAktenzeichen(p) {
+  const liste = aktenzeichenListe(p);
+  const h = liste.find((a) => a.haupt);
+  return h ? h.az : '';
+}
+
+export function verteilerListe(p) {
+  return p && Array.isArray(p.verteiler) ? p.verteiler : [];
+}
+
+export const EMAIL_MUSTER = /^[^\s@;,]+@[^\s@;,]+\.[^\s@;,]+$/;

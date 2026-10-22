@@ -1,7 +1,9 @@
 // Projekt-Auswahl oben in jedem Protokoll (nur am Bildschirm, nicht im
 // Druck). Wählt man ein Projekt aus der Datenbank:
 //   - Projekt-Name und Projektnummer werden ins Protokoll übernommen,
-//   - Auftraggeber und Ort nur, wenn das Feld noch leer ist,
+//   - Auftraggeber, Ort und Haupt-Aktenzeichen nur, wenn das Feld noch
+//     leer ist; neben dem Aktenzeichen-Feld erscheint eine Auswahl aller
+//     Aktenzeichen des Projekts (mit Kommentar), um das passende zu wählen,
 //   - die Flächen (Shapes) des Projekts erscheinen im Übersichtsplan und
 //     in den Karten über den Foto-Blöcken (ui/fotokarte.js).
 //
@@ -11,6 +13,7 @@
 import { dbHolen } from '../core/zustand.js';
 import { esc } from '../core/util.js';
 import { karteAktualisieren } from './fotokarte.js';
+import { aktenzeichenListe, hauptAktenzeichen } from '../domain/projekt.js';
 
 import { PROTOKOLL_TABS } from '../config/konstanten.js';
 
@@ -75,8 +78,35 @@ function projektUebernehmen(tab, pid) {
     feldSetzen(tab, '[data-feld="projektnummer"]', p.projektnummer);
     feldSetzen(tab, '[data-feld="auftraggeber-fuss"]', p.infos && p.infos.auftraggeber, true);
     feldSetzen(tab, '[data-feld="ort"]', p.ort, true);
+    feldSetzen(tab, '[data-feld="aktenzeichen"]', hauptAktenzeichen(p), true);
   }
+  azAuswahl(tab, p);
   karteAktualisieren(tab);
+}
+
+// Auswahlliste neben dem Aktenzeichen-Feld (nur am Bildschirm). Erscheint,
+// sobald das Projekt mindestens ein Aktenzeichen hat.
+function azAuswahl(tab, p) {
+  const feld = tab.querySelector('[data-feld="aktenzeichen"]');
+  if (!feld) return;
+  let sel = feld.parentElement.querySelector('select.az-wahl');
+  const liste = aktenzeichenListe(p);
+  if (!liste.length) { if (sel) sel.remove(); return; }
+  if (!sel) {
+    sel = document.createElement('select');
+    sel.className = 'az-wahl kein-druck';
+    sel.title = 'Aktenzeichen aus dem Projekt übernehmen';
+    sel.addEventListener('change', () => {
+      if (sel.value === '') return;
+      feld.value = sel.value;
+      feld.dispatchEvent(new Event('input', { bubbles: true }));
+      sel.value = '';
+    });
+    feld.after(sel);
+  }
+  sel.innerHTML = '<option value="">▾ Aktenzeichen aus Projekt wählen …</option>' +
+    liste.map((a) => '<option value="' + esc(a.az) + '">' + (a.haupt ? '★ ' : '') + esc(a.az) +
+      (a.kommentar ? ' – ' + esc(a.kommentar) : '') + '</option>').join('');
 }
 
 // Als tabWechselHook registrieren: Liste auffrischen + Karten neu zeichnen
@@ -86,6 +116,9 @@ export function projektwahlBeiAnzeige(id) {
   const tab = document.getElementById(id);
   if (!tab) return;
   optionenFuellen(tab);
+  const db = dbHolen();
+  const pid = tab.dataset.projektId;
+  azAuswahl(tab, pid && db && db.projekte ? db.projekte[pid] : null);
   karteAktualisieren(tab);
 }
 

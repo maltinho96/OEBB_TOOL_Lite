@@ -39,6 +39,17 @@ export function uebersichtsplan() {
   );
 }
 
+// Knopf "Mail vorbereiten" am Protokollende (nur Bildschirm), verdrahtet in
+// ui/mail.js. empfaenger: kurzer Hinweis, an wen die Mail geht.
+export function mailKnopf(empfaenger) {
+  return (
+    '<div class="mail-leiste kein-druck">' +
+    '<button type="button" class="mail-knopf" data-aktion="mail-vorbereiten">✉ Mail vorbereiten</button>' +
+    '<span>Öffnet das Mailprogramm mit fertigem Text ' + empfaenger + '. Das PDF bitte als Anhang dazulegen.</span>' +
+    '</div>'
+  );
+}
+
 // Fußzeile (Bildschirm-Vorschau am Dokumentende): Datum | Auftrag | Seite.
 // Beim Drucken wird sie ausgeblendet; dort setzt ui/fusszeile.js dieselbe
 // Zeile über @page-Seitenränder auf JEDE Seite, mit echter Seitenzahl.

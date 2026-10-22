@@ -1,5 +1,5 @@
 // Übersicht- und Projekte-Reiter.
-//  - Übersicht: Einrichtung (Grundordner, Firmen), Team, Verteiler.
+//  - Übersicht: Einrichtung (Grundordner, Firmen), Team.
 //  - Projekte: Statistik-Kacheln, Projektformular, Projekttabelle.
 // Das Projektformular selbst lebt in
 // ui/projektformular.js, die Team-Verwaltung in ui/team.js, die
@@ -13,7 +13,8 @@ import { dbSetzen, dbHolen } from '../core/zustand.js';
 import { logo } from '../schema/felder.js';
 import { firmenLaden } from './firma.js';
 import { teamAnzeigen, teamInit } from './team.js';
-import { verteilerAnzeigen, verteilerInit } from './verteiler.js';
+import { projektlistenInit } from './projektlisten.js';
+import { aktenzeichenListe, hauptAktenzeichen, verteilerListe } from '../domain/projekt.js';
 import { shapefilesInit } from './shapefiles.js';
 import {
   projektformularInit,
@@ -63,14 +64,6 @@ Fehlt die Datei, legt die App sie beim Verbinden mit den Standard-Firmen an.
   <select id="nutzerAuswahl" style="font:inherit; padding:3px; min-width:200px;"></select>
   <span style="font-size:11.5px; color:#777;">– wird bei neuen Protokollen automatisch als Baubegleiter*in eingetragen.</span>
 </p>
-
-<h2 class="c-grau">Verteiler</h2>
-<p style="font-size:11.5px; color:#777; margin:0 0 4px;">Empfänger*innen der Protokolle. Gilt für alle im Team (liegt in der gemeinsamen Datenbank).</p>
-<div id="verteilerTabelle"></div>
-<p class="kein-druck" id="verteilerKnoepfe" style="display:none; margin-top:6px;">
-  <button class="ordner-knopf" data-aktion="verteiler-kopieren">📋 Adressen kopieren</button>
-  <button class="ordner-knopf" data-aktion="verteiler-mail">✉ Mail an alle</button>
-</p>
 `;
 }
 
@@ -96,7 +89,7 @@ ${logo()}
 </div>
 <div class="kein-druck projektformular" id="npDetails" style="display:none">
 <h3 id="npTitel">Neues Projekt anlegen</h3>
-<table class="form" style="max-width:640px; margin-top:6px">
+<table class="form" style="max-width:900px; margin-top:6px">
   <tr class="bg-grau-h"><td class="label" style="width:200px">Projektname:</td><td><input type="text" id="npName" placeholder="z. B. Telekom Treuenbrietzen"></td></tr>
   <tr class="bg-grau-h"><td class="label">Projektnummer:</td><td><input type="text" id="npNummer" placeholder="z. B. SM4214114269"></td></tr>
   <tr class="bg-grau-h"><td class="label">Ort Bvh:</td><td><input type="text" id="npOrt" placeholder="z. B. Treuenbrietzen"></td></tr>
@@ -130,7 +123,18 @@ ${logo()}
   <tr class="bg-grau-h"><td class="label">Telefon Ansprechpartner <small>(optional)</small>:</td><td><input type="tel" id="npAnsprechpartnerTelefon"></td></tr>
   <tr class="bg-grau-h"><td class="label">E-Mail Ansprechpartner <small>(optional)</small>:</td><td><input type="email" id="npAnsprechpartnerEmail"></td></tr>
   <tr class="bg-grau-h"><td class="label">Landkreis <small>(optional)</small>:</td><td><input type="text" id="npLandkreis"></td></tr>
-  <tr class="bg-grau-h"><td class="label">Aktenzeichen <small>(optional)</small>:</td><td><input type="text" id="npAktenzeichen"></td></tr>
+  <tr class="bg-grau-h"><td class="label">Aktenzeichen <small>(optional)</small>:
+    <div style="font-size:11px; color:#777; font-weight:400; margin-top:3px;">Haupt-Aktenzeichen per Punkt markieren (falls es eins gibt).</div></td><td>
+    <table class="uebersicht projektliste"><thead><tr><th>Aktenzeichen</th><th>Kommentar</th><th class="schmal" title="Haupt-Aktenzeichen">Haupt</th><th class="schmal"></th></tr></thead>
+    <tbody id="npAzZeilen"></tbody></table>
+    <button type="button" class="ordner-knopf klein" data-aktion="az-zeile-hinzu">＋ Aktenzeichen</button>
+  </td></tr>
+  <tr class="bg-grau-h"><td class="label">Verteiler <small>(optional)</small>:
+    <div style="font-size:11px; color:#777; font-weight:400; margin-top:3px;">Empfänger*innen der Begehungs- und Vorbegehungsprotokolle.</div></td><td>
+    <table class="uebersicht projektliste"><thead><tr><th>Name</th><th>E-Mail</th><th class="schmal"></th></tr></thead>
+    <tbody id="npVtZeilen"></tbody></table>
+    <button type="button" class="ordner-knopf klein" data-aktion="vt-zeile-hinzu">＋ Empfänger*in</button>
+  </td></tr>
   <tr class="bg-grau-h"><td class="label">Notizen <small>(optional)</small>:<textarea id="npNotizen" rows="2"></textarea></td><td style="vertical-align:bottom">
     <button class="ordner-knopf" data-aktion="projekt-anlegen"><span id="npKnopfText">＋ Anlegen &amp; Protokollordner wählen</span></button>
     <button class="ordner-knopf kein-druck" id="npAbbrechen" data-aktion="bearbeiten-abbrechen">Abbrechen</button>
@@ -205,7 +209,6 @@ async function uebersichtAktualisieren(interaktiv) {
   statusText(Object.keys(db.projekte).length + ' Projekte in der Datenbank (' + ordner.name + ').');
   neuZeichnen(db);
   teamAnzeigen();
-  verteilerAnzeigen();
 }
 
 function neuZeichnen(db) {
@@ -266,13 +269,14 @@ function uebersichtRendern(db) {
       (dateien.length ? '<ul class="datei-liste">' + liste + '</ul>' : '<p style="font-size:11.5px">Noch keine Protokolle – „Scannen“ klicken.</p>') + '</details></td>' +
       '<td>' + esc(p.projektnummer) + '</td>' +
       '<td>' + esc(p.ort) + (p.lat != null ? ' <span title="' + p.lat + ', ' + p.lng + '">📍</span>' : '') +
-      (p.infos && (p.infos.auftraggeber || p.infos.landkreis || p.infos.aktenzeichen || p.infos.ansprechpartner) || p.hauptverantwortlich || p.start || p.ende
+      (p.infos && (p.infos.auftraggeber || p.infos.landkreis || p.infos.ansprechpartner) || aktenzeichenListe(p).length || verteilerListe(p).length || p.hauptverantwortlich || p.start || p.ende
         ? '<div style="font-size:11px;color:#666">' +
           (p.infos && p.infos.auftraggeber ? 'AG: ' + esc(p.infos.auftraggeber) + ' ' : '') +
           (p.infos && p.infos.ansprechpartner ? '· AP: ' + esc(p.infos.ansprechpartner) +
             (p.infos.ansprechpartnerTelefon ? ' (Tel. ' + esc(p.infos.ansprechpartnerTelefon) + ')' : '') + ' ' : '') +
           (p.infos && p.infos.landkreis ? '· LK ' + esc(p.infos.landkreis) + ' ' : '') +
-          (p.infos && p.infos.aktenzeichen ? '· Az. ' + esc(p.infos.aktenzeichen) + ' ' : '') +
+          azText(p) +
+          (verteilerListe(p).length ? '· ✉ ' + verteilerListe(p).length + ' im Verteiler ' : '') +
           (p.hauptverantwortlich ? '· 👤 ' + esc(p.hauptverantwortlich) +
             (p.zweitverantwortlich ? ' (Vertr.: ' + esc(p.zweitverantwortlich) + ')' : '') : '') +
           (p.start || p.ende
@@ -306,6 +310,14 @@ function uebersichtRendern(db) {
   });
   html += '</table>';
   ziel.innerHTML = '<div style="overflow-x:auto; max-width:100%;">' + html + '</div>';
+}
+
+// "· Az. 4713-B-178/2025 (+2)" – Haupt-Aktenzeichen bzw. das erste, plus Anzahl weiterer.
+function azText(p) {
+  const liste = aktenzeichenListe(p);
+  if (!liste.length) return '';
+  const erstes = hauptAktenzeichen(p) || liste[0].az;
+  return '· Az. ' + esc(erstes) + (liste.length > 1 ? ' (+' + (liste.length - 1) + ')' : '') + ' ';
 }
 
 function startRendern(db) {
@@ -367,8 +379,8 @@ export function uebersichtTabInit(mount) {
   // Untermodule verdrahten. Jedes hört selbst auf seine Section, nur nach
   // seinen eigenen data-aktion-Werten filternd – keine Überschneidung.
   teamInit(uebersicht);
-  verteilerInit(uebersicht);
   projektformularInit(projekte);
+  projektlistenInit(projekte);
   shapefilesInit(projekte);
   // Wenn das Formular etwas an der DB ändert, hier neu zeichnen (statt
   // dass projektformular.js dashboard.js importieren müsste).

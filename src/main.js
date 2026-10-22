@@ -31,6 +31,7 @@ import { markierenInit } from './ui/markieren.js';
 import { bausteineInit, bausteineBeiAnzeige } from './ui/bausteine.js';
 import { baubegleiterVorbelegen } from './ui/team.js';
 import { kartenbildInit } from './ui/kartenbild.js';
+import { mailInit } from './ui/mail.js';
 
 import { htmlExportInit, druckTitelInit } from './export/html-export.js';
 import { htmlImportInit } from './export/html-import.js';
@@ -59,6 +60,7 @@ function start() {
   markierenInit(app);
   bausteineInit(app);
   kartenbildInit();
+  mailInit();
 
   tabWechselHook(karteBeiAnzeigeAktualisieren);
   tabWechselHook(stundenBeiAnzeigeAktualisieren);

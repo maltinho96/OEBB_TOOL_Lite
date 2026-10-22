@@ -16,6 +16,7 @@ import { dbAendern } from '../core/db.js';
 import { dbSetzen, dbHolen } from '../core/zustand.js';
 import { nadelIcon, osmEbene } from './karte.js';
 import { teamAnzeigen } from './team.js';
+import { listenFuellen, listenLesen } from './projektlisten.js';
 import { flaechenLayerInit, flaechenLeeren, flaechenLaden, flaechenAktuelle } from './shapefiles.js';
 import {
   projektSchreiben,
@@ -23,6 +24,9 @@ import {
   neueProjektId,
   projektScannen as projektOrdnerScannen,
   eintraegeZusammenfuehren,
+  aktenzeichenListe,
+  hauptAktenzeichen,
+  verteilerListe,
 } from '../domain/projekt.js';
 
 // Wird von ui/dashboard.js gesetzt: nach jeder Datenänderung hier soll
@@ -67,11 +71,12 @@ function nadelEntfernen() {
 // ---------- Formular öffnen/schließen/leeren ----------
 
 function formularLeeren() {
-  ['npName', 'npNummer', 'npOrt', 'npAuftraggeber', 'npAnsprechpartner', 'npAnsprechpartnerTelefon', 'npAnsprechpartnerEmail', 'npLandkreis', 'npAktenzeichen', 'npNotizen', 'npStart', 'npEnde'].forEach((id) => {
+  ['npName', 'npNummer', 'npOrt', 'npAuftraggeber', 'npAnsprechpartner', 'npAnsprechpartnerTelefon', 'npAnsprechpartnerEmail', 'npLandkreis', 'npNotizen', 'npStart', 'npEnde'].forEach((id) => {
     document.getElementById(id).value = '';
   });
   document.getElementById('npStatus').value = 'aktuell';
   teamAnzeigen();
+  listenFuellen([], []);
   nadelEntfernen();
   flaechenLeeren();
   bearbeitePid = null;
@@ -83,6 +88,8 @@ function formularLeeren() {
 }
 
 function projektFormularOeffnen() {
+  // Neues Projekt: je eine leere Zeile in den Tabellen anbieten.
+  if (!document.querySelector('#npAzZeilen tr')) listenFuellen([], []);
   const d = document.getElementById('npDetails');
   d.style.display = '';
   npKarteInit();
@@ -116,7 +123,7 @@ export function projektBearbeiten(pid) {
   document.getElementById('npAnsprechpartnerTelefon').value = i.ansprechpartnerTelefon || '';
   document.getElementById('npAnsprechpartnerEmail').value = i.ansprechpartnerEmail || '';
   document.getElementById('npLandkreis').value = i.landkreis || '';
-  document.getElementById('npAktenzeichen').value = i.aktenzeichen || '';
+  listenFuellen(aktenzeichenListe(p), verteilerListe(p));
   document.getElementById('npNotizen').value = i.notizen || '';
   if (p.lat != null && p.lng != null) { nadelSetzen(p.lat, p.lng); npKarte.setView([p.lat, p.lng], 12); }
   else nadelEntfernen();
@@ -134,6 +141,11 @@ async function projektAnlegen() {
   const name = document.getElementById('npName').value.trim();
   const nummer = document.getElementById('npNummer').value.trim();
   if (!name && !nummer) { alert('Bitte mindestens Projektname oder Projektnummer angeben.'); return; }
+  const { aktenzeichen, verteiler, ungueltig } = listenLesen();
+  if (ungueltig.length) {
+    alert('Diese E-Mail-Adressen im Verteiler sind ungültig:\n' + ungueltig.join('\n') + '\n\nBitte korrigieren.');
+    return;
+  }
 
   const daten = {
     name,
@@ -147,13 +159,16 @@ async function projektAnlegen() {
     lat: npLat,
     lng: npLng,
     flaechen: flaechenAktuelle(),
+    aktenzeichen,
+    verteiler,
     infos: {
       auftraggeber: document.getElementById('npAuftraggeber').value.trim(),
       ansprechpartner: document.getElementById('npAnsprechpartner').value.trim(),
       ansprechpartnerTelefon: document.getElementById('npAnsprechpartnerTelefon').value.trim(),
       ansprechpartnerEmail: document.getElementById('npAnsprechpartnerEmail').value.trim(),
       landkreis: document.getElementById('npLandkreis').value.trim(),
-      aktenzeichen: document.getElementById('npAktenzeichen').value.trim(),
+      // Haupt-Aktenzeichen zusätzlich als Text (für ältere Auswertungen).
+      aktenzeichen: hauptAktenzeichen({ aktenzeichen }),
       notizen: document.getElementById('npNotizen').value.trim(),
     },
   };

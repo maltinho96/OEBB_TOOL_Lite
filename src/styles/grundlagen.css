@@ -243,8 +243,16 @@ h2.c-blau{color:#2a6f97;}
 .bausteine button.benutzt{background:#fff; border-color:#2e7d32; color:#2e7d32;}
 .bausteine button.benutzt::before{content:"✓ ";}
 .kb-auflagen{overflow:hidden;}
-/* Verteiler (Übersicht) */
-table.verteiler{max-width:640px;}
-table.verteiler input{width:100%; box-sizing:border-box; font:inherit; padding:3px 5px;}
-table.verteiler td:last-child, table.verteiler th:last-child{width:44px;}
 .vt-weg{border:none; background:none; color:#a00; cursor:pointer; font-size:13px;}
+/* Tabellen im Projektformular (Aktenzeichen, Verteiler) */
+table.projektliste{margin:0 0 4px; background:#fff;}
+table.projektliste th{font-size:11px; padding:4px 6px;}
+table.projektliste td{padding:2px 4px; vertical-align:middle;}
+table.projektliste input[type=text], table.projektliste input[type=email]{width:100%; box-sizing:border-box; font:inherit; font-size:12px; padding:3px 4px;}
+table.projektliste .schmal{width:44px;}
+.ordner-knopf.klein{font-size:11.5px; padding:2px 8px;}
+/* Aktenzeichen-Auswahl neben dem Feld im Protokoll */
+select.az-wahl{display:block; margin-top:3px; font:inherit; font-size:11.5px; padding:2px 4px; max-width:100%; color:#555;}
+/* Mail-Knopf am Protokollende */
+.mail-leiste{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:18px 0 6px; padding:8px 10px; background:#f3f5f8; border:1px solid #d5dbe3; border-radius:6px; font-size:11.5px; color:#666;}
+.mail-knopf{font:inherit; font-size:13px; font-weight:700; padding:6px 14px; border:none; border-radius:5px; background:var(--firma); color:#fff; cursor:pointer;}

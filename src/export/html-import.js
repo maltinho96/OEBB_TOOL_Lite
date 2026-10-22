@@ -87,8 +87,11 @@ function felderUebernehmen(quelle, ziel) {
   });
 
   // Selects
-  const qs = quelle.querySelectorAll('select');
-  const zs = ziel.querySelectorAll('select');
+  // (ohne die Bildschirm-Auswahlen für Projekt und Aktenzeichen – die
+  // gibt es nicht immer, sie würden die Zuordnung verschieben)
+  const SEL = 'select:not([data-projektwahl]):not(.az-wahl)';
+  const qs = quelle.querySelectorAll(SEL);
+  const zs = ziel.querySelectorAll(SEL);
   qs.forEach((el, i) => { if (zs[i]) zs[i].value = el.value; });
 
   // contenteditable-Textblöcke (Vis-Texte, rechtliche Grundlagen,
