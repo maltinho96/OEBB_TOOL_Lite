@@ -316,3 +316,5 @@ select.az-wahl{display:block; margin-top:3px; font:inherit; font-size:11.5px; pa
 .mk-werkzeuge button:first-child{border-radius:6px 0 0 6px;}
 .mk-werkzeuge button:last-child{border-radius:0 6px 6px 0; margin-left:-1px;}
 .mk-leiste .mk-werkzeuge button.aktiv{background:#fff; border-color:#e00000; color:#e00000; font-weight:700; position:relative; z-index:1;}
+.mk-leiste .mk-rot{color:#e00000;} .mk-leiste .mk-blau{color:#0057e0;}
+.mk-leiste .mk-werkzeuge button.mk-blau.aktiv{border-color:#0057e0; color:#0057e0;}

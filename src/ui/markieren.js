@@ -1,8 +1,8 @@
-// Rote Markierungen in Fotos einzeichnen (z. B. verletzte Wurzeln).
+// Markierungen in Fotos einzeichnen (z. B. verletzte Wurzeln) – rot oder blau.
 //
 // Bedienung: Foto in der Fotodokumentation anklicken → Fenster öffnet sich →
 // Werkzeug wählen: "◯ Ellipse" (aufziehen) oder "╱ Strich" (von Punkt zu
-// Punkt ziehen) → beliebig viele zeichnen → "Fertig".
+// Punkt ziehen), Farbe rot oder blau → beliebig viele zeichnen → "Fertig".
 // "↶" nimmt die letzte Markierung zurück, Esc bricht ab, Enter übernimmt.
 //
 // Die Kreise werden direkt ins Bild gerechnet (img.src wird ersetzt), damit
@@ -16,13 +16,15 @@
 
 import { BILD_QUALITAET } from '../config/konstanten.js';
 
-const ROT = '#e00000';
+const FARBEN = { rot: '#e00000', blau: '#0057e0' };
 const originale = new WeakMap(); // img -> unmarkierte data-URL
 // img -> Markierungen, Koordinaten als Anteile 0..1 der Bildgröße:
-//   Ellipse: { x, y, rx, ry }   Strich: { typ: 'strich', x1, y1, x2, y2 }
+//   Ellipse: { x, y, rx, ry, farbe }   Strich: { typ: 'strich', x1, y1, x2, y2, farbe }
+//   farbe: 'rot' | 'blau' (fehlt = rot)
 const kreise = new WeakMap();
 
 let werkzeug = 'ellipse'; // zuletzt gewähltes Werkzeug (bleibt für das nächste Foto)
+let farbe = 'rot';        // zuletzt gewählte Farbe (ebenso)
 let editor = null; // DOM des Fensters (einmalig erzeugt)
 let sitzung = null; // { img, bild, kreise, vorschau, start }
 
@@ -34,11 +36,11 @@ function zeichnen(ctx, bild, liste, vorschau) {
   const w = ctx.canvas.width;
   const h = ctx.canvas.height;
   ctx.drawImage(bild, 0, 0, w, h);
-  ctx.strokeStyle = ROT;
   ctx.lineWidth = strichstaerke(w, h);
   ctx.lineCap = 'round';
   const alle = vorschau ? liste.concat([vorschau]) : liste;
   alle.forEach((k) => {
+    ctx.strokeStyle = FARBEN[k.farbe] || FARBEN.rot;
     ctx.beginPath();
     if (k.typ === 'strich') {
       ctx.moveTo(k.x1 * w, k.y1 * h);
@@ -58,9 +60,9 @@ function neuZeichnen() {
 
 function werkzeugZeigen() {
   editor.querySelectorAll('[data-werkzeug]').forEach((b) => b.classList.toggle('aktiv', b.dataset.werkzeug === werkzeug));
-  editor.querySelector('.mk-hinweis').textContent = werkzeug === 'strich'
-    ? 'Strich ziehen, um eine Stelle rot zu markieren'
-    : 'Ellipse aufziehen, um eine Stelle rot zu markieren';
+  editor.querySelectorAll('[data-farbe]').forEach((b) => b.classList.toggle('aktiv', b.dataset.farbe === farbe));
+  editor.querySelector('.mk-hinweis').textContent = (werkzeug === 'strich' ? 'Strich ziehen' : 'Ellipse aufziehen') +
+    ', um eine Stelle ' + farbe + ' zu markieren';
 }
 
 // Zeigerposition als Anteil (0..1) der Bildfläche.
@@ -75,8 +77,9 @@ function punkt(e) {
 // Gezogene Strecke (Start bis aktueller Punkt) -> Ellipse im Rechteck
 // dazwischen bzw. gerader Strich.
 function formAus(a, b) {
-  if (werkzeug === 'strich') return { typ: 'strich', x1: a.x, y1: a.y, x2: b.x, y2: b.y };
+  if (werkzeug === 'strich') return { typ: 'strich', x1: a.x, y1: a.y, x2: b.x, y2: b.y, farbe };
   return {
+    farbe,
     x: (a.x + b.x) / 2,
     y: (a.y + b.y) / 2,
     rx: Math.abs(b.x - a.x) / 2,
@@ -124,6 +127,10 @@ function editorBauen() {
     '<button data-mk="werkzeug" data-werkzeug="ellipse" title="Ellipse aufziehen">◯ Ellipse</button>' +
     '<button data-mk="werkzeug" data-werkzeug="strich" title="Geraden Strich ziehen">╱ Strich</button>' +
     '</span>' +
+    '<span class="mk-werkzeuge">' +
+    '<button data-mk="farbe" data-farbe="rot" class="mk-rot" title="Rot zeichnen">● Rot</button>' +
+    '<button data-mk="farbe" data-farbe="blau" class="mk-blau" title="Blau zeichnen">● Blau</button>' +
+    '</span>' +
     '<span class="mk-hinweis"></span>' +
     '<button data-mk="zurueck" title="Letzte Markierung entfernen">↶ Zurück</button>' +
     '<button data-mk="abbrechen">Abbrechen</button>' +
@@ -156,6 +163,7 @@ function editorBauen() {
     const knopf = e.target.closest('[data-mk]');
     if (!knopf || !sitzung) return;
     if (knopf.dataset.mk === 'werkzeug') { werkzeug = knopf.dataset.werkzeug; werkzeugZeigen(); }
+    if (knopf.dataset.mk === 'farbe') { farbe = knopf.dataset.farbe; werkzeugZeigen(); }
     if (knopf.dataset.mk === 'zurueck') { sitzung.kreise.pop(); neuZeichnen(); }
     if (knopf.dataset.mk === 'abbrechen') schliessen();
     if (knopf.dataset.mk === 'fertig') uebernehmen();
