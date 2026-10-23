@@ -121,14 +121,14 @@ input[type=checkbox], input[type=radio]{width:17px; height:17px; accent-color:#1
     -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 2px 2px 0 #fff,
     -2px 0 0 #fff, 2px 0 0 #fff, 0 -2px 0 #fff, 0 2px 0 #fff;
 }
-.abb-bilder{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:8px; justify-content:center;}
-.abb-bilder img{border:1px solid #999; width:auto; height:auto; cursor:pointer;}
-.abb.modus-2 .abb-bilder img{max-width:calc(50% - 6px); max-height:520px;}
-.abb.modus-1 .abb-bilder{flex-direction:column; align-items:center;}
-.abb.modus-1 .abb-bilder img{max-width:78%; max-height:560px;}
-/* Nur ein Foto im Block: volle Breite (Querformat füllt die Zeile,
-   Hochformat wird über die maximale Höhe begrenzt). */
-.abb .abb-bilder img:only-child{max-width:100%; max-height:560px;}
+.abb-bilder{
+  display:flex; gap:10px; margin:0 auto 8px;
+  /* So breit wie die Karte darüber (718 px), aber nur so breit, dass die
+     Fotos höchstens 640 px hoch werden (ui/fotobreite.js setzt --summe). */
+  width:100%; max-width:min(718px, calc(var(--summe, 1.5) * 640px + (var(--anzahl, 2) - 1) * 10px));
+}
+/* Jedes Foto wächst mit seinem Seitenverhältnis -> alle gleich hoch, zusammen bündig. */
+.abb-bilder img{flex:var(--ar, 1) 1 0; min-width:0; width:0; height:auto; border:1px solid #999; box-sizing:border-box; cursor:pointer;}
 .abb-titel{font-weight:700; margin-bottom:2px;}
 .abb-text{min-height:40px; border-bottom:1px dotted #aaa; padding:2px 4px; background:#fff;}
 .abb-text:empty::before{content:"Bildunterschrift hier eintragen …"; color:#999;}

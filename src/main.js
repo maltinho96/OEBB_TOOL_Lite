@@ -32,6 +32,7 @@ import { bausteineInit, bausteineBeiAnzeige } from './ui/bausteine.js';
 import { baubegleiterVorbelegen } from './ui/team.js';
 import { kartenbildInit } from './ui/kartenbild.js';
 import { mailInit } from './ui/mail.js';
+import { fotobreiteInit } from './ui/fotobreite.js';
 import { textfelderInit, textfelderBeiAnzeige } from './ui/textfelder.js';
 import { supportTabInit, supportBeiAnzeige } from './ui/support.js';
 import { wissenTabInit } from './ui/wissen.js';
@@ -66,6 +67,7 @@ function start() {
   bausteineInit(app);
   kartenbildInit();
   mailInit();
+  fotobreiteInit(app);
   textfelderInit(app);
 
   tabWechselHook(karteBeiAnzeigeAktualisieren);

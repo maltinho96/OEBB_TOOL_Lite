@@ -62,17 +62,15 @@
   .vis-zeile{page-break-inside:avoid; break-inside:avoid;}
   .abb-karte{margin-bottom:6px;}
   .abb-karte-map{width:190mm; max-width:100%; height:63mm; border:1px solid #999;}
-  .abb-bilder{display:flex; flex-wrap:wrap; gap:10px; justify-content:center;}
+  /* Fotos bündig mit der Karte (190 mm), höchstens 165 mm hoch – zwei
+     Hochformat-Handyfotos (9:16) sind damit praktisch noch bündig. */
+  .abb-bilder{max-width:min(100%, calc(var(--summe, 1.5) * 165mm + (var(--anzahl, 2) - 1) * 10px));}
+  .abb-bilder img{border:none;}
   /* Jede Abbildung (Mini-Karte + Fotos + Unterschrift) auf eine eigene
      Seite; die Fotos füllen den restlichen Platz. Nutzbare Seitenhöhe:
      297 − 12 − 16 mm = 269 mm, davon Karte ~67 mm, Überschrift/Titel/Text
-     ~40 mm → Fotos max. 160 mm hoch. */
+     ~37 mm → Fotos max. 165 mm hoch (siehe .abb-bilder oben). */
   .fotodoku-titel{page-break-before:always; break-before:page;}
   .abb + .abb{page-break-before:always; break-before:page;}
-  .abb-bilder img{object-fit:contain;}
-  .abb.modus-2 .abb-bilder img{max-width:calc(50% - 6px); max-height:160mm;}
-  .abb.modus-1 .abb-bilder{flex-direction:column; align-items:center;}
-  .abb.modus-1 .abb-bilder img{max-width:100%; max-height:160mm;}
-  .abb .abb-bilder img:only-child{max-width:100%; max-height:160mm;}
 }
 
