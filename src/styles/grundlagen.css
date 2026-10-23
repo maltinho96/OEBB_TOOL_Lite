@@ -275,3 +275,32 @@ select.az-wahl{display:block; margin-top:3px; font:inherit; font-size:11.5px; pa
 .support-liste .sp-browser{font-size:10.5px; color:#999; margin-top:3px;}
 .support-liste tr.sp-erledigt td{color:#888;}
 .support-liste select{font:inherit; font-size:11.5px; padding:2px;}
+/* ---------- Grundlagen / Wissensbasis (ui/wissen.js) ---------- */
+.wk-gruen{--wk:var(--gruen); --wk-hell:var(--gruen-hell);}
+.wk-orange{--wk:var(--orange); --wk-hell:var(--orange-hell);}
+.wk-pink{--wk:var(--pink); --wk-hell:var(--pink-hell);}
+.wk-blau{--wk:var(--blau); --wk-hell:var(--blau-hell);}
+.wk-gelb{--wk:var(--gelb); --wk-hell:var(--gelb-hell);}
+.wk-themen{display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:12px; margin:10px 0 16px;}
+.wk-thema{display:flex; flex-direction:column; align-items:flex-start; gap:4px; text-align:left; font:inherit; cursor:pointer;
+  padding:14px; border:1px solid var(--rahmen); border-radius:10px; background:var(--wk-hell); border-top:6px solid var(--wk);
+  transition:transform .12s, box-shadow .12s;}
+.wk-thema:hover{transform:translateY(-2px); box-shadow:0 3px 10px rgba(0,0,0,.12);}
+.wk-thema.offen{box-shadow:0 0 0 2px var(--firma);}
+.wk-symbol{font-size:26px;}
+.wk-titel{font-weight:700; font-size:14.5px;}
+.wk-kurz{font-size:12px; color:#555;}
+.wk-anzahl{font-size:11px; color:#777; margin-top:auto;}
+.wk-detail{border-top:2px solid var(--wk); padding-top:4px; margin-bottom:18px;}
+.wk-hinweis{font-size:12px; color:#7a5a00; background:#fff8dc; border:1px solid #eedc9a; border-radius:6px; padding:6px 10px;}
+.wk-karten{display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:12px;}
+.wk-karte{border:1px solid var(--rahmen); border-left:5px solid var(--wk); border-radius:8px; padding:10px 12px; background:#fff; font-size:12.5px; line-height:1.45;}
+.wk-karte p{margin:6px 0;}
+.wk-kopf{display:flex; align-items:baseline; gap:8px; flex-wrap:wrap;}
+.wk-kopf h3{margin:0; font-size:14px;}
+.wk-art{font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:1px 6px; border-radius:4px; background:var(--wk-hell); color:#333;}
+.wk-art-praxis .wk-art{background:#eee;}
+.wk-stand{font-size:11.5px; color:#777;}
+.wk-link{display:inline-block; margin-top:4px; font-size:12px; color:#1f6fd6;}
+.wk-fuss{font-size:11px; color:#888; margin-top:18px;}
+@media (max-width:600px){ .wk-karten{grid-template-columns:1fr;} }

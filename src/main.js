@@ -34,6 +34,7 @@ import { kartenbildInit } from './ui/kartenbild.js';
 import { mailInit } from './ui/mail.js';
 import { textfelderInit, textfelderBeiAnzeige } from './ui/textfelder.js';
 import { supportTabInit, supportBeiAnzeige } from './ui/support.js';
+import { wissenTabInit } from './ui/wissen.js';
 
 import { htmlExportInit, druckTitelInit } from './export/html-export.js';
 import { htmlImportInit } from './export/html-import.js';
@@ -53,6 +54,7 @@ function start() {
   uebersichtTabInit(app);
   karteTabInit(app);
   stundenTabInit(app);
+  wissenTabInit(app);
   supportTabInit(app);
 
   fotosInit(app);
