@@ -38,6 +38,9 @@ table.form{width:100%; border-collapse:separate; border-spacing:0; margin-bottom
   border-top:1px solid var(--rahmen); border-left:1px solid var(--rahmen);}
 table.form td{border-right:1px solid var(--rahmen); border-bottom:1px solid var(--rahmen); padding:5px 8px; vertical-align:top;}
 td.label{font-weight:700; white-space:nowrap;}
+/* Textfelder in Beschriftungszellen (z. B. "Adressiert an") nicht fett und
+   normal umbrechend – auch lange E-Mail-Adressen. */
+td.label textarea{font-weight:400; white-space:pre-wrap; overflow-wrap:anywhere;}
 .zeile{display:flex; align-items:center; gap:6px;}
 .zeile b{white-space:nowrap;}
 .zeile input{flex:1 1 auto; width:auto;}
