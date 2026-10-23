@@ -73,5 +73,6 @@
   .abb.modus-2 .abb-bilder img{max-width:calc(50% - 6px); max-height:160mm;}
   .abb.modus-1 .abb-bilder{flex-direction:column; align-items:center;}
   .abb.modus-1 .abb-bilder img{max-width:100%; max-height:160mm;}
+  .abb .abb-bilder img:only-child{max-width:100%; max-height:160mm;}
 }
 

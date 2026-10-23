@@ -126,6 +126,9 @@ input[type=checkbox], input[type=radio]{width:17px; height:17px; accent-color:#1
 .abb.modus-2 .abb-bilder img{max-width:calc(50% - 6px); max-height:520px;}
 .abb.modus-1 .abb-bilder{flex-direction:column; align-items:center;}
 .abb.modus-1 .abb-bilder img{max-width:78%; max-height:560px;}
+/* Nur ein Foto im Block: volle Breite (Querformat füllt die Zeile,
+   Hochformat wird über die maximale Höhe begrenzt). */
+.abb .abb-bilder img:only-child{max-width:100%; max-height:560px;}
 .abb-titel{font-weight:700; margin-bottom:2px;}
 .abb-text{min-height:40px; border-bottom:1px dotted #aaa; padding:2px 4px; background:#fff;}
 .abb-text:empty::before{content:"Bildunterschrift hier eintragen …"; color:#999;}
