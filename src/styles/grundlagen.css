@@ -58,7 +58,9 @@ textarea{
   font:inherit; display:block; width:100%; border:none; background:rgba(255,255,255,.5);
   resize:vertical; min-height:52px; padding:3px 5px; margin-top:4px;
 }
-textarea.gross{min-height:220px;}
+/* Größere Felder (z. B. Festlegungen in der Vorbegehung): leer etwas
+   höher als normale Felder, wachsen dann mit dem Text (ui/textfelder.js). */
+textarea.gross{min-height:80px;}
 input[type=checkbox], input[type=radio]{width:17px; height:17px; accent-color:#1a1a1a;}
 .cb{display:inline-flex; align-items:center; gap:6px; margin-right:14px; font-weight:400;}
 .cb b{font-weight:700;}

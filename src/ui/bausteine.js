@@ -5,22 +5,15 @@
 //
 // Leere Themenblöcke werden nicht gedruckt (Klasse .leer).
 //
-// Die Auflagen-Felder wachsen mit ihrem Inhalt (Höhe = Inhalt), damit beim
-// Drucken nichts abgeschnitten wird – ein <textarea> druckt nur seine
-// sichtbare Höhe.
+// Die Höhe der Felder passt ui/textfelder.js an den Inhalt an.
 
 import { TEXTBAUSTEINE } from '../config/textbausteine.js';
+import { hoeheAnpassen } from './textfelder.js';
 
 function bausteinText(thema, idx) {
   const b = (TEXTBAUSTEINE[thema] || [])[idx];
   if (!b) return null;
   return /^[☒☐]/.test(b.text) ? b.text : '• ' + b.text;
-}
-
-function hoeheAnpassen(ta) {
-  if (!ta.offsetParent) return; // unsichtbar (anderer Reiter) – später
-  ta.style.height = 'auto';
-  ta.style.height = ta.scrollHeight + 2 + 'px';
 }
 
 // Leerer Block = keine Auflagen zu diesem Thema -> im Druck weglassen.

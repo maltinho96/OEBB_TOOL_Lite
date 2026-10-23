@@ -32,6 +32,7 @@ import { bausteineInit, bausteineBeiAnzeige } from './ui/bausteine.js';
 import { baubegleiterVorbelegen } from './ui/team.js';
 import { kartenbildInit } from './ui/kartenbild.js';
 import { mailInit } from './ui/mail.js';
+import { textfelderInit, textfelderBeiAnzeige } from './ui/textfelder.js';
 import { supportTabInit, supportBeiAnzeige } from './ui/support.js';
 
 import { htmlExportInit, druckTitelInit } from './export/html-export.js';
@@ -63,6 +64,7 @@ function start() {
   bausteineInit(app);
   kartenbildInit();
   mailInit();
+  textfelderInit(app);
 
   tabWechselHook(karteBeiAnzeigeAktualisieren);
   tabWechselHook(stundenBeiAnzeigeAktualisieren);
@@ -72,6 +74,7 @@ function start() {
   tabWechselHook(fusszeileBeiAnzeige);
   tabWechselHook(bausteineBeiAnzeige);
   tabWechselHook(supportBeiAnzeige);
+  tabWechselHook(textfelderBeiAnzeige);
 
   tabsInit();
   werkzeugeInit();
