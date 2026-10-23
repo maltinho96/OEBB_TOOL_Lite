@@ -1,7 +1,8 @@
 // Projekt-Auswahl oben in jedem Protokoll (nur am Bildschirm, nicht im
 // Druck). Wählt man ein Projekt aus der Datenbank:
 //   - Projekt-Name und Projektnummer werden ins Protokoll übernommen,
-//   - Auftraggeber, Ort, Baufirma, Landkreis und Haupt-Aktenzeichen nur,
+//   - Auftraggeber, Ort, Baufirma, Landkreis, Haupt-Aktenzeichen und
+//     "Adressiert an" (= Verteiler des Projekts) nur,
 //     wenn das Feld noch
 //     leer ist; neben dem Aktenzeichen-Feld erscheint eine Auswahl aller
 //     Aktenzeichen des Projekts (mit Kommentar), um das passende zu wählen,
@@ -14,7 +15,7 @@
 import { dbHolen } from '../core/zustand.js';
 import { esc } from '../core/util.js';
 import { karteAktualisieren } from './fotokarte.js';
-import { aktenzeichenListe, hauptAktenzeichen } from '../domain/projekt.js';
+import { aktenzeichenListe, hauptAktenzeichen, verteilerListe } from '../domain/projekt.js';
 
 import { PROTOKOLL_TABS } from '../config/konstanten.js';
 
@@ -83,9 +84,18 @@ function projektUebernehmen(tab, pid) {
     feldSetzen(tab, '[data-feld="tiefbaufirma"]', p.infos && p.infos.baufirma, true);
     feldSetzen(tab, '[data-feld="landkreis"]', p.infos && p.infos.landkreis, true);
     feldSetzen(tab, '[data-feld="aktenzeichen"]', hauptAktenzeichen(p), true);
+    feldSetzen(tab, '[data-feld="adressiert"]', adressaten(p), true);
   }
   azAuswahl(tab, p);
   karteAktualisieren(tab);
+}
+
+// "Adressiert an": eine Zeile je Empfänger*in aus dem Verteiler des Projekts,
+// z. B. "UNB Potsdam (unb@potsdam.de)".
+function adressaten(p) {
+  return verteilerListe(p)
+    .map((v) => (v.name && v.name !== v.email ? v.name + ' (' + v.email + ')' : v.email))
+    .join('\n');
 }
 
 // Auswahlliste neben dem Aktenzeichen-Feld (nur am Bildschirm). Erscheint,

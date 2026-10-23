@@ -29,7 +29,7 @@ ${logo()}
   </tr>
   <tr class="bg-grau-h">
     <td class="label" colspan="2">Teilnehmende:<textarea rows="3"></textarea></td>
-    <td class="label" colspan="2">Adressiert an:<textarea rows="3"></textarea></td>
+    <td class="label" colspan="2">Adressiert an:<textarea rows="3" data-feld="adressiert"></textarea></td>
   </tr>
   <tr class="bg-grau"><td class="label" colspan="2">Geltendes naturschutzrechtliches Aktenzeichen:</td><td colspan="2"><input type="text" data-feld="aktenzeichen"></td></tr>
   <tr class="bg-grau-h"><td class="label">Projektnummer:</td><td colspan="3"><input type="text" data-feld="projektnummer"></td></tr>
