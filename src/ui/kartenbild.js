@@ -47,6 +47,14 @@ function kachelnZeichnen(g, c, basis) {
   });
 }
 
+// Vom Canvas-Renderer gezeichnete Objekte (z. B. viele WFS-Punkte).
+function leinwaendeZeichnen(g, c, basis) {
+  c.querySelectorAll('.leaflet-overlay-pane canvas').forEach((cv) => {
+    const r = relativ(cv, basis);
+    if (r.w && r.h) g.drawImage(cv, r.x, r.y, r.w, r.h);
+  });
+}
+
 function flaechenZeichnen(g, c, basis) {
   c.querySelectorAll('.leaflet-overlay-pane svg').forEach((svg) => {
     const vb = svg.viewBox && svg.viewBox.baseVal;
@@ -163,6 +171,7 @@ function bildErzeugen(c) {
   g.fillStyle = '#ddd';
   g.fillRect(0, 0, basis.width, basis.height);
   kachelnZeichnen(g, c, basis);
+  leinwaendeZeichnen(g, c, basis);
   flaechenZeichnen(g, c, basis);
   markerZeichnen(g, c, basis);
   quelleZeichnen(g, basis.width, basis.height, c);

@@ -73,7 +73,10 @@ export function ebenenAusCapabilities(xmlText, typ, parser) {
 
 // GetFeature-Anfrage für einen Kartenausschnitt (WGS84). Achsenfolge bei
 // EPSG:4326 im WFS 2.0 ist Breite,Länge – deshalb die URN-Schreibweise.
-export function getFeatureUrl(e, grenzen, format) {
+export const WFS_SEITE = 5000;     // Objekte pro Anfrage
+export const WFS_HOECHSTENS = 25000; // mehr wird im Ausschnitt nicht geladen
+
+export function getFeatureUrl(e, grenzen, format, start = 0) {
   return mitParametern(e.url, {
     SERVICE: 'WFS',
     VERSION: '2.0.0',
@@ -83,7 +86,8 @@ export function getFeatureUrl(e, grenzen, format) {
     OUTPUTFORMAT: format,
     SRSNAME: 'urn:ogc:def:crs:EPSG::4326',
     BBOX: [grenzen.sued, grenzen.west, grenzen.nord, grenzen.ost].join(',') + ',urn:ogc:def:crs:EPSG::4326',
-    COUNT: '2000',
+    COUNT: String(WFS_SEITE),
+    STARTINDEX: String(start),
   });
 }
 

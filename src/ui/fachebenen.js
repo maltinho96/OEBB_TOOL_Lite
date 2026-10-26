@@ -12,7 +12,7 @@
 // nicht, lädt die Ebene ohne – die Karte wird dann "live" gedruckt.
 
 import L from 'leaflet';
-import { getFeatureUrl, GEOJSON_FORMATE, achsenPruefen } from '../domain/fachebenen.js';
+import { getFeatureUrl, GEOJSON_FORMATE, achsenPruefen, WFS_SEITE, WFS_HOECHSTENS } from '../domain/fachebenen.js';
 import { druckbildPlanen } from './kartenbild.js';
 
 const FARBEN = ['#7b2cbf', '#e76f00', '#00897b', '#c2185b', '#5d4037', '#1565c0'];
@@ -61,9 +61,13 @@ function wmsEbene(karte, e) {
 }
 
 function wfsEbene(karte, e, farbe) {
+  // Canvas statt SVG: zeichnet auch zehntausende Objekte (z. B. Baumkataster)
+  // flüssig. ui/kartenbild.js übernimmt das Canvas ins Druckbild.
+  const renderer = L.canvas({ padding: 0.2 });
   const gruppe = L.geoJSON(null, {
+    renderer,
     style: { color: farbe, weight: 2, fillColor: farbe, fillOpacity: 0.12 },
-    pointToLayer: (_, ll) => L.circleMarker(ll, { radius: 5, color: farbe, weight: 2, fillOpacity: 0.5 }),
+    pointToLayer: (_, ll) => L.circleMarker(ll, { renderer, radius: 4, color: farbe, weight: 1.5, fillOpacity: 0.45 }),
     onEachFeature: (f, l) => {
       const p = f.properties || {};
       const text = Object.keys(p).slice(0, 6).map((k) => k + ': ' + p[k]).join('\n');
@@ -82,15 +86,28 @@ function wfsEbene(karte, e, farbe) {
     let letzterFehler = '';
     for (const format of formate) {
       try {
-        const antwort = await fetch(getFeatureUrl(e, grenzen, format));
-        const text = await antwort.text();
-        if (nr !== anfrage) return; // inzwischen neuer Ausschnitt
-        const daten = JSON.parse(text);
-        if (!daten || !Array.isArray(daten.features)) throw new Error('kein GeoJSON');
-        wfsFormat.set(e.url, format);
-        gruppe.clearLayers();
-        gruppe.addData(achsenPruefen(daten));
-        melden(e.id, daten.features.length >= 2000 ? 'Sehr viele Objekte – nur die ersten 2000 werden gezeigt.' : '');
+        // Seitenweise laden, bis alles im Ausschnitt da ist (höchstens WFS_HOECHSTENS).
+        let start = 0;
+        let ersteId = null;
+        for (;;) {
+          const antwort = await fetch(getFeatureUrl(e, grenzen, format, start));
+          const text = await antwort.text();
+          if (nr !== anfrage) return; // inzwischen neuer Ausschnitt
+          const daten = JSON.parse(text);
+          if (!daten || !Array.isArray(daten.features)) throw new Error('kein GeoJSON');
+          wfsFormat.set(e.url, format);
+          const n = daten.features.length;
+          // Dienst ignoriert das Blättern (liefert dieselbe Seite)? Dann abbrechen.
+          const id = n ? JSON.stringify(daten.features[0].id || daten.features[0].geometry) : null;
+          if (start > 0 && id === ersteId) break;
+          if (start === 0) { gruppe.clearLayers(); ersteId = id; }
+          gruppe.addData(achsenPruefen(daten));
+          start += n;
+          if (n < WFS_SEITE || start >= WFS_HOECHSTENS) break;
+        }
+        melden(e.id, start >= WFS_HOECHSTENS
+          ? 'Sehr viele Objekte – im Ausschnitt werden höchstens ' + WFS_HOECHSTENS.toLocaleString('de-DE') + ' gezeigt. Weiter hineinzoomen.'
+          : '');
         druckbildPlanen(karte);
         return;
       } catch (err) {

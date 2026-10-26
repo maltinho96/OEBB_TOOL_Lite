@@ -130,7 +130,8 @@ async function alsHtmlSpeichern() {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  URL.revokeObjectURL(a.href);
+  // Erst später freigeben – sofortiges Freigeben bricht den Download manchmal ab.
+  setTimeout(() => URL.revokeObjectURL(a.href), 10000);
 }
 
 // Verdrahtet den Werkzeugleisten-Knopf data-aktion="speichern" (index.html).
