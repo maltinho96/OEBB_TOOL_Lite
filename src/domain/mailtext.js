@@ -37,7 +37,6 @@ export function mailBetreff(d) {
 //
 //   • 541001-26-650028
 //
-//
 //   Die im Vorbegehungsprotokoll festgelegten Maßnahmen sind von der Baufirma umzusetzen.
 //
 //   Bei Fragen kommen Sie gerne auf uns zu!
@@ -75,7 +74,7 @@ export function mailText(d) {
   const zeilen = [t.anrede, t.einleitung, ''];
   if (t.az.length) {
     t.az.forEach((a) => zeilen.push('• ' + a));
-    zeilen.push('', '');
+    zeilen.push('');
   }
   zeilen.push(t.kern, '', t.schluss);
   return zeilen.join('\n');
@@ -93,7 +92,7 @@ export function mailHtml(d) {
   const leer = p('&nbsp;');
   return '<div style="font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#000">' +
     p(esc(t.anrede)) + p(esc(t.einleitung)) + leer +
-    (t.az.length ? '<ul style="margin:0 0 0 18px;padding:0">' + t.az.map((a) => '<li>' + esc(a) + '</li>').join('') + '</ul>' + leer + leer : '') +
+    (t.az.length ? '<ul style="margin:0 0 0 18px;padding:0">' + t.az.map((a) => '<li>' + esc(a) + '</li>').join('') + '</ul>' + leer : '') +
     p(esc(t.kern)) + leer + p(esc(t.schluss)) + leer +
     '</div>';
 }
