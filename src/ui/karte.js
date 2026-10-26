@@ -86,7 +86,7 @@ function projektKarteZeigen() {
       if (b.isValid()) { punkte.push([b.getSouth(), b.getWest()]); punkte.push([b.getNorth(), b.getEast()]); }
     });
   });
-  if (punkte.length) projektKarte.fitBounds(punkte, { padding: [40, 40], maxZoom: 12 });
+  if (punkte.length) projektKarte.fitBounds(punkte, { padding: [40, 40], maxZoom: 12, animate: false });
 }
 
 // Karte anzeigen/aktualisieren: Grundordner + DB lesen, Nadeln neu zeichnen.

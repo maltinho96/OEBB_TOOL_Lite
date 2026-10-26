@@ -73,7 +73,7 @@ function zumProjekt() {
     const b = L.geoJSON(f.geojson).getBounds();
     if (b && b.isValid()) { punkte.push([b.getSouth(), b.getWest()], [b.getNorth(), b.getEast()]); }
   });
-  if (punkte.length) karte.fitBounds(punkte, { padding: [40, 40], maxZoom: STANDARD_MINZOOM });
+  if (punkte.length) karte.fitBounds(punkte, { padding: [40, 40], maxZoom: STANDARD_MINZOOM, animate: false });
 }
 
 async function speichern(aenderung) {
