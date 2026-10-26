@@ -4,11 +4,18 @@
 //     (erste Person ins An-Feld, alle weiteren in CC)
 //   - Belehrung:               an die E-Mail der Bauleitung im Protokoll
 // Anhänge kann mailto: nicht mitgeben – das PDF legt man selbst dazu.
+//
+// Schrift: Ein mailto:-Link kann nur reinen Text übergeben, und das neue
+// Outlook setzt diesen fest in Segoe UI 12. Deshalb wird der Text formatiert
+// (Calibri 11, echte Aufzählung) in die Zwischenablage gelegt und die Mail
+// ohne Text geöffnet – im Mailfenster genügt dann Strg+V. Klappt das
+// Kopieren nicht (z. B. Browser ohne Freigabe), steht der Text wie bisher
+// direkt in der Mail.
 
 import { dbHolen } from '../core/zustand.js';
 import { feldWert } from '../core/util.js';
 import { verteilerListe, EMAIL_MUSTER } from '../domain/projekt.js';
-import { mailBetreff, mailText } from '../domain/mailtext.js';
+import { mailBetreff, mailText, mailHtml } from '../domain/mailtext.js';
 
 // Bereiche "mit Beanstandung" (Haken "ohne Beanstandung" entfernt), bei
 // Arten- und Habitatschutz mit den betroffenen Unterpunkten.
@@ -48,7 +55,36 @@ function empfaenger(tab, typ) {
   return { adressen, fehlt: 'Für dieses Projekt ist noch kein Verteiler hinterlegt (Projekte → ✎ Bearbeiten).' };
 }
 
-function mailVorbereiten(tab) {
+// Text formatiert (HTML) und als Klartext in die Zwischenablage.
+async function inZwischenablage(html, text) {
+  try {
+    if (!navigator.clipboard || !window.ClipboardItem) return false;
+    await navigator.clipboard.write([new ClipboardItem({
+      'text/html': new Blob([html], { type: 'text/html' }),
+      'text/plain': new Blob([text], { type: 'text/plain' }),
+    })]);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Kurzer Hinweis unten am Bildschirm.
+function hinweisZeigen(text) {
+  let el = document.getElementById('mailHinweis');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'mailHinweis';
+    el.className = 'mail-hinweis kein-druck';
+    document.body.appendChild(el);
+  }
+  el.textContent = text;
+  el.classList.add('sichtbar');
+  clearTimeout(el._timer);
+  el._timer = setTimeout(() => el.classList.remove('sichtbar'), 9000);
+}
+
+async function mailVorbereiten(tab) {
   const typ = tab.id.replace('tab-', '');
   const daten = {
     typ,
@@ -65,12 +101,16 @@ function mailVorbereiten(tab) {
   const { adressen, fehlt } = empfaenger(tab, typ);
   if (!adressen.length && !confirm(fehlt + '\n\nMail trotzdem ohne Empfänger öffnen?')) return;
 
+  const text = mailText(daten);
+  const kopiert = await inZwischenablage(mailHtml(daten), text);
+
   // Erste Person des Verteilers ins An-Feld, alle weiteren in CC.
   const [an, ...cc] = adressen;
   const url = 'mailto:' + (an || '') +
     '?' + (cc.length ? 'cc=' + cc.join(',') + '&' : '') +
     'subject=' + encodeURIComponent(mailBetreff(daten)) +
-    '&body=' + encodeURIComponent(mailText(daten).replace(/\n/g, '\r\n'));
+    (kopiert ? '' : '&body=' + encodeURIComponent(text.replace(/\n/g, '\r\n')));
+  if (kopiert) hinweisZeigen('📋 Text ist kopiert – im Mailfenster in das Textfeld klicken und Strg+V drücken.');
   // Ereignis vorab (für Tests/Erweiterungen), dann Mailprogramm öffnen.
   document.dispatchEvent(new CustomEvent('mail-vorbereitet', { detail: url }));
   window.location.href = url;

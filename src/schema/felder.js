@@ -45,7 +45,7 @@ export function mailKnopf(empfaenger) {
   return (
     '<div class="mail-leiste kein-druck">' +
     '<button type="button" class="mail-knopf" data-aktion="mail-vorbereiten">✉ Mail vorbereiten</button>' +
-    '<span>Öffnet das Mailprogramm mit fertigem Text ' + empfaenger + '. Das PDF bitte als Anhang dazulegen.</span>' +
+    '<span>Öffnet eine Mail ' + empfaenger + ' und kopiert den fertigen Text – im Mailfenster Strg+V. Das PDF bitte als Anhang dazulegen.</span>' +
     '</div>'
   );
 }
