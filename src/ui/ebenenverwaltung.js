@@ -12,7 +12,7 @@ import { dbSetzen, dbHolen } from '../core/zustand.js';
 import {
   ebenenListe, dienstAusLink, capabilitiesUrl, ebenenAusCapabilities, STANDARD_MINZOOM,
 } from '../domain/fachebenen.js';
-import { fachebenenAnwenden, ebenenMeldung, ebenenFarbe } from './fachebenen.js';
+import { fachebenenAnwenden, ebenenMeldung, ebenenFarbe, ebenenFelder } from './fachebenen.js';
 
 let karte = null;      // Leaflet-Karte des Reiters
 let entwurf = null;    // Ebene, die gerade hinzugefügt wird
@@ -45,18 +45,31 @@ function listeZeigen() {
   if (!p) { ziel.innerHTML = '<p style="color:#777">Zuerst oben ein Projekt wählen.</p>'; return; }
   const ebenen = ebenenListe(p);
   if (!ebenen.length) { ziel.innerHTML = '<p style="color:#777">Für dieses Projekt sind noch keine Ebenen hinterlegt.</p>'; return; }
-  ziel.innerHTML = '<table class="uebersicht eb-tabelle"><tr><th>an</th><th>Ebene</th><th>Typ</th><th>ab Zoom</th><th class="kein-druck"></th></tr>' +
+  ziel.innerHTML = '<table class="uebersicht eb-tabelle"><tr><th>an</th><th>Farbe</th><th>Ebene</th><th>Typ</th><th>Nummern aus</th><th>ab Zoom</th><th class="kein-druck"></th></tr>' +
     ebenen.map((e, i) => {
       const m = ebenenMeldung(e.id);
       return '<tr>' +
         '<td class="mitte"><input type="checkbox" data-eb-an="' + esc(e.id) + '"' + (e.an ? ' checked' : '') + '></td>' +
-        '<td><span class="eb-farbe" style="background:' + (e.typ === 'wfs' ? ebenenFarbe(i) : '#999') + '"></span>' + esc(e.name) +
+        '<td class="mitte">' + (e.typ === 'wfs'
+          ? '<input type="color" class="eb-farbwahl" value="' + ebenenFarbe(i, e) + '" data-eb-farbe="' + esc(e.id) + '" title="Farbe ändern">'
+          : '<span class="eb-klein">–</span>') + '</td>' +
+        '<td>' + esc(e.name) +
         '<div class="eb-klein">' + esc(e.layer) + ' · ' + esc(new URL(e.url).host) + '</div>' +
         (m ? '<div class="eb-warn">⚠ ' + esc(m) + '</div>' : '') + '</td>' +
         '<td>' + e.typ.toUpperCase() + '</td>' +
+        '<td>' + (e.typ === 'wfs' ? nummernWahl(e) : '<span class="eb-klein">–</span>') + '</td>' +
         '<td><input type="number" min="5" max="19" value="' + Number(e.minZoom) + '" data-eb-zoom="' + esc(e.id) + '" style="width:56px"></td>' +
         '<td class="kein-druck mitte"><button class="vt-weg" data-aktion="eb-weg" data-id="' + esc(e.id) + '" title="Ebene entfernen">✕</button></td></tr>';
     }).join('') + '</table>';
+}
+
+// Auswahl, welches Attribut als Nummer neben die Objekte geschrieben wird.
+function nummernWahl(e) {
+  const namen = ebenenFelder(e.id).slice();
+  if (e.nummer && !namen.includes(e.nummer)) namen.unshift(e.nummer);
+  if (!namen.length) return '<span class="eb-klein">erscheint, sobald Objekte geladen sind</span>';
+  return '<select data-eb-nummer="' + esc(e.id) + '"><option value="">– keine –</option>' +
+    namen.map((n) => '<option value="' + esc(n) + '"' + (n === e.nummer ? ' selected' : '') + '>' + esc(n) + '</option>').join('') + '</select>';
 }
 
 function anwenden() {
@@ -196,6 +209,14 @@ export function ebenenverwaltungInit(section, leafletKarte) {
       if (a && name) name.value = a.titel || a.name;
     }
     if (t.dataset.ebAn) { const id = t.dataset.ebAn; const an = t.checked; speichern((l) => { const x = l.find((e2) => e2.id === id); if (x) x.an = an; }); }
+    if (t.dataset.ebFarbe) {
+      const id = t.dataset.ebFarbe; const f = /^#[0-9a-f]{6}$/i.test(t.value) ? t.value : '';
+      speichern((l) => { const x = l.find((e2) => e2.id === id); if (x) x.farbe = f; });
+    }
+    if (t.dataset.ebNummer !== undefined) {
+      const id = t.dataset.ebNummer; const n = t.value;
+      speichern((l) => { const x = l.find((e2) => e2.id === id); if (x) { if (n) x.nummer = n; else delete x.nummer; } });
+    }
     if (t.dataset.ebZoom) {
       const id = t.dataset.ebZoom; const z = Math.min(19, Math.max(5, parseInt(t.value, 10) || STANDARD_MINZOOM));
       speichern((l) => { const x = l.find((e2) => e2.id === id); if (x) x.minZoom = z; });
