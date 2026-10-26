@@ -3,7 +3,8 @@
 //  1. Übersichtsplan (.plankarte-map): Projekt-Flächen (Shapes) + je Foto-
 //     Gruppe ein nummeriertes blaues Rechteck.
 //  2. Über jedem Foto-Block (.abb-karte): eine 3:1-Karte mit den Standorten
-//     der Fotos dieses Blocks (Punkte mit Abbildungsnummer) + Shapes.
+//     der Fotos dieses Blocks (Punkte mit Abbildungsnummer) + Shapes +
+//     Fachdaten-Ebenen (WMS/WFS) des Projekts (ui/fachebenen.js).
 //     Blöcke ohne GPS-Fotos zeigen keine Karte.
 //
 // Die GPS-Koordinaten hängen als data-lat/data-lng an den <img> (gesetzt
@@ -22,6 +23,8 @@ import { KARTE_START } from '../config/konstanten.js';
 import { osmEbene } from './karte.js';
 import { dbHolen } from '../core/zustand.js';
 import { druckbildAnmelden, druckbildPlanen } from './kartenbild.js';
+import { fachebenenAnwenden } from './fachebenen.js';
+import { ebenenListe } from '../domain/fachebenen.js';
 
 const GRUPPEN_ABSTAND_M = 50;   // Übersicht: ab hier neues Rechteck
 const MIN_KASTEN_M = 45;        // Übersicht: Mindest-Kantenlänge
@@ -94,11 +97,15 @@ function karteErzeugen(div) {
   return karte;
 }
 
-// Flächen des im Protokoll gewählten Projekts (aus der Datenbank).
-function projektFlaechen(tab) {
+// Das im Protokoll gewählte Projekt (aus der Datenbank).
+function projektVon(tab) {
   const pid = tab.dataset.projektId;
   const db = dbHolen();
-  const p = pid && db && db.projekte ? db.projekte[pid] : null;
+  return pid && db && db.projekte ? db.projekte[pid] : null;
+}
+
+function projektFlaechen(tab) {
+  const p = projektVon(tab);
   return (p && p.flaechen) || [];
 }
 
@@ -170,7 +177,7 @@ function uebersichtAktualisieren(tab) {
 
 // ---------- 2. Karte über jedem Foto-Block ----------
 
-function blockKarteAktualisieren(block, flaechen, nummerVon) {
+function blockKarteAktualisieren(block, flaechen, ebenen, nummerVon) {
   const huelle = block.querySelector('.abb-karte');
   if (!huelle) return;
 
@@ -197,6 +204,8 @@ function blockKarteAktualisieren(block, flaechen, nummerVon) {
   }
   e.gruppe.clearLayers();
   flaechenZeichnen(e.gruppe, flaechen);
+  // Fachdaten-Ebenen (WMS/WFS) des Projekts – nur hier, nicht im Übersichtsplan.
+  fachebenenAnwenden(e.karte, ebenen);
 
   const punkte = [];
   gruppieren(fotos, GLEICHER_ORT_M).forEach((g) => {
@@ -232,7 +241,8 @@ export function karteAktualisieren(tab) {
   tab.querySelectorAll('.fotoContainer .abb-bilder img').forEach((img, i) => nummerVon.set(img, i + 1));
 
   const flaechen = projektFlaechen(tab);
+  const ebenen = ebenenListe(projektVon(tab));
   tab.querySelectorAll('.fotoContainer .abb').forEach((block) => {
-    blockKarteAktualisieren(block, flaechen, nummerVon);
+    blockKarteAktualisieren(block, flaechen, ebenen, nummerVon);
   });
 }

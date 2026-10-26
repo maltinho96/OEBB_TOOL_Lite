@@ -323,3 +323,18 @@ select.az-wahl{display:block; margin-top:3px; font:inherit; font-size:11.5px; pa
   background:#1f3864; color:#fff; padding:10px 18px; border-radius:8px; box-shadow:0 4px 18px rgba(0,0,0,.3);
   font-size:14px; z-index:9000; transition:opacity .2s, transform .2s; max-width:92vw; text-align:center;}
 .mail-hinweis.sichtbar{opacity:1; transform:translate(-50%, 0);}
+/* Fachdaten-Ebenen im Kartenreiter */
+.eb-kopf{display:flex; gap:14px; align-items:center; flex-wrap:wrap;}
+.eb-kopf select{font:inherit; padding:3px 6px; min-width:240px;}
+.eb-zoom{font-size:12px; color:#777;}
+.eb-info{font-size:11.5px; color:#777; margin:0 0 6px;}
+.eb-tabelle{max-width:860px;}
+.eb-tabelle td{vertical-align:middle;}
+.eb-farbe{display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:6px;}
+.eb-klein{font-size:11px; color:#888; word-break:break-all;}
+.eb-warn{font-size:11.5px; color:#a15c00; margin-top:2px;}
+.eb-neu{display:flex; gap:8px; margin:10px 0 6px; max-width:860px;}
+.eb-neu input{flex:1; font:inherit; padding:5px 8px;}
+.eb-entwurf{display:flex; flex-wrap:wrap; gap:10px 14px; align-items:center; padding:10px 12px; background:#f3f5f8; border:1px solid #d5dbe3; border-radius:6px; max-width:860px; font-size:12.5px;}
+.eb-entwurf .eb-warn{flex-basis:100%;}
+.eb-entwurf select, .eb-entwurf input{font:inherit; padding:3px 5px; max-width:340px;}

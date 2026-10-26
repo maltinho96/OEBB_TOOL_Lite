@@ -3,14 +3,15 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 // Content-Security-Policy für die veröffentlichte App (nur im Build – der
 // Dev-Server braucht u. a. eine WebSocket-Verbindung für das Neuladen).
-// Erlaubt nur eigene Skripte; Bilder/Kacheln von OpenStreetMap; keine
+// Erlaubt nur eigene Skripte; Bilder und Daten per https; keine
 // Plugins, keine fremden Formular-Ziele.
 const CSP = [
   "default-src 'self'",
   "script-src 'self'",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://tile.openstreetmap.org",
-  "connect-src 'self' data: blob: https://tile.openstreetmap.org",
+  // https: für Fachdaten-Ebenen (WMS-Bilder, WFS-Daten) beliebiger Geoportale.
+  "img-src 'self' data: blob: https:",
+  "connect-src 'self' data: blob: https:",
   "font-src 'self' data:",
   "object-src 'none'",
   "base-uri 'self'",

@@ -27,16 +27,23 @@ function relativ(el, basis) {
 }
 
 function kachelnZeichnen(g, c, basis) {
-  // Ältere Zoomstufen liegen darunter (kleinerer z-index) – in dieser
-  // Reihenfolge zeichnen, damit die aktuelle Stufe oben liegt.
-  const ebenen = Array.from(c.querySelectorAll('.leaflet-tile-container'))
-    .sort((a, b) => (parseInt(a.style.zIndex, 10) || 0) - (parseInt(b.style.zIndex, 10) || 0));
-  ebenen.forEach((ebene) => {
-    ebene.querySelectorAll('img.leaflet-tile-loaded').forEach((img) => {
-      if (!img.complete || !img.naturalWidth) return;
-      const t = relativ(img, basis);
-      g.drawImage(img, t.x, t.y, t.w, t.h);
-    });
+  // Kachel-Ebenen in ihrer Reihenfolge (Grundkarte, dann z. B. WMS darüber),
+  // jeweils mit ihrer Deckkraft. Innerhalb einer Ebene liegen ältere
+  // Zoomstufen darunter (kleinerer z-index).
+  c.querySelectorAll('.leaflet-tile-pane > .leaflet-layer').forEach((ebene) => {
+    const deckkraft = parseFloat(getComputedStyle(ebene).opacity);
+    g.save();
+    g.globalAlpha = Number.isNaN(deckkraft) ? 1 : deckkraft;
+    Array.from(ebene.querySelectorAll('.leaflet-tile-container'))
+      .sort((a, b) => (parseInt(a.style.zIndex, 10) || 0) - (parseInt(b.style.zIndex, 10) || 0))
+      .forEach((stufe) => {
+        stufe.querySelectorAll('img.leaflet-tile-loaded').forEach((img) => {
+          if (!img.complete || !img.naturalWidth) return;
+          const t = relativ(img, basis);
+          g.drawImage(img, t.x, t.y, t.w, t.h);
+        });
+      });
+    g.restore();
   });
 }
 
@@ -127,8 +134,11 @@ function markerZeichnen(g, c, basis) {
 }
 
 // OSM-Quellenangabe unten rechts (ODbL-Pflicht).
-function quelleZeichnen(g, breite, hoehe) {
-  const text = '© OpenStreetMap-Mitwirkende';
+// Quellenangaben unten rechts: OSM (ODbL-Pflicht) plus ggf. Fachebenen –
+// so, wie sie die Karte selbst anzeigt.
+function quelleZeichnen(g, breite, hoehe, c) {
+  const el = c.querySelector('.leaflet-control-attribution');
+  const text = (el && el.textContent.trim()) || '© OpenStreetMap-Mitwirkende';
   g.font = '9px system-ui, sans-serif';
   const w = g.measureText(text).width + 8;
   g.fillStyle = 'rgba(255,255,255,.75)';
@@ -140,8 +150,8 @@ function quelleZeichnen(g, breite, hoehe) {
 }
 
 // Zeichnet die Karte als JPEG-DataURL. null, wenn die Karte gerade nicht
-// sichtbar ist (anderer Reiter) oder die Kacheln nicht ausgelesen werden
-// dürfen.
+// sichtbar ist (anderer Reiter); 'gesperrt', wenn Bilder ohne CORS-Freigabe
+// darin sind (z. B. ein WMS-Dienst, der das nicht erlaubt).
 function bildErzeugen(c) {
   const basis = c.getBoundingClientRect();
   if (!basis.width || !basis.height) return null;
@@ -155,11 +165,11 @@ function bildErzeugen(c) {
   kachelnZeichnen(g, c, basis);
   flaechenZeichnen(g, c, basis);
   markerZeichnen(g, c, basis);
-  quelleZeichnen(g, basis.width, basis.height);
+  quelleZeichnen(g, basis.width, basis.height, c);
   try {
     return canvas.toDataURL('image/jpeg', QUALITAET);
   } catch {
-    return null; // Kacheln ohne CORS-Freigabe – dann bleibt die lebende Karte
+    return 'gesperrt';
   }
 }
 
@@ -167,8 +177,15 @@ function druckbildSetzen(c) {
   const huelle = c.parentElement;
   if (!huelle) return;
   const url = bildErzeugen(c);
-  if (!url) return; // altes Bild (falls vorhanden) behalten
+  if (!url) return; // gerade unsichtbar: altes Bild (falls vorhanden) behalten
   let img = c.nextElementSibling;
+  if (url === 'gesperrt') {
+    // Bild nicht erzeugbar -> lieber die lebende Karte drucken als ein
+    // veraltetes Bild ohne die neue Ebene.
+    if (img && img.classList.contains('karte-druckbild')) img.remove();
+    huelle.classList.remove('hat-druckbild');
+    return;
+  }
   if (!img || !img.classList.contains('karte-druckbild')) {
     img = document.createElement('img');
     img.className = 'karte-druckbild';

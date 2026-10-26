@@ -28,7 +28,7 @@ export function htmlVorlage({ firmenFarbe, titel, bodyHtml, metaScriptTag, fussC
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: https://tile.openstreetmap.org; style-src 'unsafe-inline'; font-src data:">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: https:; style-src 'unsafe-inline'; font-src data:">
 <title>${String(titel).replace(/[<>&]/g, '')}</title>
 <style>
 ${grundlagenCss}
