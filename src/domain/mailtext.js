@@ -3,9 +3,9 @@
 //
 // d = {
 //   typ: 'protokoll' | 'vorbegehung' | 'belehrung-karel',
-//   nummer, datum (JJJJ-MM-TT), auftraggeber, ort, landkreis, projekt, aktenzeichen,
+//   nummer, datum (JJJJ-MM-TT), auftraggeber, ort, landkreis, projekt,
+//   aktenzeichen: ['541001-26-650028', …],
 //   abweichungen: ['Baumschutz', 'Arten- und Habitatschutz: Fledermausschutz', …],
-//   absender, firma,
 // }
 
 import { datumDeutsch } from '../core/util.js';
@@ -31,35 +31,47 @@ export function mailBetreff(d) {
   return titel + ' zur ökologischen Baubegleitung' + (orte ? ' in ' + orte : '');
 }
 
+// Aufbau (Beispiel Vorbegehung):
+//   Sehr geehrte Damen und Herren,
+//   im Anhang übersende ich Ihnen das 01. Protokoll der Vorbegehung …, mit dem Aktenzeichen:
+//
+//   • 541001-26-650028
+//
+//
+//   Die im Vorbegehungsprotokoll festgelegten Maßnahmen sind von der Baufirma umzusetzen.
+//
+//   Bei Fragen kommen Sie gerne auf uns zu!
+// Keine Grußformel – die kommt aus der Signatur im Mailprogramm.
 export function mailText(d) {
   const am = datumDeutsch(d.datum);
+  const az = (d.aktenzeichen || []).filter(Boolean);
   let einleitung;
   let kern;
   if (d.typ === 'vorbegehung') {
     einleitung = 'im Anhang übersende ich Ihnen das ' + nummerText(d.nummer) + 'Protokoll der Vorbegehung zur ökologischen Baubegleitung' +
-      (am ? ', durchgeführt am ' + am : '') + ', ' + bauvorhaben(d) + '.';
+      (am ? ', durchgeführt am ' + am : '') + ', ' + bauvorhaben(d);
     kern = 'Die im Vorbegehungsprotokoll festgelegten Maßnahmen sind von der Baufirma umzusetzen.';
   } else if (d.typ === 'belehrung-karel') {
     einleitung = 'im Anhang übersende ich Ihnen das Belehrungsprotokoll zur ökologischen Baubegleitung' +
-      (am ? ' vom ' + am : '') + ' ' + bauvorhaben(d) + '.';
+      (am ? ' vom ' + am : '') + ' ' + bauvorhaben(d);
     kern = 'Bitte beachten Sie die darin festgelegten Auflagen zum Naturschutz und geben Sie das Protokoll ' +
       'an alle auf der Baustelle tätigen Personen weiter.';
   } else {
     einleitung = 'im Anhang übersende ich Ihnen das ' + nummerText(d.nummer) + 'Protokoll zur ökologischen Baubegleitung' +
-      (am ? ', durchgeführt am ' + am : '') + ', ' + bauvorhaben(d) + '.';
+      (am ? ', durchgeführt am ' + am : '') + ', ' + bauvorhaben(d);
     kern = d.abweichungen && d.abweichungen.length
       ? 'Es wurden Abweichungen von den Genehmigungsauflagen dokumentiert (' + d.abweichungen.join('; ') + '). ' +
         'Details entnehmen Sie bitte dem Protokoll.'
       : 'Es wurden keine Abweichungen von den Genehmigungsauflagen dokumentiert.';
   }
-  const zeilen = [
-    'Sehr geehrte Damen und Herren,',
-    '',
-    einleitung,
-  ];
-  if (d.aktenzeichen) zeilen.push('Aktenzeichen: ' + d.aktenzeichen);
-  zeilen.push('', kern, 'Bei Fragen kommen Sie gerne auf uns zu!', '', 'Mit freundlichen Grüßen');
-  if (d.absender) zeilen.push(d.absender);
-  if (d.firma) zeilen.push(d.firma);
+  const zeilen = ['Sehr geehrte Damen und Herren,'];
+  if (az.length) {
+    zeilen.push(einleitung + ', mit ' + (az.length > 1 ? 'den Aktenzeichen' : 'dem Aktenzeichen') + ':', '');
+    az.forEach((a) => zeilen.push('• ' + a));
+    zeilen.push('', '');
+  } else {
+    zeilen.push(einleitung + '.', '');
+  }
+  zeilen.push(kern, '', 'Bei Fragen kommen Sie gerne auf uns zu!');
   return zeilen.join('\n');
 }

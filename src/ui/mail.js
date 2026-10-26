@@ -1,15 +1,14 @@
 // Knopf "✉ Mail vorbereiten" am Ende jedes Protokolls: öffnet das
 // Mailprogramm (mailto:) mit Empfängern, Betreff und fertigem Text.
 //   - Begehung / Vorbegehung: an den Verteiler des gewählten Projekts
+//     (erste Person ins An-Feld, alle weiteren in CC)
 //   - Belehrung:               an die E-Mail der Bauleitung im Protokoll
 // Anhänge kann mailto: nicht mitgeben – das PDF legt man selbst dazu.
 
 import { dbHolen } from '../core/zustand.js';
 import { feldWert } from '../core/util.js';
-import { aktuellerNutzer } from '../core/nutzer.js';
 import { verteilerListe, EMAIL_MUSTER } from '../domain/projekt.js';
 import { mailBetreff, mailText } from '../domain/mailtext.js';
-import { aktuelleFirma } from './firma.js';
 
 // Bereiche "mit Beanstandung" (Haken "ohne Beanstandung" entfernt), bei
 // Arten- und Habitatschutz mit den betroffenen Unterpunkten.
@@ -59,16 +58,18 @@ function mailVorbereiten(tab) {
     ort: feldWert(tab, 'ort'),
     landkreis: feldWert(tab, 'landkreis') || projektInfo(tab, 'landkreis'),
     projekt: feldWert(tab, 'projekt').split('\n')[0].trim(),
-    aktenzeichen: feldWert(tab, 'aktenzeichen').split(/\s*\n\s*/).filter(Boolean).join(', '),
+    // Mehrere Aktenzeichen (Zeilen oder durch Komma/Semikolon getrennt) -> je ein Punkt.
+    aktenzeichen: feldWert(tab, 'aktenzeichen').split(/\s*[\n;,]\s*/).filter(Boolean),
     abweichungen: abweichungen(tab),
-    absender: feldWert(tab, 'baubegleiter') || aktuellerNutzer(),
-    firma: aktuelleFirma().name,
   };
   const { adressen, fehlt } = empfaenger(tab, typ);
   if (!adressen.length && !confirm(fehlt + '\n\nMail trotzdem ohne Empfänger öffnen?')) return;
 
-  const url = 'mailto:' + adressen.join(',') +
-    '?subject=' + encodeURIComponent(mailBetreff(daten)) +
+  // Erste Person des Verteilers ins An-Feld, alle weiteren in CC.
+  const [an, ...cc] = adressen;
+  const url = 'mailto:' + (an || '') +
+    '?' + (cc.length ? 'cc=' + cc.join(',') + '&' : '') +
+    'subject=' + encodeURIComponent(mailBetreff(daten)) +
     '&body=' + encodeURIComponent(mailText(daten).replace(/\n/g, '\r\n'));
   // Ereignis vorab (für Tests/Erweiterungen), dann Mailprogramm öffnen.
   document.dispatchEvent(new CustomEvent('mail-vorbereitet', { detail: url }));
