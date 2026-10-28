@@ -23,6 +23,15 @@ export function fotobreiteAktualisieren(bilder) {
     summe += ar;
   });
   if (summe) bilder.style.setProperty('--summe', summe.toFixed(4));
+  // flex-grow als Anteil (Summe = 1): Ist die Summe der Wachstumswerte
+  // kleiner als 1 (z. B. ein einzelnes Hochformatfoto, 0,56), verteilt der
+  // Browser nur diesen Bruchteil des Platzes – das Foto bliebe zu schmal.
+  if (summe) {
+    bilder.querySelectorAll('img').forEach((img) => {
+      const ar = verhaeltnis(img);
+      if (ar) img.style.setProperty('--anteil', (ar / summe).toFixed(5));
+    });
+  }
   bilder.style.setProperty('--anzahl', String(bilder.querySelectorAll('img').length));
 }
 
