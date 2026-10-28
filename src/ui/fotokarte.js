@@ -130,6 +130,14 @@ function punktAusImg(img) {
   return Number.isNaN(lat) || Number.isNaN(lng) ? null : { lat, lng };
 }
 
+// Bereiche im Übersichtsplan mit Buchstaben (A, B, … Z, AA, AB, …), damit
+// sie sich von den Abbildungsnummern der Fotos unterscheiden.
+function buchstabe(i) {
+  let s = '';
+  for (let n = i + 1; n > 0; n = Math.floor((n - 1) / 26)) s = String.fromCharCode(65 + ((n - 1) % 26)) + s;
+  return s;
+}
+
 // ---------- 1. Übersichtsplan ----------
 
 function uebersichtAktualisieren(tab) {
@@ -159,7 +167,7 @@ function uebersichtAktualisieren(tab) {
       L.rectangle(grenzen, { color: '#1f6fd6', weight: 2, fillColor: '#1f6fd6', fillOpacity: 0.15 })
         .addTo(e.rechtecke);
       L.marker([(grenzen[0][0] + grenzen[1][0]) / 2, (grenzen[0][1] + grenzen[1][1]) / 2], {
-        icon: L.divIcon({ className: 'bereich-nummer', html: String(i + 1), iconSize: [24, 24], iconAnchor: [12, 12] }),
+        icon: L.divIcon({ className: 'bereich-nummer', html: buchstabe(i), iconSize: [28, 24], iconAnchor: [14, 12] }),
         interactive: false,
       }).addTo(e.rechtecke);
       ecken.push(L.latLng(grenzen[0]), L.latLng(grenzen[1]));
