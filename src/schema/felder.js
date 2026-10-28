@@ -55,11 +55,12 @@ export function mailKnopf(empfaenger) {
 // Fußzeile (Bildschirm-Vorschau am Dokumentende): Datum | Auftrag | Seite.
 // Beim Drucken wird sie ausgeblendet; dort setzt ui/fusszeile.js dieselbe
 // Zeile über @page-Seitenränder auf JEDE Seite, mit echter Seitenzahl.
-// Rollen-/Haftungshinweis am Protokollende. Text: haftungshinweis.txt im
+// Rollen-/Haftungshinweis im Abschnitt mit der Unterschrift. Text: haftungshinweis.txt im
 // Grundordner (ui/haftungshinweis.js), bis dahin der Standardtext.
-export function haftungshinweis() {
-  return '<div class="haftungshinweis" data-haftungshinweis><b>Hinweis:</b> <span class="hh-text">' +
-    HINWEIS_STANDARD + '</span></div>';
+// Als letzte Zeile der Unterschriften-Tabelle (farbe: 'gelb' | 'blau').
+export function haftungshinweis(spalten, farbe = 'gelb') {
+  return '<tr class="bg-' + farbe + ' hh-zeile" data-haftungshinweis><td colspan="' + spalten + '">' +
+    '<b>Hinweis:</b> <span class="hh-text">' + HINWEIS_STANDARD + '</span></td></tr>';
 }
 
 export function abschlussFusszeile() {

@@ -129,10 +129,9 @@ Der Bauleiter/Polier der beauftragten Tiefbaufirma ist dafür verantwortlich, al
   <tr class="bg-blau">
     <td colspan="2"><span class="zeile"><b>Ort / Datum:</b> <input type="text" value="Berlin" style="max-width:140px">, <input type="date" style="max-width:150px"></span></td>
   </tr>
+  ${haftungshinweis(2, 'blau')}
 </table>
 </div>
-
-${haftungshinweis()}
 
 ${mailKnopf('an die Bauleitung (E-Mail oben)')}
 

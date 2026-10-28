@@ -62,14 +62,13 @@ ${logo()}
   <tr class="bg-gelb-h">
     <td colspan="2"><span class="zeile"><b>Ort / Datum:</b> <input type="text" value="Berlin" style="max-width:140px">, <input type="date" style="max-width:150px"></span></td>
   </tr>
+  ${haftungshinweis(4)}
 </table>
 </div>
 
 ${uebersichtsplan()}
 
 ${fotodokumentation('Je 2 Fotos ergeben eine Abbildung (umschaltbar auf 1 Bild) · Fotos mit GPS-Daten erscheinen automatisch auf der Karte über dem Block · Foto anklicken, um Stellen rot zu markieren (Ellipse oder Strich)')}
-
-${haftungshinweis()}
 
 ${mailKnopf('an den Verteiler des Projekts')}
 
