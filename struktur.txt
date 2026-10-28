@@ -15,6 +15,7 @@ oebb-app/   (Stand: Oktober 2026)
     │
     ├── config/                  # reine Daten
     │   ├── firmen.js            # Standard-Firmen + Aufbau von firmen.txt
+    │   ├── haftungshinweis.js   # Standardtext + Aufbau von haftungshinweis.txt
     │   ├── konstanten.js        # Bildgrößen, Reiter, Typnamen …
     │   └── textbausteine.js     # Knöpfe mit Mustertexten im Belehrungsprotokoll
     │
@@ -49,6 +50,7 @@ oebb-app/   (Stand: Oktober 2026)
     │   ├── projektformular.js, projektlisten.js, shapefiles.js, team.js
     │   ├── projektwahl.js       # Projekt-/Aktenzeichen-Auswahl im Protokoll
     │   ├── firma.js             # firmen.txt, Logos, Farbe
+    │   ├── haftungshinweis.js   # Hinweis am Protokollende aus haftungshinweis.txt
     │   ├── fotos.js, markieren.js, fotokarte.js, kartenbild.js, karte.js
     │   ├── einklappen.js, bausteine.js, fusszeile.js, mail.js
     │   ├── stundentabelle.js
@@ -65,6 +67,7 @@ oebb-app/   (Stand: Oktober 2026)
 
 Grundordner (bei euch, NICHT im Repo):
 ├── firmen.txt                   # Firmenname | Logo-Datei | Farbe
+├── haftungshinweis.txt          # Text des Hinweises am Protokollende
 ├── logos/                       # Logo-Dateien
 ├── oebb_datenbank.json          # Projekte, Team, Stunden, Support-Meldungen
 └── backups/                     # eine Sicherung pro Monat

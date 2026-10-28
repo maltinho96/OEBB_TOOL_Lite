@@ -1,6 +1,6 @@
 // Vorbegehungsprotokoll. HTML originalgetreu; Logos/onclick angepasst.
 
-import { logo, fotodokumentation, uebersichtsplan, mailKnopf, abschlussFusszeile } from './felder.js';
+import { logo, fotodokumentation, uebersichtsplan, mailKnopf, abschlussFusszeile, haftungshinweis } from './felder.js';
 
 export const vorbegehung = {
   id: 'tab-vorbegehung',
@@ -68,6 +68,8 @@ ${logo()}
 ${uebersichtsplan()}
 
 ${fotodokumentation('Je 2 Fotos ergeben eine Abbildung (umschaltbar auf 1 Bild) · Fotos mit GPS-Daten erscheinen automatisch auf der Karte über dem Block · Foto anklicken, um Stellen rot zu markieren (Ellipse oder Strich)')}
+
+${haftungshinweis()}
 
 ${mailKnopf('an den Verteiler des Projekts')}
 

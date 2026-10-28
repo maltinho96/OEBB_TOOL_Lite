@@ -7,7 +7,7 @@
 // Auflagen-Feld gibt es Knöpfe für Textbausteine (config/textbausteine.js,
 // eingefügt von ui/bausteine.js – die Knöpfe werden nicht gedruckt).
 
-import { logo, mailKnopf, abschlussFusszeile } from './felder.js';
+import { logo, mailKnopf, abschlussFusszeile, haftungshinweis } from './felder.js';
 import { visZeile, VIS_TEXTE } from './visualisierung.js';
 import { TEXTBAUSTEINE } from '../config/textbausteine.js';
 import { esc } from '../core/util.js';
@@ -131,6 +131,8 @@ Der Bauleiter/Polier der beauftragten Tiefbaufirma ist dafür verantwortlich, al
   </tr>
 </table>
 </div>
+
+${haftungshinweis()}
 
 ${mailKnopf('an die Bauleitung (E-Mail oben)')}
 

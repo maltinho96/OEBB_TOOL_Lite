@@ -13,6 +13,7 @@ import { dbLesen } from '../core/db.js';
 import { dbSetzen, dbHolen } from '../core/zustand.js';
 import { logo } from '../schema/felder.js';
 import { firmenLaden } from './firma.js';
+import { haftungshinweisLaden } from './haftungshinweis.js';
 import { teamAnzeigen, teamInit } from './team.js';
 import { projektlistenInit } from './projektlisten.js';
 import { aktenzeichenListe, hauptAktenzeichen, verteilerListe } from '../domain/projekt.js';
@@ -207,6 +208,8 @@ async function uebersichtAktualisieren(interaktiv) {
   if (bereich) bereich.style.display = '';
   if (status) status.textContent = '✅ verknüpft: ' + ordner.name;
   const firmenStatus = await firmenLaden(ordner);
+  const hinweisStatus = await haftungshinweisLaden(ordner);
+  if (hinweisStatus) firmenStatus.push(hinweisStatus);
   const logoStatus = document.getElementById('logoStatus');
   if (logoStatus) logoStatus.textContent = firmenStatus.join('\n');
   if (knopf) knopf.textContent = '📂 Anderen Grundordner wählen';

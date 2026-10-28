@@ -3,6 +3,8 @@
 // Wiederkehrende Muster (Textfeld, Checkbox-Zeile, Foto-Abschnitt) kannst
 // du spaeter nach Bedarf ergaenzen, ohne die Templates umzubauen.
 
+import { HINWEIS_STANDARD } from '../config/haftungshinweis.js';
+
 // Firmen-Logo. Das Bild liegt NICHT im Repo, sondern im Grundordner
 // (Unterordner logos/, Dateiname steht in firmen.txt) und wird von
 // ui/firma.js eingesetzt, sobald der Grundordner verbunden ist.
@@ -53,6 +55,13 @@ export function mailKnopf(empfaenger) {
 // Fußzeile (Bildschirm-Vorschau am Dokumentende): Datum | Auftrag | Seite.
 // Beim Drucken wird sie ausgeblendet; dort setzt ui/fusszeile.js dieselbe
 // Zeile über @page-Seitenränder auf JEDE Seite, mit echter Seitenzahl.
+// Rollen-/Haftungshinweis am Protokollende. Text: haftungshinweis.txt im
+// Grundordner (ui/haftungshinweis.js), bis dahin der Standardtext.
+export function haftungshinweis() {
+  return '<div class="haftungshinweis" data-haftungshinweis><b>Hinweis:</b> <span class="hh-text">' +
+    HINWEIS_STANDARD + '</span></div>';
+}
+
 export function abschlussFusszeile() {
   return (
     '<div class="dok-fusszeile" data-dok-fusszeile>' +

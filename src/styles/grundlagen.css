@@ -104,6 +104,9 @@ input[type=checkbox], input[type=radio]{width:17px; height:17px; accent-color:#1
 .karte-druckbild{display:none;}
 .plankarte-hinweis{font-size:11px; color:#888; margin:4px 0 8px; font-style:italic;}
 /* Fußzeilen-Vorschau am Bildschirm: Datum | Auftrag | Seite. */
+.haftungshinweis{margin:18px 0 10px; padding:6px 10px; border-left:3px solid var(--firma); background:#f6f6f6;
+  font-size:11px; line-height:1.4; color:#444; page-break-inside:avoid; break-inside:avoid;}
+.haftungshinweis[hidden]{display:none;}
 .dok-fusszeile{
   display:flex; justify-content:space-between; align-items:baseline; gap:16px;
   margin-top:16px; padding-top:5px;
