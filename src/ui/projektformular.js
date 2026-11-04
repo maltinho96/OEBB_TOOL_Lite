@@ -27,6 +27,7 @@ import {
   aktenzeichenListe,
   hauptAktenzeichen,
   verteilerListe,
+  EMAIL_MUSTER,
 } from '../domain/projekt.js';
 
 // Wird von ui/dashboard.js gesetzt: nach jeder Datenänderung hier soll
@@ -71,7 +72,7 @@ function nadelEntfernen() {
 // ---------- Formular öffnen/schließen/leeren ----------
 
 function formularLeeren() {
-  ['npName', 'npNummer', 'npOrt', 'npAuftraggeber', 'npBaufirma', 'npAnsprechpartner', 'npAnsprechpartnerTelefon', 'npAnsprechpartnerEmail', 'npLandkreis', 'npBehoerde', 'npNotizen', 'npStart', 'npEnde'].forEach((id) => {
+  ['npName', 'npNummer', 'npOrt', 'npAuftraggeber', 'npBaufirma', 'npAnsprechpartner', 'npAnsprechpartnerTelefon', 'npAnsprechpartnerEmail', 'npLandkreis', 'npBehoerde', 'npBehoerdeTelefon', 'npBehoerdeEmail', 'npNotizen', 'npStart', 'npEnde'].forEach((id) => {
     document.getElementById(id).value = '';
   });
   document.getElementById('npStatus').value = 'aktuell';
@@ -127,6 +128,8 @@ export function projektBearbeiten(pid) {
   document.getElementById('npBaufirma').value = i.baufirma || '';
   document.getElementById('npLandkreis').value = i.landkreis || '';
   document.getElementById('npBehoerde').value = i.behoerde || '';
+  document.getElementById('npBehoerdeTelefon').value = i.behoerdeTelefon || '';
+  document.getElementById('npBehoerdeEmail').value = i.behoerdeEmail || '';
   listenFuellen(aktenzeichenListe(p), verteilerListe(p));
   document.getElementById('npNotizen').value = i.notizen || '';
   if (p.lat != null && p.lng != null) { nadelSetzen(p.lat, p.lng); npKarte.setView([p.lat, p.lng], 12); }
@@ -166,8 +169,10 @@ async function projektAnlegen() {
   const nummer = document.getElementById('npNummer').value.trim();
   if (!name && !nummer) { alert('Bitte mindestens Projektname oder Projektnummer angeben.'); return; }
   const { aktenzeichen, verteiler, ungueltig } = listenLesen();
+  const behoerdeMail = document.getElementById('npBehoerdeEmail').value.trim();
+  if (behoerdeMail && !EMAIL_MUSTER.test(behoerdeMail)) ungueltig.push(behoerdeMail + ' (Behörde)');
   if (ungueltig.length) {
-    alert('Diese E-Mail-Adressen im Verteiler sind ungültig:\n' + ungueltig.join('\n') + '\n\nBitte korrigieren.');
+    alert('Diese E-Mail-Adressen sind ungültig:\n' + ungueltig.join('\n') + '\n\nBitte korrigieren.');
     return;
   }
 
@@ -193,6 +198,8 @@ async function projektAnlegen() {
       baufirma: document.getElementById('npBaufirma').value.trim(),
       landkreis: document.getElementById('npLandkreis').value.trim(),
       behoerde: document.getElementById('npBehoerde').value.trim(),
+      behoerdeTelefon: document.getElementById('npBehoerdeTelefon').value.trim(),
+      behoerdeEmail: document.getElementById('npBehoerdeEmail').value.trim(),
       // Haupt-Aktenzeichen zusätzlich als Text (für ältere Auswertungen).
       aktenzeichen: hauptAktenzeichen({ aktenzeichen }),
       notizen: document.getElementById('npNotizen').value.trim(),
