@@ -13,6 +13,7 @@
 // aktuellen Datenbank neu befüllt (Projekte können ja dazukommen).
 
 import { dbHolen } from '../core/zustand.js';
+import { anlassAktualisieren } from './anlass.js';
 import { esc } from '../core/util.js';
 import { karteAktualisieren } from './fotokarte.js';
 import { aktenzeichenListe, hauptAktenzeichen, verteilerListe } from '../domain/projekt.js';
@@ -87,6 +88,7 @@ function projektUebernehmen(tab, pid) {
     feldSetzen(tab, '[data-feld="adressiert"]', adressaten(p), true);
   }
   azAuswahl(tab, p);
+  anlassAktualisieren(tab);
   karteAktualisieren(tab);
 }
 

@@ -71,7 +71,7 @@ function nadelEntfernen() {
 // ---------- Formular öffnen/schließen/leeren ----------
 
 function formularLeeren() {
-  ['npName', 'npNummer', 'npOrt', 'npAuftraggeber', 'npBaufirma', 'npAnsprechpartner', 'npAnsprechpartnerTelefon', 'npAnsprechpartnerEmail', 'npLandkreis', 'npNotizen', 'npStart', 'npEnde'].forEach((id) => {
+  ['npName', 'npNummer', 'npOrt', 'npAuftraggeber', 'npBaufirma', 'npAnsprechpartner', 'npAnsprechpartnerTelefon', 'npAnsprechpartnerEmail', 'npLandkreis', 'npBehoerde', 'npNotizen', 'npStart', 'npEnde'].forEach((id) => {
     document.getElementById(id).value = '';
   });
   document.getElementById('npStatus').value = 'aktuell';
@@ -126,6 +126,7 @@ export function projektBearbeiten(pid) {
   document.getElementById('npAnsprechpartnerEmail').value = i.ansprechpartnerEmail || '';
   document.getElementById('npBaufirma').value = i.baufirma || '';
   document.getElementById('npLandkreis').value = i.landkreis || '';
+  document.getElementById('npBehoerde').value = i.behoerde || '';
   listenFuellen(aktenzeichenListe(p), verteilerListe(p));
   document.getElementById('npNotizen').value = i.notizen || '';
   if (p.lat != null && p.lng != null) { nadelSetzen(p.lat, p.lng); npKarte.setView([p.lat, p.lng], 12); }
@@ -191,6 +192,7 @@ async function projektAnlegen() {
       ansprechpartnerEmail: document.getElementById('npAnsprechpartnerEmail').value.trim(),
       baufirma: document.getElementById('npBaufirma').value.trim(),
       landkreis: document.getElementById('npLandkreis').value.trim(),
+      behoerde: document.getElementById('npBehoerde').value.trim(),
       // Haupt-Aktenzeichen zusätzlich als Text (für ältere Auswertungen).
       aktenzeichen: hauptAktenzeichen({ aktenzeichen }),
       notizen: document.getElementById('npNotizen').value.trim(),

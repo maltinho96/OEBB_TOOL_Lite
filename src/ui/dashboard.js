@@ -130,6 +130,7 @@ ${logo()}
   <tr class="bg-grau-h"><td class="label">Telefon Ansprechpartner <small>(optional)</small>:</td><td><input type="tel" id="npAnsprechpartnerTelefon"></td></tr>
   <tr class="bg-grau-h"><td class="label">E-Mail Ansprechpartner <small>(optional)</small>:</td><td><input type="email" id="npAnsprechpartnerEmail"></td></tr>
   <tr class="bg-grau-h"><td class="label">Landkreis <small>(optional)</small>:</td><td><input type="text" id="npLandkreis"></td></tr>
+  <tr class="bg-gruen-h"><td class="label">Genehmigende Behörde (Grün) <small>(optional)</small>:</td><td><input type="text" id="npBehoerde" placeholder="z. B. Straßen- und Grünflächenamt Mitte / UNB Landkreis Potsdam-Mittelmark"></td></tr>
   <tr class="bg-grau-h"><td class="label">Aktenzeichen <small>(optional)</small>:
     <div style="font-size:11px; color:#777; font-weight:400; margin-top:3px;">Haupt-Aktenzeichen per Punkt markieren (falls es eins gibt).</div></td><td>
     <table class="uebersicht projektliste"><thead><tr><th>Aktenzeichen</th><th>Kommentar</th><th class="schmal" title="Haupt-Aktenzeichen">Haupt</th><th class="schmal"></th></tr></thead>
@@ -277,13 +278,14 @@ function uebersichtRendern(db) {
       (dateien.length ? '<ul class="datei-liste">' + liste + '</ul>' : '<p style="font-size:11.5px">Noch keine Protokolle – „Scannen“ klicken.</p>') + '</details></td>' +
       '<td>' + esc(p.projektnummer) + '</td>' +
       '<td>' + esc(p.ort) + (p.lat != null ? ' <span title="' + p.lat + ', ' + p.lng + '">📍</span>' : '') +
-      (p.infos && (p.infos.auftraggeber || p.infos.baufirma || p.infos.landkreis || p.infos.ansprechpartner) || aktenzeichenListe(p).length || verteilerListe(p).length || p.hauptverantwortlich || p.start || p.ende
+      (p.infos && (p.infos.auftraggeber || p.infos.baufirma || p.infos.landkreis || p.infos.behoerde || p.infos.ansprechpartner) || aktenzeichenListe(p).length || verteilerListe(p).length || p.hauptverantwortlich || p.start || p.ende
         ? '<div style="font-size:11px;color:#666">' +
           (p.infos && p.infos.auftraggeber ? 'AG: ' + esc(p.infos.auftraggeber) + ' ' : '') +
           (p.infos && p.infos.ansprechpartner ? '· AP: ' + esc(p.infos.ansprechpartner) +
             (p.infos.ansprechpartnerTelefon ? ' (Tel. ' + esc(p.infos.ansprechpartnerTelefon) + ')' : '') + ' ' : '') +
           (p.infos && p.infos.baufirma ? '· Baufirma: ' + esc(p.infos.baufirma) + ' ' : '') +
           (p.infos && p.infos.landkreis ? '· LK ' + esc(p.infos.landkreis) + ' ' : '') +
+          (p.infos && p.infos.behoerde ? '· Behörde: ' + esc(p.infos.behoerde) + ' ' : '') +
           azText(p) +
           (verteilerListe(p).length ? '· ✉ ' + verteilerListe(p).length + ' im Verteiler ' : '') +
           (p.hauptverantwortlich ? '· 👤 ' + esc(p.hauptverantwortlich) +

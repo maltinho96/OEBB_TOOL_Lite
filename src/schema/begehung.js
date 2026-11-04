@@ -121,7 +121,7 @@ ${logo()}
 <div class="zusammen">
 <h2 class="c-gelb">Ökologische Baubegleitung</h2>
 <table class="form">
-  <tr class="bg-gelb"><td colspan="4" class="label">Anlass:<textarea rows="3"></textarea></td></tr>
+  <tr class="bg-gelb"><td colspan="4" class="label">Anlass:<textarea rows="3" data-feld="anlass"></textarea></td></tr>
   <tr class="bg-gelb-h"><td class="label" colspan="2">Belehrung durchgeführt am / durch:</td><td colspan="2"><input type="text"></td></tr>
   <tr class="bg-gelb"><td colspan="4"><span class="cb"><b>Vorbegehung des Bereiches durchgeführt:</b> <input type="checkbox"></span></td></tr>
   <tr class="bg-gelb-h">

@@ -52,6 +52,7 @@ oebb-app/   (Stand: Oktober 2026)
     │   ├── firma.js             # firmen.txt, Logos, Farbe
     │   ├── haftungshinweis.js   # Hinweis am Protokollende aus haftungshinweis.txt
     │   ├── zusatzdatum.js       # zweites Begehungsdatum (Wochenprotokoll)
+    │   ├── anlass.js            # Anlass-Text vorbelegen und aktuell halten
     │   ├── fotos.js, markieren.js, fotokarte.js, kartenbild.js, karte.js
     │   ├── einklappen.js, bausteine.js, fusszeile.js, mail.js
     │   ├── stundentabelle.js

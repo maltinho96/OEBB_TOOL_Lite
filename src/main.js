@@ -34,6 +34,7 @@ import { kartenbildInit } from './ui/kartenbild.js';
 import { mailInit } from './ui/mail.js';
 import { fotobreiteInit } from './ui/fotobreite.js';
 import { zusatzdatumInit } from './ui/zusatzdatum.js';
+import { anlassInit } from './ui/anlass.js';
 import { textfelderInit, textfelderBeiAnzeige } from './ui/textfelder.js';
 import { supportTabInit, supportBeiAnzeige } from './ui/support.js';
 import { wissenTabInit } from './ui/wissen.js';
@@ -70,6 +71,7 @@ function start() {
   mailInit();
   fotobreiteInit(app);
   zusatzdatumInit(app);
+  anlassInit();
   textfelderInit(app);
 
   tabWechselHook(karteBeiAnzeigeAktualisieren);
