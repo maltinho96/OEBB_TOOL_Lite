@@ -44,11 +44,13 @@ function fsaVerfuegbar() {
   return false;
 }
 
-async function handleHolen(schluessel, zwischenspeicher, interaktiv) {
+// mode: Projektordner werden nur gelesen ('read') – sonst fragt Chrome
+// unnötig nach Schreibrechten (und ohne Zusage gilt der Ordner als fehlend).
+async function handleHolen(schluessel, zwischenspeicher, interaktiv, mode = 'readwrite') {
   const h = zwischenspeicher || await idbHolen(schluessel).catch(() => null);
   if (!h) return null;
-  let p = await h.queryPermission({ mode: 'readwrite' });
-  if (p !== 'granted' && interaktiv) p = await h.requestPermission({ mode: 'readwrite' });
+  let p = await h.queryPermission({ mode });
+  if (p !== 'granted' && interaktiv) p = await h.requestPermission({ mode });
   return p === 'granted' ? h : null;
 }
 
@@ -108,7 +110,7 @@ export async function gespeicherterProjektordner(id) {
   return await idbHolen('projektOrdner:' + id).catch(() => null);
 }
 export async function projektOrdnerHolen(id, interaktiv) {
-  const h = await handleHolen('projektOrdner:' + id, projektOrdnerCache[id], interaktiv);
+  const h = await handleHolen('projektOrdner:' + id, projektOrdnerCache[id], interaktiv, 'read');
   if (h) projektOrdnerCache[id] = h;
   return h;
 }
@@ -185,7 +187,12 @@ export async function scanneHtmlDateien(ordner) {
         geprueft++;
         try {
           const f = await eintrag.getFile();
-          const kopf = await f.slice(0, 200000).text();
+          // Metadaten stehen im <head> – bei älteren Dateien aber am Ende,
+          // hinter den eingebetteten Fotos. Dann zusätzlich das Ende lesen.
+          let kopf = await f.slice(0, 200000).text();
+          if (!kopf.includes('id="protokollMeta"') && f.size > 200000) {
+            kopf += '\n' + await f.slice(Math.max(200000, f.size - 400000)).text();
+          }
           treffer.push({ pfad: pfad + eintrag.name, kopf, geaendert: f.lastModified });
         } catch { /* Datei ueberspringen */ }
       } else if (eintrag.kind === 'directory' && tiefe < 3) {

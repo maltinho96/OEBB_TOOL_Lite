@@ -90,6 +90,7 @@ async function mailVorbereiten(tab) {
     typ,
     nummer: feldWert(tab, 'nummer'),
     datum: feldWert(tab, 'datum'),
+    datum2: feldWert(tab, 'datum2'),
     auftraggeber: feldWert(tab, 'auftraggeber-fuss'),
     ort: feldWert(tab, 'ort'),
     landkreis: feldWert(tab, 'landkreis') || projektInfo(tab, 'landkreis'),

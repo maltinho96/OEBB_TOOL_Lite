@@ -33,6 +33,7 @@ import { baubegleiterVorbelegen } from './ui/team.js';
 import { kartenbildInit } from './ui/kartenbild.js';
 import { mailInit } from './ui/mail.js';
 import { fotobreiteInit } from './ui/fotobreite.js';
+import { zusatzdatumInit } from './ui/zusatzdatum.js';
 import { textfelderInit, textfelderBeiAnzeige } from './ui/textfelder.js';
 import { supportTabInit, supportBeiAnzeige } from './ui/support.js';
 import { wissenTabInit } from './ui/wissen.js';
@@ -68,6 +69,7 @@ function start() {
   kartenbildInit();
   mailInit();
   fotobreiteInit(app);
+  zusatzdatumInit(app);
   textfelderInit(app);
 
   tabWechselHook(karteBeiAnzeigeAktualisieren);

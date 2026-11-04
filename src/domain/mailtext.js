@@ -44,7 +44,7 @@ export function mailBetreff(d) {
 
 // Die Bausteine des Textes – daraus entstehen Klartext und HTML.
 function mailTeile(d) {
-  const am = datumDeutsch(d.datum);
+  const am = [d.datum, d.datum2].map(datumDeutsch).filter(Boolean).join(' und ');
   const az = (d.aktenzeichen || []).filter(Boolean);
   let einleitung;
   let kern;

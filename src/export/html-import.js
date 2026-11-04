@@ -17,6 +17,7 @@ import { tabZeigen } from '../ui/tabs.js';
 import { einklappenAktualisieren } from '../ui/einklappen.js';
 import { fotosUebernehmen, unterschriftenUebernehmen, textMitUmbruechen } from '../ui/fotos.js';
 import { karteAktualisieren } from '../ui/fotokarte.js';
+import { zusatzdatumAktualisieren } from '../ui/zusatzdatum.js';
 
 // typ (aus protokollMeta) -> Reiter-Id
 const TYP_ZU_TAB = {
@@ -42,7 +43,13 @@ function felderUebernehmen(quelle, ziel) {
 
   // Einzeilige Eingabefelder: der gespeicherte Wert steht im value-Attribut
   // (so schreibt es zustandSichern beim Export).
-  ['input[type=text]', 'input[type=date]', 'input[type=tel]', 'input[type=email]'].forEach((selektor) => {
+  // Zweites Begehungsdatum über seine Kennung (ältere Dateien haben es nicht –
+  // positionsweise würde es sonst die folgenden Datumsfelder verschieben).
+  const d2q = quelle.querySelector('[data-feld="datum2"]');
+  const d2z = ziel.querySelector('[data-feld="datum2"]');
+  if (d2z) d2z.value = d2q ? d2q.getAttribute('value') || '' : '';
+
+  ['input[type=text]', 'input[type=date]:not([data-feld="datum2"])', 'input[type=tel]', 'input[type=email]'].forEach((selektor) => {
     const q = quelle.querySelectorAll(selektor);
     const z = ziel.querySelectorAll(selektor);
     q.forEach((el, i) => {
@@ -132,6 +139,7 @@ async function protokollLaden(file) {
   // Aufgeklappt/eingeklappt passend zu den geladenen Häkchen darstellen und
   // abhängige Anzeigen (z. B. Fußzeile mit Auftraggeber) auffrischen.
   einklappenAktualisieren(ziel);
+  zusatzdatumAktualisieren(ziel);
   ziel.querySelectorAll('[data-feld], textarea').forEach((el) => el.dispatchEvent(new Event('input', { bubbles: true })));
 
   // Gewähltes Projekt (für die Flächen auf den Karten) mit übernehmen.

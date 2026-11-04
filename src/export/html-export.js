@@ -13,6 +13,9 @@ import { druckbilderJetzt } from '../ui/kartenbild.js';
 import { fussStilText } from '../ui/fusszeile.js';
 import { aktuelleFirma } from '../ui/firma.js';
 import { feldWert, aktiverTab } from '../core/util.js';
+import { gespeicherterProjektordner } from '../core/storage/index.js';
+import { projektStillScannen } from '../ui/projektformular.js';
+import { zusatzdatumAufraeumen } from '../ui/zusatzdatum.js';
 
 // Live-Werte (Inputs/Textareas/Checkboxen/Selects) als Attribute im DOM
 // festschreiben, damit sie beim outerHTML-Export erhalten bleiben.
@@ -86,6 +89,7 @@ async function alsHtmlSpeichern() {
     return;
   }
 
+  zusatzdatumAufraeumen(tab);
   zustandSichern(tab);
   // Gespeichert wird eine Kopie: die lebenden Karten bleiben unangetastet.
   // Karten, für die ein Druckbild existiert, werden in der Kopie durch das
@@ -109,13 +113,22 @@ async function alsHtmlSpeichern() {
 
   if (window.showSaveFilePicker) {
     try {
-      const handle = await window.showSaveFilePicker({
+      // Dialog im Protokollordner des gewählten Projekts öffnen. Ohne
+      // Projekt merkt sich Chrome den zuletzt genutzten Ordner (id).
+      const pid = tab.dataset.projektId;
+      const start = pid ? await gespeicherterProjektordner(pid).catch(() => null) : null;
+      const optionen = {
         suggestedName: vorschlag,
         types: [{ description: 'HTML-Protokoll', accept: { 'text/html': ['.html'] } }],
-      });
+      };
+      if (start) optionen.startIn = start;
+      else optionen.id = 'oebb-protokoll';
+      const handle = await window.showSaveFilePicker(optionen);
       const schreibbar = await handle.createWritable();
       await schreibbar.write(inhalt);
       await schreibbar.close();
+      // Projekt-Tabelle gleich aktualisieren (ohne Nachfrage, falls erlaubt).
+      if (pid) projektStillScannen(pid).catch(() => {});
       return;
     } catch (e) {
       if (e && e.name === 'AbortError') return; // Dialog abgebrochen

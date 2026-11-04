@@ -274,6 +274,21 @@ export async function projektScannenUndSpeichern(id) {
   statusText(geprueft + ' HTML-Dateien geprüft, ' + gefunden + ' Protokolle im Projekt.');
 }
 
+// Nach dem Speichern: Projektordner ohne Rückfrage neu einlesen, wenn die
+// Leseberechtigung schon besteht (sonst bleibt es beim Knopf „Scannen“).
+export async function projektStillScannen(id) {
+  const ordner = await projektOrdnerHolen(id, false);
+  const grundOrdner = ordner && await grundordnerHolen(false);
+  if (!ordner || !grundOrdner) return;
+  const { neu } = await projektOrdnerScannen(ordner);
+  const db = await dbAendern(grundOrdner, (db) => {
+    const p = db.projekte[id];
+    if (p) eintraegeZusammenfuehren(p, neu);
+  });
+  dbSetzen(db);
+  aufAenderung(db);
+}
+
 // ---------- Initialisierung ----------
 
 // Verdrahtet ausschließlich die formular-internen Knöpfe. Die Zeilen-

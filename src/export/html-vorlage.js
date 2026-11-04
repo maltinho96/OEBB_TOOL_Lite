@@ -5,7 +5,9 @@
 // Stile werden per Vite ?raw-Import als Text eingebettet, das Ergebnis
 // ist aber funktional dasselbe – eine Datei, die man doppelklicken und
 // offline ansehen kann, inklusive des eingebetteten Metadaten-Scripts
-// für den späteren Scan durch die App.
+// für den späteren Scan durch die App. Der Block steht im <head>, damit der
+// Scan ihn findet, ohne die (durch Fotos oft viele MB große) Datei ganz zu
+// lesen. Ältere Dateien haben ihn am Ende – der Scan liest dann das Ende.
 //
 // Sicherheit: Die Datei darf keinerlei Skripte ausführen (CSP default-src
 // 'none'). Selbst wenn jemand Schadcode in ein Feld schreibt, läuft er beim
@@ -30,6 +32,7 @@ export function htmlVorlage({ firmenFarbe, titel, bodyHtml, metaScriptTag, fussC
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: https:; style-src 'unsafe-inline'; font-src data:">
 <title>${String(titel).replace(/[<>&]/g, '')}</title>
+${metaScriptTag}
 <style>
 ${grundlagenCss}
 ${themesCss}
@@ -44,7 +47,6 @@ ${fussCss || ''}
 <div class="blatt">
 ${bodyHtml}
 </div>
-${metaScriptTag}
 </body>
 </html>`;
 }

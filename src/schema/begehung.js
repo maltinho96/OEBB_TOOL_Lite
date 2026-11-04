@@ -21,7 +21,7 @@ ${logo()}
 <h2 class="c-grau">Begehung</h2>
 <table class="form">
   <tr class="bg-grau">
-    <td class="label" style="width:120px">Datum:</td><td style="width:200px"><input type="date" data-feld="datum"></td>
+    <td class="label" style="width:120px">Datum:</td><td style="width:330px"><span class="zusatzdatum" data-zusatzdatum><input type="date" data-feld="datum"><span class="zd-feld" hidden> und <input type="date" data-feld="datum2"><button type="button" class="zd-weg kein-druck" data-aktion="datum2-weg" title="Zweites Datum entfernen">✕</button></span><button type="button" class="zd-plus kein-druck" data-aktion="datum2-an" title="Zweite Begehung in derselben Woche">＋ weiteres Datum</button></span></td>
     <td class="label" style="width:60px">Ort:</td><td><input type="text" data-feld="ort"></td>
   </tr>
   <tr class="bg-grau-h"><td class="label">Landkreis:</td><td colspan="3"><input type="text" data-feld="landkreis"></td></tr>

@@ -51,6 +51,7 @@ oebb-app/   (Stand: Oktober 2026)
     │   ├── projektwahl.js       # Projekt-/Aktenzeichen-Auswahl im Protokoll
     │   ├── firma.js             # firmen.txt, Logos, Farbe
     │   ├── haftungshinweis.js   # Hinweis am Protokollende aus haftungshinweis.txt
+    │   ├── zusatzdatum.js       # zweites Begehungsdatum (Wochenprotokoll)
     │   ├── fotos.js, markieren.js, fotokarte.js, kartenbild.js, karte.js
     │   ├── einklappen.js, bausteine.js, fusszeile.js, mail.js
     │   ├── stundentabelle.js
