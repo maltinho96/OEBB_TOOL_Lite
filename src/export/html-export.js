@@ -47,11 +47,14 @@ function dateinameBauen(tab) {
   function sauber(text) {
     return text.replace(/[\\/:*?"<>|]+/g, '').trim().replace(/\s+/g, '_');
   }
-  // Heutiges Datum in Ortszeit (toISOString wäre UTC und kurz nach
-  // Mitternacht noch "gestern").
+  // Datum des Vor-Ort-Termins (Feld "Datum" im Protokoll), nicht das
+  // Erstellungsdatum. Nur wenn es fehlt: heute (Ortszeit – toISOString wäre
+  // UTC und kurz nach Mitternacht noch "gestern").
+  const termin = /^(\d{4})-(\d{2})-(\d{2})$/.exec(feld('datum') || '');
   const h = new Date();
-  const datum = String(h.getFullYear()).slice(2) +
-    String(h.getMonth() + 1).padStart(2, '0') + String(h.getDate()).padStart(2, '0');
+  const datum = termin
+    ? termin[1].slice(2) + termin[2] + termin[3]
+    : String(h.getFullYear()).slice(2) + String(h.getMonth() + 1).padStart(2, '0') + String(h.getDate()).padStart(2, '0');
   // Einstellige Nummern zweistellig: 6 -> 06.
   const roh = sauber(feld('nummer'));
   const nr = /^\d$/.test(roh) ? '0' + roh : roh;
@@ -164,7 +167,11 @@ export function druckTitelInit() {
     const tab = aktiverTab();
     if (!tab || !PROTOKOLL_TABS.includes(tab.id)) return;
     vorher = document.title;
-    document.title = dateinameBauen(tab).replace(/\.html$/, '');
+    // Chrome hält alles nach dem letzten Punkt für die Endung und schneidet
+    // es ab ("261103_08.ÖBB_Protokoll_Ort" -> "261103_08.pdf"). Mit ".pdf"
+    // am Ende bleibt der ganze Name stehen. Firefox hängt .pdf selbst an.
+    const name = dateinameBauen(tab).replace(/\.html$/, '');
+    document.title = /firefox/i.test(navigator.userAgent) ? name : name + '.pdf';
   });
   window.addEventListener('afterprint', () => {
     if (vorher !== null) document.title = vorher;
