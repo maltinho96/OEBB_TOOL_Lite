@@ -141,9 +141,18 @@ async function alsHtmlSpeichern() {
       if (start) optionen.startIn = start;
       else optionen.id = 'oebb-protokoll';
       const handle = await window.showSaveFilePicker(optionen);
-      const schreibbar = await handle.createWritable();
-      await schreibbar.write(inhalt);
-      await schreibbar.close();
+      try {
+        const schreibbar = await handle.createWritable();
+        await schreibbar.write(inhalt);
+        await schreibbar.close();
+      } catch (e) {
+        // Datei ist dann im Ordner, aber leer (0 KB) – deutlich melden und
+        // stattdessen herunterladen, statt still in den Download auszuweichen.
+        alert('Speichern in den gewählten Ordner ist fehlgeschlagen' + (e && e.message ? ':\n' + e.message : '.') +
+          '\n\nDas Protokoll wird stattdessen in den Download-Ordner geladen – bitte von dort in den Projektordner ' +
+          'verschieben und die leere Datei „' + handle.name + '“ löschen.');
+        throw e;
+      }
       // Projekt-Tabelle gleich aktualisieren (ohne Nachfrage, falls erlaubt).
       if (pid) projektStillScannen(pid).catch(() => {});
       return;

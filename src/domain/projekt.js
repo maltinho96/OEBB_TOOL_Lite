@@ -39,8 +39,10 @@ export async function projektScannen(ordner) {
   const { treffer, geprueft } = await scanneHtmlDateien(ordner);
   const neu = {};
   let gefunden = 0;
+  const leer = [];        // 0-KB-Dateien (Speichern abgebrochen)
 
   treffer.forEach(({ pfad, kopf, geaendert }) => {
+    if (!kopf || !kopf.trim()) { leer.push(pfad); return; }
     const meta = metaAusText(kopf);
     // Nur echte Protokolle uebernehmen (nicht Start-/Uebersichtsseiten).
     if (meta && meta.typ && meta.typ !== 'start' && meta.typ !== 'uebersicht') {
@@ -50,7 +52,7 @@ export async function projektScannen(ordner) {
     }
   });
 
-  return { neu, gefunden, geprueft };
+  return { neu, gefunden, geprueft, leer };
 }
 
 // Scan-Ergebnis in ein Projekt einpflegen: vorhandene Stunden-Angaben je
