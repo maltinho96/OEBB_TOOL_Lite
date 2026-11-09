@@ -1,10 +1,9 @@
 name: Desktop-Programm bauen (Windows)
 
 # Baut das ÖBB-Tool als Windows-Programm (Installer) und veröffentlicht es
-# unter "Releases". Auslösen: neuen Tag pushen, z. B.
-#   git tag desktop-v0.1.1 && git push origin desktop-v0.1.1
-# (vorher die Versionsnummer in src-tauri/tauri.conf.json erhöhen)
-# oder im Actions-Tab "Run workflow".
+# unter "Releases" (Tag desktop-vX.Y.Z legt die Action selbst an).
+# Auslösen: in src-tauri/tauri.conf.json die Versionsnummer erhöhen und auf
+# beta-neu pushen – oder im Actions-Tab "Run workflow".
 #
 # Automatische Updates brauchen das Secret TAURI_SIGNING_PRIVATE_KEY
 # (Settings > Secrets and variables > Actions). Fehlt es, entsteht trotzdem
@@ -12,7 +11,8 @@ name: Desktop-Programm bauen (Windows)
 
 on:
   push:
-    tags: ['desktop-v*']
+    branches: [beta-neu]
+    paths: ['src-tauri/tauri.conf.json']
   workflow_dispatch:
 
 permissions:
