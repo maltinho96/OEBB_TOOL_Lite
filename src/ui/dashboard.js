@@ -8,7 +8,8 @@
 
 import { esc, statusText } from '../core/util.js';
 import { TYP_NAMEN } from '../config/konstanten.js';
-import { grundordnerHolen, waehleGrundordner, gespeicherterGrundordner } from '../core/storage/index.js';
+import { grundordnerHolen, waehleGrundordner, gespeicherterGrundordner, istDesktop, dateiSchreiben } from '../core/storage/index.js';
+import { KENNUNG_DATEI, kennungVorlage } from '../config/grundordner.js';
 import { dbLesen } from '../core/db.js';
 import { dbSetzen, dbHolen } from '../core/zustand.js';
 import { logo } from '../schema/felder.js';
@@ -159,6 +160,9 @@ ${logo()}
 // ---------- Laden + Rendern ----------
 
 async function grundordnerFestlegen() {
+  // Desktop-Programm: Grundordner ist bei der Einrichtung festgelegt –
+  // der Knopf versucht nur erneut zu verbinden (z. B. nach VPN-Start).
+  if (istDesktop()) { uebersichtAktualisieren(false); return; }
   // Bereits verbunden? Dann will der Klick bewusst einen ANDEREN Ordner
   // waehlen -> voller Dialog.
   const bereitsVerbunden = await grundordnerHolen(false).catch(() => null);
@@ -203,7 +207,7 @@ async function uebersichtAktualisieren(interaktiv) {
     if (gespeichert && gespeichert.pfad) {
       // Desktop-Programm: Pfad aus oebb-konfig.txt, aber nicht erreichbar.
       if (status) status.textContent = '⚠️ Grundordner nicht erreichbar: ' + gespeichert.pfad + ' – Netzlaufwerk / VPN verbunden?';
-      if (knopf) knopf.textContent = '🔄 Erneut verbinden';
+      if (knopf) { knopf.textContent = '🔄 Erneut verbinden'; knopf.style.display = ''; }
     } else if (gespeichert) {
       if (status) status.textContent = '🔗 „' + gespeichert.name + '“ gespeichert – zum Verbinden anklicken.';
       if (knopf) knopf.textContent = '🔗 Grundordner „' + gespeichert.name + '“ verbinden';
@@ -214,7 +218,12 @@ async function uebersichtAktualisieren(interaktiv) {
     return;
   }
   if (bereich) bereich.style.display = '';
-  const gekennzeichnet = await istGekennzeichnet(ordner);
+  let gekennzeichnet = await istGekennzeichnet(ordner);
+  // Desktop: der Ordner steht fest in oebb-konfig.txt – Kennung ggf. nachholen.
+  if (!gekennzeichnet && istDesktop() && ordner.pfad) {
+    gekennzeichnet = await dateiSchreiben(ordner, KENNUNG_DATEI, kennungVorlage(ordner.pfad)).then(() => true, () => false);
+    if (gekennzeichnet) await istGekennzeichnet(ordner);
+  }
   if (status) {
     status.textContent = gekennzeichnet
       ? '✅ verknüpft: ' + (bekannterPfad() || ordner.name)
@@ -226,6 +235,8 @@ async function uebersichtAktualisieren(interaktiv) {
   const logoStatus = document.getElementById('logoStatus');
   if (logoStatus) logoStatus.textContent = firmenStatus.join('\n');
   if (knopf) knopf.textContent = '📂 Anderen Grundordner wählen';
+  // Desktop: kein Wechsel im Programm (nur über Neu-Installation).
+  if (knopf) knopf.style.display = istDesktop() ? 'none' : '';
   const db = await dbLesen(ordner);
   dbSetzen(db);
   statusText(Object.keys(db.projekte).length + ' Projekte in der Datenbank (' + ordner.name + ').');

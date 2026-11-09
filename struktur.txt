@@ -86,6 +86,7 @@ src-tauri/
 └── src/lib.rs           # Dateizugriff (lesen/schreiben/scannen), oebb-konfig.txt
 src/core/storage/tauri.js  # Speicher-Backend im Programm (statt fsa.js)
 src/ui/desktop.js          # Links/mailto ins Standardprogramm, Update-Suche
+src/ui/einrichtung.js      # Einrichtung nach der Installation: Grundordner (bestehend/neu), Firmen, Logos
 .github/workflows/desktop-release.yml  # baut den Installer bei Tag desktop-v*
 
 oebb-konfig.txt (neben dem Programm oder in %APPDATA%\de.nettec.oebbtool\):

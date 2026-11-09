@@ -162,6 +162,25 @@ fn pfad_schreiben(pfad: String, text: Option<String>, base64: Option<String>) ->
     fs::write(pfad, daten).map_err(fehler)
 }
 
+// Namen im Ordner (eine Ebene) – für die Einrichtung: leer, bestehender
+// Grundordner oder fremder Ordner?
+#[tauri::command]
+fn ordner_inhalt(pfad: String) -> Result<Vec<String>, String> {
+    let mut namen = Vec::new();
+    for e in fs::read_dir(&pfad).map_err(fehler)?.flatten() {
+        namen.push(e.file_name().to_string_lossy().into_owned());
+    }
+    Ok(namen)
+}
+
+// Logo bei der Einrichtung in den Grundordner kopieren.
+#[tauri::command]
+fn datei_kopieren(quelle: String, ordner: String, name: String) -> Result<(), String> {
+    let ziel = pfad_in(&ordner, &name)?;
+    fs::copy(quelle, ziel).map_err(fehler)?;
+    Ok(())
+}
+
 #[derive(Serialize)]
 struct Treffer {
     pfad: String,
@@ -240,7 +259,9 @@ pub fn run() {
             datei_loeschen,
             unterordner,
             pfad_schreiben,
-            html_scannen
+            html_scannen,
+            ordner_inhalt,
+            datei_kopieren
         ])
         .run(tauri::generate_context!())
         .expect("ÖBB-Tool konnte nicht gestartet werden");

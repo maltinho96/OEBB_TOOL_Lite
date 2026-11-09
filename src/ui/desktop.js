@@ -4,6 +4,7 @@
 //  - Versionsnummer in der Statuszeile
 
 import { istDesktop } from '../core/storage/index.js';
+import { einrichtungPruefen } from './einrichtung.js';
 
 export function externOeffnen(url) {
   if (istDesktop() && window.__TAURI__.opener) {
@@ -48,5 +49,5 @@ export function desktopInit() {
       externOeffnen(href);
     }
   });
-  setTimeout(nachUpdateSuchen, 3000);
+  einrichtungPruefen().then((laeuft) => { if (!laeuft) setTimeout(nachUpdateSuchen, 3000); });
 }
