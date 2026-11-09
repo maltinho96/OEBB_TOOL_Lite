@@ -27,7 +27,9 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis"],
+    "targets": [
+      "nsis"
+    ],
     "createUpdaterArtifacts": true,
     "publisher": "Malte Lenzen",
     "shortDescription": "Protokolle der ökologischen Baubegleitung",
@@ -41,10 +43,13 @@
     "windows": {
       "nsis": {
         "installMode": "currentUser",
-        "languages": ["German"],
+        "languages": [
+          "German"
+        ],
         "displayLanguageSelector": false
       }
-    }
+    },
+    "copyright": "Malte Lenzen"
   },
   "plugins": {
     "updater": {
