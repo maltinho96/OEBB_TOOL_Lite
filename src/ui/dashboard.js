@@ -239,7 +239,8 @@ async function uebersichtAktualisieren(interaktiv) {
   if (knopf) knopf.style.display = istDesktop() ? 'none' : '';
   const db = await dbLesen(ordner);
   dbSetzen(db);
-  statusText(Object.keys(db.projekte).length + ' Projekte in der Datenbank (' + ordner.name + ').');
+  const anzahl = Object.keys(db.projekte).length;
+  statusText(anzahl + (anzahl === 1 ? ' Projekt' : ' Projekte') + ' in der Datenbank (' + ordner.name + ').');
   neuZeichnen(db);
   teamAnzeigen();
 }
