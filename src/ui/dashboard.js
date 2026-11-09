@@ -200,7 +200,11 @@ async function uebersichtAktualisieren(interaktiv) {
     // beim naechsten Klick reicht die Berechtigungs-Nachfrage – kein
     // erneutes Ordner-Suchen. Knopf und Text entsprechend anpassen.
     const gespeichert = await gespeicherterGrundordner().catch(() => null);
-    if (gespeichert) {
+    if (gespeichert && gespeichert.pfad) {
+      // Desktop-Programm: Pfad aus oebb-konfig.txt, aber nicht erreichbar.
+      if (status) status.textContent = '⚠️ Grundordner nicht erreichbar: ' + gespeichert.pfad + ' – Netzlaufwerk / VPN verbunden?';
+      if (knopf) knopf.textContent = '🔄 Erneut verbinden';
+    } else if (gespeichert) {
       if (status) status.textContent = '🔗 „' + gespeichert.name + '“ gespeichert – zum Verbinden anklicken.';
       if (knopf) knopf.textContent = '🔗 Grundordner „' + gespeichert.name + '“ verbinden';
     } else {

@@ -13,7 +13,7 @@ import { druckbilderJetzt } from '../ui/kartenbild.js';
 import { fussStilText } from '../ui/fusszeile.js';
 import { aktuelleFirma } from '../ui/firma.js';
 import { feldWert, aktiverTab } from '../core/util.js';
-import { gespeicherterProjektordner } from '../core/storage/index.js';
+import { gespeicherterProjektordner, istDesktop, speichernUnter } from '../core/storage/index.js';
 import { projektStillScannen } from '../ui/projektformular.js';
 import { zusatzdatumAufraeumen } from '../ui/zusatzdatum.js';
 
@@ -113,6 +113,20 @@ async function alsHtmlSpeichern() {
     fussCss: fussStilText(),
   });
   const vorschlag = dateinameBauen(tab);
+
+  // Desktop-Programm: Speichern-Dialog im Protokollordner des Projekts.
+  if (istDesktop()) {
+    const pid = tab.dataset.projektId;
+    const start = pid ? await gespeicherterProjektordner(pid).catch(() => null) : null;
+    try {
+      if (await speichernUnter(vorschlag, start, { text: inhalt }, { name: 'HTML-Protokoll', extensions: ['html'] })) {
+        if (pid) projektStillScannen(pid).catch(() => {});
+      }
+    } catch (e) {
+      alert('Speichern fehlgeschlagen:\n' + (e && e.message ? e.message : e));
+    }
+    return;
+  }
 
   if (window.showSaveFilePicker) {
     try {

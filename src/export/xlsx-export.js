@@ -6,7 +6,7 @@
 
 import * as XLSX from 'xlsx-js-style';
 import { esc, statusText } from '../core/util.js';
-import { grundordnerHolen } from '../core/storage/index.js';
+import { grundordnerHolen, istDesktop, speichernUnter } from '../core/storage/index.js';
 import { dbLesen } from '../core/db.js';
 import { dbSetzen, dbHolen } from '../core/zustand.js';
 import { projektStundenzeilen, nachMonat, monatsName, smNummer } from '../domain/stunden.js';
@@ -180,7 +180,13 @@ async function projektExportieren(pid, mkey) {
   const ort = (p.ort || p.name || 'Projekt').replace(/[^\wäöüÄÖÜß-]+/g, '-');
   const sm = smNummer(p);
   const monat = mkey && mkey !== 'alle' ? '_' + monatsName(mkey).replace(' ', '-') : '';
-  XLSX.writeFile(wb, 'Stundennachweis_' + ort + (sm ? '_SM' + sm : '') + monat + '.xlsx');
+  const name = 'Stundennachweis_' + ort + (sm ? '_SM' + sm : '') + monat + '.xlsx';
+  if (istDesktop()) {
+    await speichernUnter(name, ordner, { base64: XLSX.write(wb, { type: 'base64', bookType: 'xlsx' }) },
+      { name: 'Excel', extensions: ['xlsx'] }).catch((e) => alert('Speichern fehlgeschlagen:\n' + e));
+    return;
+  }
+  XLSX.writeFile(wb, name);
 }
 
 function exPdf() {

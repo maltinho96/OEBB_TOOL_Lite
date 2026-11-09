@@ -18,12 +18,15 @@ const CSP = [
   "form-action 'none'",
 ].join('; ');
 
-function cspEinfuegen() {
+// Desktop-Programm (Tauri): zusätzlich die Verbindung zur Programm-Hülle.
+const CSP_DESKTOP = CSP.replace("connect-src 'self'", "connect-src 'self' ipc: http://ipc.localhost");
+
+function cspEinfuegen(desktop) {
   return {
     name: 'csp-einfuegen',
     apply: 'build',
     transformIndexHtml(html) {
-      return html.replace('<meta charset="UTF-8" />', '<meta charset="UTF-8" />\n  <meta http-equiv="Content-Security-Policy" content="' + CSP + '" />');
+      return html.replace('<meta charset="UTF-8" />', '<meta charset="UTF-8" />\n  <meta http-equiv="Content-Security-Policy" content="' + (desktop ? CSP_DESKTOP : CSP) + '" />');
     },
   };
 }
@@ -33,12 +36,14 @@ function cspEinfuegen() {
 // bleibt base auf "/", damit die App lokal / in Codespaces unter der
 // Wurzel-URL laeuft und man keinen Unterpfad an die URL haengen muss.
 // command ist 'serve' bei dev, 'build' beim Bauen.
-export default defineConfig(({ command }) => ({
+// mode 'desktop' (npm run build:desktop): Build für das Tauri-Programm –
+// relative Pfade statt des GitHub-Pages-Unterordners.
+export default defineConfig(({ command, mode }) => ({
   root: '.',            // Projektwurzel; index.html ist der Einstieg
   publicDir: 'public',  // wird 1:1 in den Build kopiert (Logos etc.)
-  base: command === 'build' ? '/OEBB_TOOL_Lite/' : '/',
+  base: mode === 'desktop' ? './' : command === 'build' ? '/OEBB_TOOL_Lite/' : '/',
   plugins: [
-    cspEinfuegen(),
+    cspEinfuegen(mode === 'desktop'),
     // shpjs (Shapefile-Import) bringt eine Kette alter Node-Pakete mit
     // (buffer, string_decoder, safe-buffer, parsedbf, immediate, lie …),
     // die Node-Kernmodule wie "buffer" und das globale "global"-Objekt

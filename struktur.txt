@@ -76,3 +76,17 @@ Grundordner (bei euch, NICHT im Repo):
 ├── logos/                       # Logo-Dateien
 ├── oebb_datenbank.json          # Projekte, Team, Stunden, Support-Meldungen
 └── backups/                     # eine Sicherung pro Monat
+
+DESKTOP-PROGRAMM (Tauri, Windows)
+─────────────────────────────────
+src-tauri/
+├── tauri.conf.json      # Name, Version, Installer (pro Benutzer), Update-Adresse
+├── capabilities/        # Rechte des Fensters (Dialoge, Links, Updates)
+├── icons/               # Programmsymbol
+└── src/lib.rs           # Dateizugriff (lesen/schreiben/scannen), oebb-konfig.txt
+src/core/storage/tauri.js  # Speicher-Backend im Programm (statt fsa.js)
+src/ui/desktop.js          # Links/mailto ins Standardprogramm, Update-Suche
+.github/workflows/desktop-release.yml  # baut den Installer bei Tag desktop-v*
+
+oebb-konfig.txt (neben dem Programm oder in %APPDATA%\de.nettec.oebbtool\):
+  Grundordner=\\server\Pfad\zum\Grundordner

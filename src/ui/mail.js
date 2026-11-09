@@ -13,6 +13,7 @@
 // direkt in der Mail.
 
 import { dbHolen } from '../core/zustand.js';
+import { externOeffnen } from './desktop.js';
 import { feldWert } from '../core/util.js';
 import { verteilerListe, EMAIL_MUSTER } from '../domain/projekt.js';
 import { mailBetreff, mailText, mailHtml } from '../domain/mailtext.js';
@@ -114,7 +115,7 @@ async function mailVorbereiten(tab) {
   if (kopiert) hinweisZeigen('📋 Text ist kopiert – im Mailfenster in das Textfeld klicken und Strg+V drücken.');
   // Ereignis vorab (für Tests/Erweiterungen), dann Mailprogramm öffnen.
   document.dispatchEvent(new CustomEvent('mail-vorbereitet', { detail: url }));
-  window.location.href = url;
+  externOeffnen(url);
 }
 
 export function mailInit() {

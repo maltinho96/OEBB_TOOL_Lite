@@ -21,7 +21,9 @@ function pfadMerken(p) {
   try { if (p) localStorage.setItem(PFAD_SPEICHER, p); } catch { /* egal */ }
 }
 
-function pfadErfragen(ordnerName) {
+function pfadErfragen(ordnerName, ordner) {
+  // Desktop-Programm: der volle Pfad ist bekannt – nicht nachfragen.
+  if (ordner && ordner.pfad) return ordner.pfad;
   const p = window.prompt('Bitte den vollständigen Pfad dieses Ordners eintragen, damit alle denselben wählen ' +
     '(z. B. aus der Adresszeile des Explorers kopieren):\n\nOrdner: „' + ordnerName + '“', bekannterPfad());
   return p === null ? null : p.trim();
@@ -49,7 +51,7 @@ export async function grundordnerPruefen(ordner) {
     if (!window.confirm('In „' + ordner.name + '“ liegt eine Datenbank, aber keine ' + KENNUNG_DATEI + '.\n\n' +
       (soll ? 'Bekannter Grundordner:\n' + soll + '\n\n' : '') +
       'Ist das wirklich der GEMEINSAME Grundordner, den alle nutzen?\n„OK“ = ja, ihn so kennzeichnen. „Abbrechen“ = anderen Ordner wählen.')) return false;
-    const p = pfadErfragen(ordner.name);
+    const p = pfadErfragen(ordner.name, ordner);
     if (p === null) return true; // ohne Kennung weiterarbeiten, beim nächsten Mal erneut fragen
     await dateiSchreiben(ordner, KENNUNG_DATEI, kennungVorlage(p)).catch(() => {});
     pfadMerken(p);
@@ -62,7 +64,7 @@ export async function grundordnerPruefen(ordner) {
     'Nur wenn ihr noch GAR KEINEN Grundordner habt: „OK“ legt hier einen neuen an.\n' +
     'Sonst „Abbrechen“ und den richtigen Ordner wählen.');
   if (!neu) return false;
-  const p = pfadErfragen(ordner.name);
+  const p = pfadErfragen(ordner.name, ordner);
   if (p === null) return false;
   await dateiSchreiben(ordner, KENNUNG_DATEI, kennungVorlage(p));
   pfadMerken(p);
