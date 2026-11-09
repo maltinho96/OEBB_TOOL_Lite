@@ -109,7 +109,11 @@ fn datei_lesen(ordner: String, name: String) -> Result<Option<String>, String> {
     let p = pfad_in(&ordner, &name)?;
     match fs::read(&p) {
         Ok(b) => Ok(Some(String::from_utf8_lossy(&b).into_owned())),
-        Err(_) => Ok(None),
+        // Nur "gibt es nicht" ist ein leeres Ergebnis. Andere Fehler (Datei
+        // gesperrt, Netzlaufwerk weg) werden gemeldet – sonst sähe eine
+        // unlesbare Datenbank wie eine leere aus.
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(None),
+        Err(e) => Err(format!("{name} konnte nicht gelesen werden: {e}")),
     }
 }
 

@@ -5,13 +5,11 @@
 // Original eingebettete Kopie derselben Bibliothek (kommt jetzt aus npm).
 
 import * as XLSX from 'xlsx-js-style';
-import { esc, statusText } from '../core/util.js';
+import { statusText } from '../core/util.js';
 import { grundordnerHolen, istDesktop, speichernUnter } from '../core/storage/index.js';
 import { dbLesen } from '../core/db.js';
-import { dbSetzen, dbHolen } from '../core/zustand.js';
+import { dbSetzen } from '../core/zustand.js';
 import { projektStundenzeilen, nachMonat, monatsName, smNummer } from '../domain/stunden.js';
-import { tabZeigen } from '../ui/tabs.js';
-import { stBereich, exMonateFuellen, exVorschau } from '../ui/stundentabelle.js';
 
 // ---------- Excel-Arbeitsmappe bauen ----------
 
@@ -117,63 +115,11 @@ function arbeitsmappeBauen(db, pid, mkey) {
   return wb;
 }
 
-// ---------- Monatsauswahl-Dialog ----------
-
-let monatDialogAufloeser = null;
-
-// Legt das Dialog-Overlay einmalig an (index.html enthält es im Original
-// fest; hier erzeugen wir es bei Bedarf, analog zu ui/fotos.js).
-function monatDialogElement() {
-  let el = document.getElementById('monatDialog');
-  if (el) return el;
-  el = document.createElement('div');
-  el.id = 'monatDialog';
-  el.style.cssText = 'display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:200; align-items:center; justify-content:center;';
-  el.innerHTML =
-    '<div style="background:#fff; border-radius:10px; padding:20px 24px; min-width:300px; box-shadow:0 4px 24px rgba(0,0,0,.3);">' +
-    '<div style="font-weight:700; margin-bottom:10px;">Monat wählen</div>' +
-    '<select id="monatDialogSelect" style="font:inherit; padding:6px; width:100%;"></select>' +
-    '<div style="display:flex; gap:8px; justify-content:flex-end; margin-top:14px;">' +
-    '<button class="ordner-knopf" data-aktion="monat-dialog-abbrechen">Abbrechen</button>' +
-    '<button class="ordner-knopf" style="background:var(--firma); color:#fff; border-color:var(--firma);" data-aktion="monat-dialog-ok">OK</button>' +
-    '</div></div>';
-  document.body.appendChild(el);
-  el.querySelector('[data-aktion="monat-dialog-abbrechen"]').addEventListener('click', () => monatDialogSchliessen(null));
-  el.querySelector('[data-aktion="monat-dialog-ok"]').addEventListener('click', () =>
-    monatDialogSchliessen(document.getElementById('monatDialogSelect').value)
-  );
-  return el;
-}
-
-function monatDialog(p) {
-  const monate = Object.keys(nachMonat(projektStundenzeilen(p))).sort();
-  if (!monate.length) {
-    alert('Für dieses Projekt sind noch keine Stunden eingetragen.');
-    return Promise.resolve(null);
-  }
-  const el = monatDialogElement();
-  const sel = document.getElementById('monatDialogSelect');
-  sel.innerHTML = '<option value="alle">Alle Monate</option>' +
-    monate.map((m) => `<option value="${esc(m)}">${esc(monatsName(m))}</option>`).join('');
-  sel.value = monate[monate.length - 1];
-  el.style.display = 'flex';
-  return new Promise((res) => { monatDialogAufloeser = res; });
-}
-
-function monatDialogSchliessen(wert) {
-  const el = document.getElementById('monatDialog');
-  if (el) el.style.display = 'none';
-  if (monatDialogAufloeser) { monatDialogAufloeser(wert); monatDialogAufloeser = null; }
-}
-
-// ---------- Aktionen ----------
-
 async function projektExportieren(pid, mkey) {
   const ordner = await grundordnerHolen(true);
   if (!ordner) { statusText('Bitte zuerst den Grundordner festlegen.'); return; }
   const db = await dbLesen(ordner);
   dbSetzen(db);
-  if (!mkey) { mkey = await monatDialog(db.projekte[pid]); if (!mkey) return; }
   const wb = arbeitsmappeBauen(db, pid, mkey);
   if (!wb) { alert('Für diese Auswahl sind keine Stunden eingetragen.'); return; }
   const p = db.projekte[pid];
@@ -205,27 +151,9 @@ async function exXlsx() {
   await projektExportieren(pid, mkey);
 }
 
-// Sprungziel aus der Übersichtstabelle (🖨-Knopf je Projekt).
-function stundenzettelDrucken(pid, mkey) {
-  tabZeigen('tab-stunden');
-  stBereich('export');
-  setTimeout(() => {
-    const ps = document.getElementById('exProjekt');
-    const db = dbHolen();
-    if (ps && db && db.projekte[pid]) { ps.value = pid; exMonateFuellen(); }
-    if (mkey) {
-      const ms = document.getElementById('exMonat');
-      if (ms) { ms.value = mkey; exVorschau(); }
-    }
-  }, 100);
-}
-
 // ---------- Initialisierung ----------
 
-// Verdrahtet die Export-Knöpfe im Stunden-Reiter (data-aktion="ex-*") und
-// die Sprung-Knöpfe in der Übersichtstabelle (data-aktion="projekt-exportieren"
-// / "stundenzettel-drucken"), per Delegation auf document, da beide
-// Bereiche unabhängig voneinander gemountet werden.
+// Verdrahtet die Export-Knöpfe im Stunden-Reiter (data-aktion="ex-*").
 export function xlsxExportInit() {
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-aktion]');
@@ -233,12 +161,6 @@ export function xlsxExportInit() {
     switch (btn.dataset.aktion) {
       case 'ex-pdf': exPdf(); break;
       case 'ex-xlsx': exXlsx(); break;
-      case 'projekt-exportieren': projektExportieren(btn.dataset.pid); break;
-      case 'stundenzettel-drucken': {
-        const monatSel = document.getElementById('mon_' + btn.dataset.pid);
-        stundenzettelDrucken(btn.dataset.pid, monatSel ? monatSel.value : null);
-        break;
-      }
     }
   });
 }

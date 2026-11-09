@@ -45,9 +45,9 @@ async function lockErwerben(ordner) {
       const kontrolle = await dateiLesen(ordner, LOCK_NAME);
       if (kontrolle === eigenerZeitstempel) {
         if (hinweisGezeigt) statusText('Danke fürs Warten – wird gespeichert …');
-        return;
+        return eigenerZeitstempel;
       }
-      if (zuLangeGewartet) return; // Notbremse: einfach weitermachen
+      if (zuLangeGewartet) return eigenerZeitstempel; // Notbremse: einfach weitermachen
     }
 
     if (!hinweisGezeigt && Date.now() - start > LOCK_STATUS_VERZOEGERUNG_MS) {
@@ -58,15 +58,36 @@ async function lockErwerben(ordner) {
   }
 }
 
-async function lockFreigeben(ordner) {
-  await dateiLoeschen(ordner, LOCK_NAME);
+// Nur die EIGENE Sperre löschen – hat sie inzwischen jemand anderes
+// übernommen (Notbremse bei sehr langem Warten), bleibt seine stehen.
+async function lockFreigeben(ordner, stempel) {
+  const inhalt = await dateiLesen(ordner, LOCK_NAME);
+  if (inhalt == null || inhalt === stempel) await dateiLoeschen(ordner, LOCK_NAME);
+}
+
+// Fehler beim Lesen der Datenbank: einmal deutlich melden (nicht bei
+// jedem Neuzeichnen erneut) und weiterwerfen – es wird dann NICHTS
+// geschrieben, damit eine unlesbare Datei nie durch eine leere ersetzt wird.
+let letzteMeldung = '';
+function lesefehler(text) {
+  statusText('⚠️ ' + text);
+  if (letzteMeldung !== text) { letzteMeldung = text; alert('⚠️ ' + text); }
+  return new Error(text);
 }
 
 // Rohtext -> geparste, migrierte DB-Struktur (immer mit .projekte).
+// Leerer Text = noch keine Datenbank. Kaputtes JSON = Fehler.
 function dbAusText(text) {
-  let db = null;
-  try { db = JSON.parse(text); } catch { db = null; }
-  if (!db) db = {};
+  let db = {};
+  if (text && text.trim()) {
+    try {
+      db = JSON.parse(text);
+    } catch {
+      throw lesefehler('Die Datenbank-Datei ist beschädigt (kein gültiges JSON) und wird nicht überschrieben. ' +
+        'Bitte aus dem Ordner „backups“ die letzte Sicherung zurückkopieren.');
+    }
+  }
+  if (!db || typeof db !== 'object') db = {};
   if (!db.projekte) db.projekte = {};
 
   // Migration: alte flache Struktur (db.eintraege) -> Projekte.
@@ -93,15 +114,57 @@ function dbAusText(text) {
   return db;
 }
 
-// DB aus dem Grundordner lesen (oder leere, migrierte Struktur).
+async function textLesen(ordner) {
+  try {
+    return await leseDbText(ordner);
+  } catch (e) {
+    throw lesefehler('Die Datenbank konnte nicht gelesen werden (' + (e && e.message ? e.message : e) +
+      '). Netzlaufwerk / VPN verbunden? Es wurde nichts gespeichert.');
+  }
+}
+
+// DB aus dem Grundordner lesen (oder leere Struktur, wenn es noch keine gibt).
 export async function dbLesen(ordner) {
-  const text = await leseDbText(ordner);
-  return dbAusText(text || '');
+  const db = dbAusText(await textLesen(ordner));
+  letzteMeldung = '';
+  return db;
 }
 
 // DB in den Grundordner schreiben (eingerueckt, wie im Original).
 async function dbSchreiben(ordner, db) {
   await schreibeDbText(ordner, JSON.stringify(db, null, 1));
+}
+
+// Tägliche Sicherung (rollierend, eine Datei je Wochentag): vor dem ersten
+// Schreiben eines Tages den Stand sichern. So gibt es immer die letzten
+// sieben Tage zum Zurückholen, ohne dass sich Dateien ansammeln.
+const WOCHENTAGE = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+async function tagesSicherung(ordner, db) {
+  try {
+    const heute = new Date();
+    const datum = heute.getFullYear() + '-' + String(heute.getMonth() + 1).padStart(2, '0') + '-' + String(heute.getDate()).padStart(2, '0');
+    const backupOrdner = await unterordnerHolen(ordner, 'backups');
+    if (!backupOrdner) return;
+    const name = 'oebb_tag-' + WOCHENTAGE[heute.getDay()] + '.json';
+    const vorhanden = await dateiLesen(backupOrdner, name);
+    if (vorhanden && vorhanden.includes('"_gesichert": "' + datum + '"')) return;
+    await dateiSchreiben(backupOrdner, name, JSON.stringify({ _gesichert: datum, ...db }, null, 1));
+  } catch {
+    // unkritisch
+  }
+}
+
+// Gibt es Sicherungen, obwohl die Datenbank fehlt? Dann wurde sie gelöscht
+// oder verschoben – lieber nicht still eine neue, leere anlegen.
+async function datenbankVerschwunden(ordner) {
+  try {
+    const backupOrdner = await unterordnerHolen(ordner, 'backups');
+    if (!backupOrdner) return false;
+    for (const tag of WOCHENTAGE) {
+      if (await dateiLesen(backupOrdner, 'oebb_tag-' + tag + '.json')) return true;
+    }
+  } catch { /* egal */ }
+  return false;
 }
 
 // Monatliche Sicherung: legt beim ersten Schreiben eines Monats eine Kopie
@@ -134,16 +197,22 @@ async function monatsSicherung(ordner, db) {
 // Neu-Zeichnen der Oberflaeche ist bewusst NICHT hier, sondern Sache der
 // aufrufenden UI-Schicht.
 export async function dbAendern(ordner, aenderung) {
-  await lockErwerben(ordner);
+  const stempel = await lockErwerben(ordner);
   try {
-    const db = await dbLesen(ordner);
-    // Vor der Aenderung den aktuellen Stand monatlich sichern (nur einmal
-    // pro Monat, siehe monatsSicherung).
+    const text = await textLesen(ordner);
+    if (text == null && await datenbankVerschwunden(ordner)) {
+      throw lesefehler('Die Datenbank-Datei fehlt im Grundordner, es gibt aber Sicherungen. ' +
+        'Bitte die letzte Sicherung aus „backups“ als oebb_datenbank.json zurückkopieren – es wurde nichts gespeichert.');
+    }
+    const db = dbAusText(text);
+    // Vor der Aenderung sichern: täglich (7 Tage rollierend) und monatlich.
+    await tagesSicherung(ordner, db);
     await monatsSicherung(ordner, db);
     await aenderung(db);
     await dbSchreiben(ordner, db);
+    letzteMeldung = '';
     return db;
   } finally {
-    await lockFreigeben(ordner);
+    await lockFreigeben(ordner, stempel);
   }
 }

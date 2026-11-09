@@ -130,6 +130,20 @@ export async function dateiLesen(ordner, name) {
     return null; // fehlt
   }
 }
+// Wie dateiLesen, aber nur „gibt es nicht“ ergibt null – jeder andere
+// Fehler (keine Berechtigung, Netzlaufwerk weg) wird geworfen. Für die
+// Datenbank: eine unlesbare Datei darf nie wie eine leere aussehen.
+export async function dateiLesenStreng(ordner, name) {
+  let fh;
+  try {
+    fh = await ordner.getFileHandle(name);
+  } catch (e) {
+    if (e && (e.name === 'NotFoundError' || e.name === 'TypeMismatchError')) return null;
+    throw e;
+  }
+  const f = await fh.getFile();
+  return await f.text();
+}
 // Bilddatei (z. B. Firmenlogo) als data:-URL lesen; null, wenn sie fehlt.
 export async function dateiAlsDataUrl(ordner, name) {
   try {
@@ -171,7 +185,7 @@ export async function dateiLoeschen(ordner, name) {
 
 // ---------- Datenbank-Datei lesen/schreiben (duenne Wrapper) ----------
 export async function leseDbText(ordner) {
-  return dateiLesen(ordner, DB_NAME);
+  return dateiLesenStreng(ordner, DB_NAME);
 }
 export async function schreibeDbText(ordner, text) {
   return dateiSchreiben(ordner, DB_NAME, text);

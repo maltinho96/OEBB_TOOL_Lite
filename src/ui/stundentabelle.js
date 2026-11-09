@@ -169,6 +169,7 @@ function stTabRendern() {
       '<span class="st-status">' + statusIcon(e) + '</span> ' + (TYP_NAMEN[e.typ] || esc(e.typ)) +
       (e.nummer ? ' Nr. ' + esc(e.nummer) : '') + (dat ? ' · Begehung am ' + dat : '') +
       ' <span style="font-weight:400;color:#666">(' + esc(e.datei) + ')</span>' +
+      (e.fehlt ? ' <span style="font-weight:400;color:#b00">– Datei nicht mehr im Ordner</span>' : '') +
       '</td>' +
       '<td><button class="kein-druck" title="Zeile hinzufügen" data-aktion="st-zeile-plus" data-datei="' + encodeURIComponent(e.datei) + '">＋</button></td></tr>';
 

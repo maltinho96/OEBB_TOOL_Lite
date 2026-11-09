@@ -29,7 +29,7 @@ import {
   projektStatusSetzen,
   projektLoeschenMitBestaetigung,
 } from './projektformular.js';
-import { statusIcon, stundenSumme, projektStundenzeilen, nachMonat, monatsName } from '../domain/stunden.js';
+import { statusIcon, stundenSumme } from '../domain/stunden.js';
 
 // ---------- HTML des Übersicht-Reiters ----------
 
@@ -268,28 +268,20 @@ function uebersichtRendern(db) {
   }
   const statusLabel = { aktuell: '▶ Aktuell', geplant: '🕓 Geplant', abgeschlossen: '✔ Abgeschlossen' };
   let html = '<table class="uebersicht"><tr>' +
-    '<th>Projekt</th><th>Projektnummer</th><th>Ort</th><th>Status</th><th>Prot.</th><th>Vorb.</th><th>Bel.</th>' +
-    '<th>Σ Std.</th><th class="kein-druck">Stundenzettel</th><th class="kein-druck">Aktionen</th></tr>';
+    '<th>Projekt</th><th>Projektnummer</th><th>Ort</th><th>Status</th>' +
+    '<th>Σ Std.</th><th class="kein-druck">Aktionen</th></tr>';
 
   ids.sort((a, b) => (db.projekte[a].name || '').localeCompare(db.projekte[b].name || '')).forEach((pid) => {
     const p = db.projekte[pid];
-    const dateien = Object.keys(p.eintraege).map((k) => { const e = p.eintraege[k]; e.datei = k; return e; });
-    const z = { protokoll: 0, vorbegehung: 0, belehrung: 0 };
-    let stdSumme = 0;
-    dateien.forEach((e) => {
-      // Beide Belehrungs-Varianten zählen in die Spalte "Bel.".
-      const t = e.typ === 'belehrung-karel' ? 'belehrung' : e.typ;
-      if (z[t] !== undefined) z[t]++;
-      stdSumme += stundenSumme(e);
-    });
-    const monate = Object.keys(nachMonat(projektStundenzeilen(p))).sort();
-    const monatOpts = monate.map((m) => '<option value="' + esc(m) + '">' + esc(monatsName(m)) + '</option>').join('');
+    // Kopien – die Objekte im Zustand nicht verändern.
+    const dateien = Object.keys(p.eintraege).map((k) => ({ ...p.eintraege[k], datei: k }));
+    const stdSumme = dateien.reduce((s, e) => s + stundenSumme(e), 0);
     const liste = dateien
       .sort((a, b) => (b.geaendert || 0) - (a.geaendert || 0))
       .map((d) => {
         const dat = d.datum ? new Date(d.datum).toLocaleDateString('de-DE') : '';
         const su = stundenSumme(d);
-        return '<li>' + statusIcon(d) + ' ' + esc(d.datei) + ' – ' + (TYP_NAMEN[d.typ] || esc(d.typ)) +
+        return '<li>' + statusIcon(d) + ' ' + esc(d.datei) + (d.fehlt ? ' <span style="color:#b00">(Datei fehlt)</span>' : '') + ' – ' + (TYP_NAMEN[d.typ] || esc(d.typ)) +
           (d.nummer ? ' Nr. ' + esc(d.nummer) : '') +
           (dat ? ', Begehung am ' + dat : '') +
           (su > 0 ? ' – <b>' + su + ' Std.</b>' : ' – <i>noch keine Stunden → Reiter „🕒 Stunden“</i>') + '</li>';
@@ -297,7 +289,7 @@ function uebersichtRendern(db) {
       .join('');
 
     html += '<tr>' +
-      '<td><details><summary>' + (esc(p.name) || '<i>ohne Namen</i>') + ' <span style="color:#777">(' + dateien.length + ' Protokolle)</span></summary>' +
+      '<td><details><summary>' + (esc(p.name) || '<i>ohne Namen</i>') + ' <span style="color:#777">(' + dateien.length + (dateien.length === 1 ? ' Protokoll' : ' Protokolle') + ')</span></summary>' +
       (dateien.length ? '<ul class="datei-liste">' + liste + '</ul>' : '<p style="font-size:11.5px">Noch keine Protokolle – „Scannen“ klicken.</p>') + '</details></td>' +
       '<td>' + esc(p.projektnummer) + '</td>' +
       '<td>' + esc(p.ort) + (p.lat != null ? ' <span title="' + p.lat + ', ' + p.lng + '">📍</span>' : '') +
@@ -321,16 +313,7 @@ function uebersichtRendern(db) {
             : '') + '</div>'
         : '') + '</td>' +
       '<td class="mitte">' + statusLabel[p.status || 'aktuell'] + '</td>' +
-      '<td class="mitte">' + z.protokoll + '</td>' +
-      '<td class="mitte">' + z.vorbegehung + '</td>' +
-      '<td class="mitte">' + z.belehrung + '</td>' +
       '<td class="mitte"><b>' + stdSumme + '</b></td>' +
-      '<td class="kein-druck"><div class="projekt-aktionen">' +
-      (monate.length ? '<select id="mon_' + esc(pid) + '"><option value="alle">Alle Monate</option>' + monatOpts + '</select>' +
-        '<button class="ordner-knopf" data-aktion="stundenzettel-drucken" data-pid="' + esc(pid) + '">🖨</button>' +
-        '<button class="ordner-knopf" data-aktion="projekt-exportieren" data-pid="' + esc(pid) + '">📥 xlsx</button>'
-        : '<i style="font-size:11px">noch keine Stunden</i>') +
-      '</div></td>' +
       '<td class="kein-druck"><div class="projekt-aktionen">' +
       '<button class="ordner-knopf" data-aktion="projekt-scannen" data-pid="' + esc(pid) + '">🔍 Scannen</button>' +
       '<button class="ordner-knopf" data-aktion="projekt-ordner-verknuepfen" data-pid="' + esc(pid) + '" title="Protokollordner wählen / ändern">📂</button>' +
@@ -441,7 +424,6 @@ export function uebersichtTabInit(mount) {
         if (sel) { sel.value = 'alle'; neuZeichnen(dbHolen()); }
         break;
       }
-      // stundenzettel-drucken / projekt-exportieren: verdrahtet in export/xlsx-export.js (Stufe 5)
     }
   };
   uebersicht.addEventListener('click', klick);

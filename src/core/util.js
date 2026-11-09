@@ -2,7 +2,7 @@
 
 // HTML-Sonderzeichen maskieren (für sicheres Einsetzen in innerHTML-Strings).
 export function esc(t) {
-  return String(t)
+  return String(t == null ? '' : t)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')

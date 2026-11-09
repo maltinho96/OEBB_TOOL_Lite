@@ -55,14 +55,37 @@ export async function projektScannen(ordner) {
   return { neu, gefunden, geprueft, leer };
 }
 
-// Scan-Ergebnis in ein Projekt einpflegen: vorhandene Stunden-Angaben je
-// Datei bleiben erhalten, Metadaten werden ersetzt.
+// Scan-Ergebnis (vollständiger Ordner-Scan) in ein Projekt einpflegen:
+//  - gefundene Dateien: Metadaten ersetzen, Stunden behalten
+//  - umbenannte Datei (gleicher Typ + Nummer, alte Datei weg): Stunden
+//    wandern zur neuen Datei mit
+//  - verschwundene Dateien ohne Stunden: aus der Liste entfernen
+//  - verschwundene Dateien MIT Stunden: behalten, als „fehlt“ markiert
+//    (damit keine erfassten Stunden verloren gehen)
 export function eintraegeZusammenfuehren(projekt, neu) {
+  const alt = projekt.eintraege || {};
+  const ergebnis = {};
+  const hatStunden = (e) => Array.isArray(e.stunden) && e.stunden.length > 0;
+  const weg = Object.keys(alt).filter((d) => !neu[d]);
+
   Object.keys(neu).forEach((datei) => {
-    const alt = projekt.eintraege[datei] || {};
-    neu[datei].stunden = alt.stunden || [];
-    projekt.eintraege[datei] = neu[datei];
+    let stunden = alt[datei] && alt[datei].stunden;
+    if (!alt[datei]) {
+      const umbenannt = weg.find((d) => hatStunden(alt[d]) && alt[d].typ === neu[datei].typ &&
+        String(alt[d].nummer || '') === String(neu[datei].nummer || '') && (alt[d].nummer || alt[d].datum === neu[datei].datum));
+      if (umbenannt) {
+        stunden = alt[umbenannt].stunden;
+        weg.splice(weg.indexOf(umbenannt), 1);
+        delete alt[umbenannt];
+      }
+    }
+    ergebnis[datei] = { ...neu[datei], stunden: stunden || [] };
+    delete ergebnis[datei].fehlt;
   });
+  weg.forEach((d) => {
+    if (alt[d] && hatStunden(alt[d])) ergebnis[d] = { ...alt[d], fehlt: true };
+  });
+  projekt.eintraege = ergebnis;
 }
 
 // ---------- Aktenzeichen und Verteiler je Projekt ----------

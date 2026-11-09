@@ -107,7 +107,8 @@ export async function unterordnerHolen(ordner, name) {
   return p ? ordnerHandle(p) : null;
 }
 export async function leseDbText(ordner) {
-  return dateiLesen(ordner, DB_NAME);
+  // Ohne catch: Lesefehler (nicht „fehlt“) gehen an db.js weiter.
+  return aufruf('datei_lesen', { ordner: ordner.pfad, name: DB_NAME });
 }
 export async function schreibeDbText(ordner, text) {
   return dateiSchreiben(ordner, DB_NAME, text);
