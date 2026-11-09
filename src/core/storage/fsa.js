@@ -63,10 +63,14 @@ function dialogFehler(e) {
 }
 
 // ---------- Grundordner ----------
-export async function waehleGrundordner() {
+// pruefen(h): optionale Prüfung (ui/grundordnerpruefung.js) – nur ein
+// bestätigter Ordner wird übernommen und gespeichert.
+export async function waehleGrundordner(pruefen) {
   if (!fsaVerfuegbar()) return null;
   try {
-    grundOrdner = await window.showDirectoryPicker({ mode: 'readwrite' });
+    const h = await window.showDirectoryPicker({ mode: 'readwrite', id: 'oebb-grundordner' });
+    if (pruefen && !(await pruefen(h))) return null;
+    grundOrdner = h;
     await idbSetzen('grundOrdner', grundOrdner);
     return grundOrdner;
   } catch (e) {

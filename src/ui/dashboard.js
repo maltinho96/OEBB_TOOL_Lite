@@ -14,6 +14,7 @@ import { dbSetzen, dbHolen } from '../core/zustand.js';
 import { logo } from '../schema/felder.js';
 import { firmenLaden } from './firma.js';
 import { haftungshinweisLaden } from './haftungshinweis.js';
+import { grundordnerPruefen, bekannterPfad, istGekennzeichnet } from './grundordnerpruefung.js';
 import { teamAnzeigen, teamInit } from './team.js';
 import { projektlistenInit } from './projektlisten.js';
 import { aktenzeichenListe, hauptAktenzeichen, verteilerListe } from '../domain/projekt.js';
@@ -162,7 +163,7 @@ async function grundordnerFestlegen() {
   // waehlen -> voller Dialog.
   const bereitsVerbunden = await grundordnerHolen(false).catch(() => null);
   if (bereitsVerbunden) {
-    const h = await waehleGrundordner();
+    const h = await waehleGrundordner(grundordnerPruefen);
     if (!h) return;
     statusText('Grundordner: ' + h.name);
     uebersichtAktualisieren(false);
@@ -173,14 +174,14 @@ async function grundordnerFestlegen() {
   const gespeichert = await gespeicherterGrundordner().catch(() => null);
   if (gespeichert) {
     const reaktiviert = await grundordnerHolen(true);
-    if (reaktiviert) {
+    if (reaktiviert && await grundordnerPruefen(reaktiviert)) {
       statusText('Grundordner verbunden: ' + reaktiviert.name);
       uebersichtAktualisieren(false);
       return;
     }
   }
   // Nichts gespeichert (oder Reaktivierung fehlgeschlagen) -> voller Dialog.
-  const h = await waehleGrundordner();
+  const h = await waehleGrundordner(grundordnerPruefen);
   if (!h) return;
   statusText('Grundordner: ' + h.name);
   uebersichtAktualisieren(false);
@@ -203,13 +204,18 @@ async function uebersichtAktualisieren(interaktiv) {
       if (status) status.textContent = '🔗 „' + gespeichert.name + '“ gespeichert – zum Verbinden anklicken.';
       if (knopf) knopf.textContent = '🔗 Grundordner „' + gespeichert.name + '“ verbinden';
     } else {
-      if (status) status.textContent = 'Noch nicht festgelegt.';
+      if (status) status.textContent = bekannterPfad() ? 'Noch nicht festgelegt – bitte wählen: ' + bekannterPfad() : 'Noch nicht festgelegt.';
       if (knopf) knopf.textContent = '📂 Grundordner festlegen';
     }
     return;
   }
   if (bereich) bereich.style.display = '';
-  if (status) status.textContent = '✅ verknüpft: ' + ordner.name;
+  const gekennzeichnet = await istGekennzeichnet(ordner);
+  if (status) {
+    status.textContent = gekennzeichnet
+      ? '✅ verknüpft: ' + (bekannterPfad() || ordner.name)
+      : '⚠️ „' + ordner.name + '“ ist nicht als gemeinsamer Grundordner gekennzeichnet – bitte „Anderen Grundordner wählen“ und den richtigen Ordner nehmen.';
+  }
   const firmenStatus = await firmenLaden(ordner);
   const hinweisStatus = await haftungshinweisLaden(ordner);
   if (hinweisStatus) firmenStatus.push(hinweisStatus);
