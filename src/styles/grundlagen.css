@@ -41,6 +41,11 @@ td.label{font-weight:700; white-space:nowrap;}
 /* Textfelder in Beschriftungszellen (z. B. "Adressiert an") nicht fett und
    normal umbrechend – auch lange E-Mail-Adressen. */
 td.label textarea{font-weight:400; white-space:pre-wrap; overflow-wrap:anywhere;}
+/* Teilnehmende (meist ~3 kurze Zeilen) schmal, Verteiler (9–12 Adressen) breit */
+table.form td.tn-zelle{padding:0;}
+.tn-teile{display:flex; align-items:stretch;}
+.tn-links{flex:0 0 32%; padding:5px 8px; border-right:1px solid var(--rahmen); box-sizing:border-box; min-width:0;}
+.tn-rechts{flex:1 1 auto; padding:5px 8px; min-width:0;}
 .zeile{display:flex; align-items:center; gap:6px;}
 .zeile b{white-space:nowrap;}
 .zeile input{flex:1 1 auto; width:auto;}
