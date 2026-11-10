@@ -40,17 +40,19 @@ ${logo()}
 <p style="margin-top:2px; color:#555">Protokolle, Projekte und Stundennachweise – gemeinsam über den Grundordner.</p>
 
 <h2 class="c-grau">Einrichtung</h2>
-<p>Der <b>Grundordner</b> ist der Ordner, in dem diese Anwendung und die gemeinsame Datenbank
-(<code>oebb_datenbank.json</code>) liegen. Beim ersten Start hier klicken – danach merkt sich der
-Browser die Verknüpfung. Jedes Projekt (Reiter „Projekte“) bekommt einmalig seinen Protokollordner
-verknüpft – danach genügt dort „Scannen“.</p>
+<p>Der <b>Grundordner</b> ist der gemeinsame Ordner mit der Datenbank
+(<code>oebb_datenbank.json</code>), den Firmen und Logos.
+<span class="nur-web">Beim ersten Start hier klicken – danach merkt sich der Browser die Verknüpfung.</span>
+<span class="nur-desktop">Er wurde bei der Einrichtung nach der Installation festgelegt und gilt fest für diese Installation.</span>
+Jedes Projekt (Reiter „Projekte“) bekommt einmalig seinen Protokollordner verknüpft – danach genügt dort „Scannen“.</p>
 <p class="kein-druck">
   <button class="haupt-knopf" data-aktion="grundordner-festlegen">📂 Grundordner festlegen</button>
   <span id="grundordnerStatus" style="margin-left:10px; color:#555;">Noch nicht festgelegt.</span>
 </p>
-<p style="font-size:11.5px; color:#777;">Ordner-Verknüpfungen merkt sich der Browser pro Person (Chromium/Chrome/Edge);
-Kolleginnen verknüpfen die Ordner bei der ersten Nutzung einmal selbst.
-Bei gleichzeitigem Schreiben gewinnt die zuletzt speichernde Person.</p>
+<p class="nur-web" style="font-size:11.5px; color:#777;">Ordner-Verknüpfungen merkt sich der Browser pro Person (Chromium/Chrome/Edge);
+Kolleginnen verknüpfen die Ordner bei der ersten Nutzung einmal selbst.</p>
+<p class="nur-desktop" style="font-size:11.5px; color:#777;">Anderer Grundordner: Programm deinstallieren
+(mit „Anwendungsdaten löschen“) und neu installieren – die Einrichtung startet dann wieder.</p>
 <p style="font-size:11.5px; color:#777;">Firmen stehen im Grundordner in <code>firmen.txt</code>
 (je Zeile: <code>Firmenname | Logo-Datei | Farbe</code>), die Logos im Unterordner <code>logos</code>.
 Fehlt die Datei, legt die App sie beim Verbinden mit den Standard-Firmen an.

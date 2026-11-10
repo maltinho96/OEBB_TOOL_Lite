@@ -91,3 +91,12 @@ src/ui/einrichtung.js      # Einrichtung nach der Installation: Grundordner (bes
 
 oebb-konfig.txt (neben dem Programm oder in %APPDATA%\de.nettec.oebbtool\):
   Grundordner=\\server\Pfad\zum\Grundordner
+
+UBUNTU (apt)
+────────────
+Der Release-Workflow baut zusätzlich ein .deb (Ubuntu 22.04+). deploy-pages.yml
+macht daraus mit scripts/apt-quelle.sh eine apt-Paketquelle unter
+https://maltinho96.github.io/OEBB_TOOL_Lite/apt/ (mit install.sh).
+Installieren:  curl -fsSL https://maltinho96.github.io/OEBB_TOOL_Lite/apt/install.sh | sh
+Updates:       sudo apt update && sudo apt upgrade
+Konfig zentral für alle Benutzer: /etc/oebb-tool/oebb-konfig.txt

@@ -38,6 +38,15 @@ jobs:
       - name: Build erzeugen
         run: npm run build
 
+      # apt-Paketquelle für Ubuntu (aus den .deb der Desktop-Releases)
+      - name: apt-Paketquelle bauen
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APT_GPG_PRIVATE_KEY: ${{ secrets.APT_GPG_PRIVATE_KEY }}
+        run: |
+          sudo apt-get install -y dpkg-dev apt-utils >/dev/null
+          scripts/apt-quelle.sh dist/apt
+
       - name: Pages vorbereiten
         uses: actions/configure-pages@v6
 

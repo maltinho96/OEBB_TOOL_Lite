@@ -1,7 +1,8 @@
-name: Desktop-Programm bauen (Windows)
+name: Desktop-Programm bauen (Windows + Ubuntu)
 
-# Baut das ÖBB-Tool als Windows-Programm (Installer) und veröffentlicht es
-# unter "Releases" (Tag desktop-vX.Y.Z legt die Action selbst an).
+# Baut das ÖBB-Tool als Windows-Programm (Installer) und als Ubuntu-Paket
+# (.deb) und veröffentlicht beides unter "Releases" (Tag desktop-vX.Y.Z legt
+# die Action selbst an). Danach baut deploy-pages.yml die apt-Paketquelle.
 # Auslösen: in src-tauri/tauri.conf.json die Versionsnummer erhöhen und auf
 # beta-neu pushen – oder im Actions-Tab "Run workflow".
 #
@@ -17,15 +18,31 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
-  windows:
-    runs-on: windows-latest
+  bauen:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            bundles: nsis
+          # Ubuntu 22.04: läuft dann auf 22.04, 24.04 und neuer
+          - os: ubuntu-22.04
+            bundles: deb
+    runs-on: ${{ matrix.os }}
     env:
       HAT_SCHLUESSEL: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY != '' }}
     steps:
       - name: Repo auschecken
         uses: actions/checkout@v4
+
+      - name: Linux-Bibliotheken
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
       - name: Node.js einrichten
         uses: actions/setup-node@v4
@@ -44,10 +61,15 @@ jobs:
       - name: Abhängigkeiten installieren
         run: npm ci
 
-      - name: Ohne Signaturschlüssel keine Update-Dateien
-        if: env.HAT_SCHLUESSEL != 'true'
+      # Update-Dateien gibt es nur für Windows (Linux: Updates über apt).
+      - name: Bau-Optionen
         shell: bash
-        run: echo 'TAURI_ARGS=--config {"bundle":{"createUpdaterArtifacts":false}}' >> "$GITHUB_ENV"
+        run: |
+          if [ "${{ runner.os }}" = "Windows" ] && [ "$HAT_SCHLUESSEL" = "true" ]; then
+            echo 'TAURI_ARGS=--bundles ${{ matrix.bundles }}' >> "$GITHUB_ENV"
+          else
+            echo 'TAURI_ARGS=--bundles ${{ matrix.bundles }} --config {"bundle":{"createUpdaterArtifacts":false}}' >> "$GITHUB_ENV"
+          fi
 
       - name: Bauen und als Release veröffentlichen
         uses: tauri-apps/tauri-action@v0
@@ -57,10 +79,24 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: desktop-v__VERSION__
-          releaseName: 'ÖBB-Tool __VERSION__ (Windows)'
+          releaseName: 'ÖBB-Tool __VERSION__'
           releaseBody: |
-            **Installieren:** unten unter "Assets" die Datei `OEBB-Tool_…_x64-setup.exe` herunterladen und starten.
-            Keine Administratorrechte nötig. Windows-SmartScreen ggf. mit "Weitere Informationen" → "Trotzdem ausführen" bestätigen.
+            **Windows:** unten unter "Assets" `OEBB-Tool_…_x64-setup.exe` herunterladen und starten (keine Administratorrechte nötig; SmartScreen ggf. mit "Weitere Informationen" → "Trotzdem ausführen").
+
+            **Ubuntu (apt, mit automatischen Updates über `sudo apt upgrade`):**
+            ```
+            curl -fsSL https://maltinho96.github.io/OEBB_TOOL_Lite/apt/install.sh | sh
+            ```
           releaseDraft: false
           prerelease: false
           args: ${{ env.TAURI_ARGS }}
+
+  # Danach die apt-Paketquelle auf GitHub Pages neu bauen.
+  apt-aktualisieren:
+    needs: bauen
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pages-Workflow starten
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run deploy-pages.yml --repo "${{ github.repository }}" --ref beta-neu

@@ -110,6 +110,9 @@ input[type=checkbox], input[type=radio]{width:17px; height:17px; accent-color:#1
 .zd-feld[hidden], .zd-plus[hidden]{display:none;}
 .zd-plus, .zd-weg{font:inherit; font-size:11px; padding:2px 6px; border:1px solid #aaa; border-radius:4px; background:#fff; cursor:pointer;}
 .zd-weg{border:none; background:none; color:#b00; font-size:13px;}
+.nur-desktop{display:none;}
+.desktop .nur-desktop{display:revert;}
+.desktop .nur-web{display:none;}
 .einrichtung{position:fixed; inset:0; z-index:5000; background:rgba(30,40,60,.55); display:flex; align-items:center; justify-content:center; padding:16px;}
 .ein-karte{background:#fff; border-radius:10px; box-shadow:0 10px 40px rgba(0,0,0,.3); max-width:760px; width:100%; max-height:90vh; overflow:auto; padding:24px 28px;}
 .ein-karte h2{margin-top:0;}

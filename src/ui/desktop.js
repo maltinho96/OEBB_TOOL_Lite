@@ -16,7 +16,8 @@ export function externOeffnen(url) {
 
 async function nachUpdateSuchen() {
   const u = window.__TAURI__.updater;
-  if (!u) return;
+  // Ubuntu: Updates kommen über apt (sudo apt upgrade), nicht über das Programm.
+  if (!u || /linux/i.test(navigator.userAgent)) return;
   let update;
   try {
     update = await u.check();

@@ -7,7 +7,9 @@
 //
 // oebb-konfig.txt wird gesucht:
 //   1. neben dem Programm (z. B. von der IT für alle hinterlegt)
-//   2. im Einstellungsordner des Benutzers (%APPDATA%\de.nettec.oebbtool\)
+//   2. im Einstellungsordner des Benutzers (Windows: %APPDATA%\de.nettec.oebbtool\,
+//      Ubuntu: ~/.config/de.nettec.oebbtool/) – legt die Einrichtung an
+//   (Ubuntu zusätzlich zuerst: /etc/oebb-tool/oebb-konfig.txt)
 // Inhalt:  Grundordner=\\server\Projekte\ÖBB
 
 use base64::Engine;
@@ -34,6 +36,9 @@ fn pfad_in(ordner: &str, name: &str) -> Result<PathBuf, String> {
 
 fn konfig_kandidaten(app: &tauri::AppHandle) -> Vec<PathBuf> {
     let mut v = Vec::new();
+    // Linux: zentral für alle Benutzer des Rechners (vom Admin hinterlegt)
+    #[cfg(target_os = "linux")]
+    v.push(PathBuf::from("/etc/oebb-tool").join(KONFIG_DATEI));
     if let Ok(exe) = std::env::current_exe() {
         if let Some(d) = exe.parent() {
             v.push(d.join(KONFIG_DATEI));
