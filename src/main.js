@@ -29,7 +29,7 @@ import { fusszeileInit, fusszeileBeiAnzeige } from './ui/fusszeile.js';
 import { projektwahlInit, projektwahlBeiAnzeige } from './ui/projektwahl.js';
 import { markierenInit } from './ui/markieren.js';
 import { bausteineInit, bausteineBeiAnzeige } from './ui/bausteine.js';
-import { baubegleiterVorbelegen } from './ui/team.js';
+import { baubegleiterVorbelegen, telefonAutomatikInit } from './ui/team.js';
 import { kartenbildInit } from './ui/kartenbild.js';
 import { mailInit } from './ui/mail.js';
 import { fotobreiteInit } from './ui/fotobreite.js';
@@ -80,6 +80,7 @@ function start() {
   tabWechselHook(stundenBeiAnzeigeAktualisieren);
   tabWechselHook(uebersichtBeiAnzeigeAktualisieren);
   tabWechselHook(baubegleiterVorbelegen);
+  telefonAutomatikInit();
   tabWechselHook(projektwahlBeiAnzeige);
   tabWechselHook(fusszeileBeiAnzeige);
   tabWechselHook(bausteineBeiAnzeige);

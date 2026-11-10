@@ -269,7 +269,7 @@ export async function projektScannenUndSpeichern(id) {
   const ordner = await projektOrdnerHolen(id, true);
   if (!ordner) { await projektOrdnerVerknuepfen(id, true); return; }
   statusText('Scanne …');
-  const { neu, gefunden, geprueft, leer } = await projektOrdnerScannen(ordner);
+  const { neu, gefunden, geprueft } = await projektOrdnerScannen(ordner);
 
   const grundOrdner = await grundordnerHolen(true);
   if (!grundOrdner) return;
@@ -280,13 +280,7 @@ export async function projektScannenUndSpeichern(id) {
   });
   dbSetzen(db);
   aufAenderung(db);
-  statusText(geprueft + ' HTML-Dateien geprüft, ' + gefunden + ' Protokolle im Projekt.' +
-    (leer && leer.length ? ' ⚠ ' + leer.length + ' leere Datei(en) übersprungen.' : ''));
-  if (leer && leer.length) {
-    alert('Diese Protokoll-Dateien sind leer (0 KB) und enthalten nichts:\n\n' + leer.join('\n') +
-      '\n\nVermutlich ist dort das Speichern abgebrochen. Das Protokoll bitte noch einmal laden bzw. neu speichern ' +
-      '(ggf. liegt eine vollständige Kopie im Download-Ordner) und die leere Datei löschen.');
-  }
+  statusText(geprueft + ' HTML-Dateien geprüft, ' + gefunden + (gefunden === 1 ? ' Protokoll' : ' Protokolle') + ' im Projekt.');
 }
 
 // Nach dem Speichern: Projektordner ohne Rückfrage neu einlesen, wenn die

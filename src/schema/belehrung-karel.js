@@ -78,7 +78,7 @@ ${logo()}
   </tr>
   <tr class="bg-grau-h">
     <td class="label">Belehrung / ÖBB durch:</td><td><input type="text" data-feld="baubegleiter"></td>
-    <td class="label" style="width:80px">Telefon:</td><td style="width:200px"><input type="tel"></td>
+    <td class="label" style="width:80px">Telefon:</td><td style="width:200px"><input type="tel" data-feld="baubegleiter-telefon"></td>
   </tr>
   <tr class="bg-grau">
     <td class="label">E-Mail:</td><td colspan="3"><input type="email"></td>

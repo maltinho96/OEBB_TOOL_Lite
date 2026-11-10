@@ -32,27 +32,42 @@ export function neueProjektId() {
 
 // ---------- Scannen ----------
 
-// Einen Projektordner nach Protokoll-HTMLs durchsuchen und die Metadaten
-// einlesen. Reine Auswertung: gibt gefundene Eintraege + Zaehler zurueck,
-// schreibt aber noch nichts in die DB.
+// Typ, Nummer und Datum aus dem Dateinamen (so wie die App speichert):
+//   261104_09.ÖBB_Protokoll_Ort.html             -> Begehung Nr. 09, 04.11.2026
+//   261021_ÖBB_Vorbegehungsprotokoll_Ort.html    -> Vorbegehung
+//   260930_Belehrungsprotokoll_Firma_Ort.html    -> Belehrung
+// Ohne Datum vorne oder ohne „protokoll“ im Namen: null.
+export function metaAusDateiname(pfad) {
+  const name = String(pfad).split('/').pop().normalize('NFC');
+  const m = /^(\d{2})(\d{2})(\d{2})_(?:(\d{1,3})\.)?(.*)\.html?$/i.exec(name);
+  if (!m || !/protokoll/i.test(m[5])) return null;
+  const typ = /vorbegehung/i.test(m[5]) ? 'vorbegehung' : /belehrung/i.test(m[5]) ? 'belehrung-karel' : 'protokoll';
+  return { typ, nummer: m[4] || '', datum: '20' + m[1] + '-' + m[2] + '-' + m[3] };
+}
+
+// Einen Projektordner nach Protokoll-HTMLs durchsuchen. Entscheidend ist der
+// DATEINAME (Datum, Nummer, Typ) – nicht der Inhalt: jede so benannte Datei
+// zählt als Protokoll, auch wenn sie leer ist oder sich nicht lesen lässt.
+// Die Metadaten im Inhalt ergänzen nur (z. B. Ort, Status) bzw. erkennen
+// Protokolle mit abweichendem Namen.
+// Reine Auswertung: schreibt noch nichts in die DB.
 export async function projektScannen(ordner) {
   const { treffer, geprueft } = await scanneHtmlDateien(ordner);
   const neu = {};
   let gefunden = 0;
-  const leer = [];        // 0-KB-Dateien (Speichern abgebrochen)
 
   treffer.forEach(({ pfad, kopf, geaendert }) => {
-    if (!kopf || !kopf.trim()) { leer.push(pfad); return; }
-    const meta = metaAusText(kopf);
-    // Nur echte Protokolle uebernehmen (nicht Start-/Uebersichtsseiten).
-    if (meta && meta.typ && meta.typ !== 'start' && meta.typ !== 'uebersicht') {
-      meta.geaendert = geaendert;
-      neu[pfad] = meta;
-      gefunden++;
-    }
+    const ausName = metaAusDateiname(pfad);
+    let ausInhalt = null;
+    try { ausInhalt = kopf ? metaAusText(kopf) : null; } catch { ausInhalt = null; }
+    if (ausInhalt && (ausInhalt.typ === 'start' || ausInhalt.typ === 'uebersicht')) ausInhalt = null;
+    if (!ausName && !(ausInhalt && ausInhalt.typ)) return;
+    // Dateiname hat Vorrang (so sieht es auch der Mensch im Ordner).
+    neu[pfad] = { ...(ausInhalt || {}), ...(ausName || {}), geaendert };
+    gefunden++;
   });
 
-  return { neu, gefunden, geprueft, leer };
+  return { neu, gefunden, geprueft };
 }
 
 // Scan-Ergebnis (vollständiger Ordner-Scan) in ein Projekt einpflegen:

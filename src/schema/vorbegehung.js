@@ -49,7 +49,7 @@ ${logo()}
 <table class="form">
   <tr class="bg-gelb"><td colspan="4" class="label">Anlass:<textarea rows="3" data-feld="anlass"></textarea></td></tr>
   <tr class="bg-gelb-h">
-    <td><span class="zeile"><b>Telefon:</b> <input type="tel"></span></td>
+    <td><span class="zeile"><b>Telefon:</b> <input type="tel" data-feld="baubegleiter-telefon"></span></td>
     <td><span class="zeile"><b>PLZ:</b> <input type="text" style="width:70px"></span></td>
     <td colspan="2"><span class="zeile"><b>Straße:</b> <input type="text"></span></td>
   </tr>

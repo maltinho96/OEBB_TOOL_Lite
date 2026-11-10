@@ -125,7 +125,7 @@ ${logo()}
   <tr class="bg-gelb-h"><td class="label" colspan="2">Belehrung durchgeführt am / durch:</td><td colspan="2"><input type="text"></td></tr>
   <tr class="bg-gelb"><td colspan="4"><span class="cb"><b>Vorbegehung des Bereiches durchgeführt:</b> <input type="checkbox"></span></td></tr>
   <tr class="bg-gelb-h">
-    <td><span class="zeile"><b>Telefon:</b> <input type="tel"></span></td>
+    <td><span class="zeile"><b>Telefon:</b> <input type="tel" data-feld="baubegleiter-telefon"></span></td>
     <td><span class="zeile"><b>PLZ:</b> <input type="text" style="width:70px"></span></td>
     <td colspan="2"><span class="zeile"><b>Straße:</b> <input type="text"></span></td>
   </tr>

@@ -21,7 +21,7 @@ export function teamAnzeigen(vorbelegtHaupt, vorbelegtZweit) {
   if (listeZiel) {
     listeZiel.innerHTML = namen.length
       ? namen.map((n, idx) => `<span style="display:inline-flex; align-items:center; gap:4px; margin:2px 6px 2px 0; padding:2px 6px; background:#eef; border-radius:4px;">
-          👤 ${esc(n)} <button data-aktion="team-entfernen" data-idx="${idx}" style="border:none;background:none;color:#a00;cursor:pointer;font-size:12px;">✕</button>
+          👤 ${esc(n)}${telefonVon(n) ? ' · 📞 ' + esc(telefonVon(n)) : ''} <button data-aktion="team-entfernen" data-idx="${idx}" style="border:none;background:none;color:#a00;cursor:pointer;font-size:12px;">✕</button>
         </span>`).join('')
       : '<span style="color:#777">Noch niemand im Team – oben Namen hinzufügen.</span>';
   }
@@ -57,18 +57,33 @@ export function teamAnzeigen(vorbelegtHaupt, vorbelegtZweit) {
   }
 }
 
+// Handynummer einer Person aus dem Team ('' wenn keine).
+// Gespeichert in db.telefone { Name: Nummer } – die Namensliste
+// db.mitarbeitende bleibt dadurch unverändert (ältere Versionen lesen sie weiter).
+export function telefonVon(name) {
+  const db = dbHolen();
+  return (db && db.telefone && name && db.telefone[name]) || '';
+}
+
 async function mitarbeiterHinzufuegen() {
   const feld = document.getElementById('teamNeuerName');
+  const telFeld = document.getElementById('teamNeuesTelefon');
   const name = feld.value.trim();
+  const telefon = telFeld ? telFeld.value.trim() : '';
   if (!name) return;
   const ordner = await grundordnerHolen(true);
   if (!ordner) { statusText('Bitte zuerst den Grundordner festlegen.'); return; }
   const db = await dbAendern(ordner, (db) => {
     db.mitarbeitende = db.mitarbeitende || [];
     if (!db.mitarbeitende.includes(name)) db.mitarbeitende.push(name);
+    if (telefon) {
+      db.telefone = db.telefone || {};
+      db.telefone[name] = telefon;
+    }
   });
   dbSetzen(db);
   feld.value = '';
+  if (telFeld) telFeld.value = '';
   teamAnzeigen();
 }
 
@@ -92,7 +107,7 @@ export function teamInit(section) {
     if (btn.dataset.aktion === 'team-entfernen') mitarbeiterEntfernen(parseInt(btn.dataset.idx, 10));
   });
   section.addEventListener('keydown', (e) => {
-    if (e.target.id === 'teamNeuerName' && e.key === 'Enter') {
+    if ((e.target.id === 'teamNeuerName' || e.target.id === 'teamNeuesTelefon') && e.key === 'Enter') {
       e.preventDefault();
       mitarbeiterHinzufuegen();
     }
@@ -118,4 +133,27 @@ export function baubegleiterVorbelegen(id) {
   if (!tab) return;
   const feld = tab.querySelector('[data-feld="baubegleiter"]');
   if (feld && !feld.value.trim()) feld.value = name;
+  telefonEinsetzen(tab);
+}
+
+// Telefon der Baubegleitung aus dem Team eintragen – nur in ein leeres Feld.
+function telefonEinsetzen(tab) {
+  const name = tab.querySelector('[data-feld="baubegleiter"]');
+  const tel = tab.querySelector('[data-feld="baubegleiter-telefon"]');
+  if (!name || !tel || tel.value.trim()) return;
+  const nummer = telefonVon(name.value.trim());
+  if (nummer) {
+    tel.value = nummer;
+    tel.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+}
+
+// Wird der Name der Baubegleitung von Hand auf ein Teammitglied gesetzt,
+// dessen Nummer übernehmen (sofern das Telefonfeld leer ist).
+export function telefonAutomatikInit() {
+  document.addEventListener('change', (e) => {
+    if (e.target && e.target.matches && e.target.matches('[data-feld="baubegleiter"]')) {
+      telefonEinsetzen(e.target.closest('.tab'));
+    }
+  });
 }

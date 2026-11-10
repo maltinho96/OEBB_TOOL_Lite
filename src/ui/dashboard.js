@@ -56,8 +56,11 @@ Fehlt die Datei, legt die App sie beim Verbinden mit den Standard-Firmen an.
 <span id="logoStatus" class="kein-druck" style="display:block; margin-top:2px; white-space:pre-line;"></span></p>
 
 <h3 style="margin:16px 0 4px; font-size:13px; color:#555;">Team (für Verantwortliche in Projekten)</h3>
+<p style="font-size:11.5px; color:#777; margin:0 0 4px;">Die Handynummer wird in Protokollen beim Namen der Baubegleitung eingetragen.
+Gleichen Namen nochmal hinzufügen = Nummer ändern.</p>
 <p class="kein-druck" style="display:flex; gap:6px; align-items:center;">
   <input type="text" id="teamNeuerName" placeholder="Name eingeben …" style="max-width:220px;">
+  <input type="tel" id="teamNeuesTelefon" placeholder="Handynummer …" style="max-width:170px;">
   <button class="ordner-knopf" data-aktion="team-hinzufuegen">＋ Hinzufügen</button>
 </p>
 <div id="teamListe" style="font-size:11.5px; margin-top:6px;"></div>
