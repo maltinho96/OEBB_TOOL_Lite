@@ -39,11 +39,10 @@ ${logo()}
 <h1>Übersicht</h1>
 <p style="margin-top:2px; color:#555">Protokolle, Projekte und Stundennachweise – gemeinsam über den Grundordner.</p>
 
-<h2 class="c-grau">Einrichtung</h2>
-<p>Der <b>Grundordner</b> ist der gemeinsame Ordner mit der Datenbank
+<h2 class="c-grau nur-web">Einrichtung</h2>
+<p class="nur-web">Der <b>Grundordner</b> ist der gemeinsame Ordner mit der Datenbank
 (<code>oebb_datenbank.json</code>), den Firmen und Logos.
-<span class="nur-web">Beim ersten Start hier klicken – danach merkt sich der Browser die Verknüpfung.</span>
-<span class="nur-desktop">Er wurde bei der Einrichtung nach der Installation festgelegt und gilt fest für diese Installation.</span>
+Beim ersten Start hier klicken – danach merkt sich der Browser die Verknüpfung.
 Jedes Projekt (Reiter „Projekte“) bekommt einmalig seinen Protokollordner verknüpft – danach genügt dort „Scannen“.</p>
 <p class="kein-druck">
   <button class="haupt-knopf" data-aktion="grundordner-festlegen">📂 Grundordner festlegen</button>
@@ -51,10 +50,8 @@ Jedes Projekt (Reiter „Projekte“) bekommt einmalig seinen Protokollordner ve
 </p>
 <p class="nur-web" style="font-size:11.5px; color:#777;">Ordner-Verknüpfungen merkt sich der Browser pro Person (Chromium/Chrome/Edge);
 Kolleginnen verknüpfen die Ordner bei der ersten Nutzung einmal selbst.</p>
-<p class="nur-desktop" style="font-size:11.5px; color:#777;">Anderer Grundordner: Programm deinstallieren
-(mit „Anwendungsdaten löschen“) und neu installieren – die Einrichtung startet dann wieder.</p>
-<p style="font-size:11.5px; color:#777;">Firmen stehen im Grundordner in <code>firmen.txt</code>
-(je Zeile: <code>Firmenname | Logo-Datei | Farbe</code>), die Logos im Unterordner <code>logos</code>.
+<p class="nur-web" style="font-size:11.5px; color:#777;">Firmen stehen im Grundordner in <code>firmen.txt</code>
+(je Zeile: <code>Firmenname | Logo-Datei | Farbe | Adresse</code>), die Logos im Unterordner <code>logos</code>.
 Fehlt die Datei, legt die App sie beim Verbinden mit den Standard-Firmen an.
 <span id="logoStatus" class="kein-druck" style="display:block; margin-top:2px; white-space:pre-line;"></span></p>
 
@@ -209,7 +206,7 @@ async function uebersichtAktualisieren(interaktiv) {
     if (gespeichert && gespeichert.pfad) {
       // Desktop-Programm: Pfad aus oebb-konfig.txt, aber nicht erreichbar.
       if (status) status.textContent = '⚠️ Grundordner nicht erreichbar: ' + gespeichert.pfad + ' – Netzlaufwerk / VPN verbunden?';
-      if (knopf) { knopf.textContent = '🔄 Erneut verbinden'; knopf.style.display = ''; }
+      if (knopf) { knopf.textContent = '🔄 Erneut verbinden'; knopf.style.display = 'inline-block'; }
     } else if (gespeichert) {
       if (status) status.textContent = '🔗 „' + gespeichert.name + '“ gespeichert – zum Verbinden anklicken.';
       if (knopf) knopf.textContent = '🔗 Grundordner „' + gespeichert.name + '“ verbinden';

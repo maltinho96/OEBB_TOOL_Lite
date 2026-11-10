@@ -9,7 +9,7 @@ import { HINWEIS_STANDARD } from '../config/haftungshinweis.js';
 // (Unterordner logos/, Dateiname steht in firmen.txt) und wird von
 // ui/firma.js eingesetzt, sobald der Grundordner verbunden ist.
 export function logo() {
-  return '<span class="logo"><img alt="Logo"></span>';
+  return '<span class="logo"><img alt="Logo"><span class="firmen-adresse"></span></span>';
 }
 
 // Standard-Fotodokumentationsblock (Container + Dropzone).

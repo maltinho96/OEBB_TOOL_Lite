@@ -110,11 +110,14 @@ input[type=checkbox], input[type=radio]{width:17px; height:17px; accent-color:#1
 .zd-feld[hidden], .zd-plus[hidden]{display:none;}
 .zd-plus, .zd-weg{font:inherit; font-size:11px; padding:2px 6px; border:1px solid #aaa; border-radius:4px; background:#fff; cursor:pointer;}
 .zd-weg{border:none; background:none; color:#b00; font-size:13px;}
+.logo .firmen-adresse{display:block; font-size:9px; line-height:1.25; color:#555; text-align:right; margin-top:2px;}
+.logo .firmen-adresse:empty{display:none;}
+.desktop [data-aktion="grundordner-festlegen"]{display:none;}
 .nur-desktop{display:none;}
 .desktop .nur-desktop{display:revert;}
 .desktop .nur-web{display:none;}
 .einrichtung{position:fixed; inset:0; z-index:5000; background:rgba(30,40,60,.55); display:flex; align-items:center; justify-content:center; padding:16px;}
-.ein-karte{background:#fff; border-radius:10px; box-shadow:0 10px 40px rgba(0,0,0,.3); max-width:760px; width:100%; max-height:90vh; overflow:auto; padding:24px 28px;}
+.ein-karte{background:#fff; border-radius:10px; box-shadow:0 10px 40px rgba(0,0,0,.3); max-width:960px; width:100%; max-height:90vh; overflow:auto; padding:24px 28px;}
 .ein-karte h2{margin-top:0;}
 .ein-karte code{background:#f1f3f6; padding:1px 5px; border-radius:3px; word-break:break-all;}
 .ein-klein{font-size:12px; color:#666;}
@@ -122,6 +125,7 @@ input[type=checkbox], input[type=radio]{width:17px; height:17px; accent-color:#1
 .ein-firmen input[type=text]{width:100%;}
 .ein-firmen input[type=color]{width:40px; height:26px; padding:0; border:1px solid #bbb;}
 .ein-tabelle{margin:10px 0 16px;}
+.ein-fehlt{border-color:#c33; color:#b00;}
 .ein-fehler{color:#b00; min-height:1em;}
 .hh-zeile td{font-size:11px; line-height:1.4; color:#444;}
 .hh-zeile[hidden]{display:none;}

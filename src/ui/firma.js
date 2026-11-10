@@ -29,6 +29,7 @@ function logosEinsetzen() {
     else img.removeAttribute('src');
     img.alt = aktuelleFirma().name + ' Logo';
   });
+  document.querySelectorAll('.logo .firmen-adresse').forEach((el) => { el.textContent = aktuelleFirma().adresse || ''; });
 }
 
 // Wählt die Firma Nr. i: Farbe, Logo, Auswahlfeld und Seitentitel (der
