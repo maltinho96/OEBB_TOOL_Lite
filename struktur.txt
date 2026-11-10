@@ -100,3 +100,8 @@ https://maltinho96.github.io/OEBB_TOOL_Lite/apt/ (mit install.sh).
 Installieren:  curl -fsSL https://maltinho96.github.io/OEBB_TOOL_Lite/apt/install.sh | sh
 Updates:       sudo apt update && sudo apt upgrade
 Konfig zentral für alle Benutzer: /etc/oebb-tool/oebb-konfig.txt
+
+DEINSTALLIEREN = EINRICHTUNG ZURÜCKSETZEN
+src-tauri/windows/hooks.nsh  # Windows: löscht oebb-konfig.txt beim Deinstallieren (nicht bei Updates)
+src-tauri/linux/postrm.sh    # Ubuntu: Marke /var/lib/oebb-tool/deinstalliert; das Programm verwirft
+                             # danach eine ältere Einrichtung und startet die Einrichtung neu

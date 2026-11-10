@@ -76,10 +76,32 @@ struct Konfig {
     benutzer_datei: String,
 }
 
+// Ubuntu: wurde das Paket seit der Einrichtung deinstalliert (Marke aus
+// postrm.sh neuer als die Einrichtungsdatei), gilt die alte Einrichtung
+// nicht mehr – sie wird entfernt und die Einrichtung startet neu.
+#[cfg(target_os = "linux")]
+fn veraltet(k: &Path) -> bool {
+    let marke = Path::new("/var/lib/oebb-tool/deinstalliert");
+    let zeit = |p: &Path| fs::metadata(p).and_then(|m| m.modified()).ok();
+    match (zeit(marke), zeit(k)) {
+        (Some(m), Some(z)) => m > z,
+        _ => false,
+    }
+}
+#[cfg(not(target_os = "linux"))]
+fn veraltet(_k: &Path) -> bool {
+    false
+}
+
 #[tauri::command]
 fn konfig_lesen(app: tauri::AppHandle) -> Konfig {
     let kandidaten = konfig_kandidaten(&app);
     let benutzer_datei = kandidaten.last().map(|p| p.display().to_string()).unwrap_or_default();
+    if let Some(eigene) = kandidaten.last() {
+        if veraltet(eigene) {
+            let _ = fs::remove_file(eigene);
+        }
+    }
     for k in &kandidaten {
         if let Ok(t) = fs::read_to_string(k) {
             if let Some(p) = pfad_aus_konfig(&t) {
