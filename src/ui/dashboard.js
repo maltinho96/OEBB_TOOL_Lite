@@ -25,7 +25,6 @@ import {
   setAufAenderung,
   projektBearbeiten,
   projektOrdnerVerknuepfen,
-  projektScannenUndSpeichern,
   projektStatusSetzen,
   projektLoeschenMitBestaetigung,
 } from './projektformular.js';
@@ -43,7 +42,7 @@ ${logo()}
 <p class="nur-web">Der <b>Grundordner</b> ist der gemeinsame Ordner mit der Datenbank
 (<code>oebb_datenbank.json</code>), den Firmen und Logos.
 Beim ersten Start hier klicken – danach merkt sich der Browser die Verknüpfung.
-Jedes Projekt (Reiter „Projekte“) bekommt einmalig seinen Protokollordner verknüpft – danach genügt dort „Scannen“.</p>
+Jedes Projekt (Reiter „Projekte“) bekommt einmalig seinen Protokollordner verknüpft – danach liest „🔄 Aktualisieren“ oben in der Leiste alle Protokolle ein.</p>
 <p class="kein-druck">
   <button class="haupt-knopf" data-aktion="grundordner-festlegen">📂 Grundordner festlegen</button>
   <span id="grundordnerStatus" style="margin-left:10px; color:#555;">Noch nicht festgelegt.</span>
@@ -82,7 +81,6 @@ ${logo()}
 <div class="dash-zahlen" id="startZahlen"></div>
 <div class="aktionsleiste kein-druck">
   <button class="haupt-knopf" data-aktion="projekt-formular-oeffnen">＋ Neues Projekt anlegen</button>
-  <button class="ordner-knopf" data-aktion="uebersicht-aktualisieren">🔄 Aktualisieren</button>
   <label style="font-size:12.5px; color:#555;">Anzeigen:
     <select id="projektStatusFilter" style="font:inherit; padding:3px;">
       <option value="aktuell" selected>▶ Aktuelle Projekte</option>
@@ -293,7 +291,7 @@ function uebersichtRendern(db) {
 
     html += '<tr>' +
       '<td><details><summary>' + (esc(p.name) || '<i>ohne Namen</i>') + ' <span style="color:#777">(' + dateien.length + (dateien.length === 1 ? ' Protokoll' : ' Protokolle') + ')</span></summary>' +
-      (dateien.length ? '<ul class="datei-liste">' + liste + '</ul>' : '<p style="font-size:11.5px">Noch keine Protokolle – „Scannen“ klicken.</p>') + '</details></td>' +
+      (dateien.length ? '<ul class="datei-liste">' + liste + '</ul>' : '<p style="font-size:11.5px">Noch keine Protokolle – oben „🔄 Aktualisieren“ klicken.</p>') + '</details></td>' +
       '<td>' + esc(p.projektnummer) + '</td>' +
       '<td>' + esc(p.ort) + (p.lat != null ? ' <span title="' + p.lat + ', ' + p.lng + '">📍</span>' : '') +
       (p.infos && (p.infos.auftraggeber || p.infos.baufirma || p.infos.landkreis || p.infos.behoerde || p.infos.ansprechpartner) || aktenzeichenListe(p).length || verteilerListe(p).length || p.hauptverantwortlich || p.start || p.ende
@@ -318,7 +316,6 @@ function uebersichtRendern(db) {
       '<td class="mitte">' + statusLabel[p.status || 'aktuell'] + '</td>' +
       '<td class="mitte"><b>' + stdSumme + '</b></td>' +
       '<td class="kein-druck"><div class="projekt-aktionen">' +
-      '<button class="ordner-knopf" data-aktion="projekt-scannen" data-pid="' + esc(pid) + '">🔍 Scannen</button>' +
       '<button class="ordner-knopf" data-aktion="projekt-ordner-verknuepfen" data-pid="' + esc(pid) + '" title="Protokollordner wählen / ändern">📂</button>' +
       '<button class="ordner-knopf" data-aktion="projekt-bearbeiten" data-pid="' + esc(pid) + '">✎</button>' +
       ((p.status || 'aktuell') === 'abgeschlossen'
@@ -413,9 +410,7 @@ export function uebersichtTabInit(mount) {
     if (!btn) return;
     const pid = btn.dataset.pid;
     switch (btn.dataset.aktion) {
-      case 'uebersicht-aktualisieren': uebersichtAktualisieren(true); break;
       case 'grundordner-festlegen': grundordnerFestlegen(); break;
-      case 'projekt-scannen': projektScannenUndSpeichern(pid); break;
       case 'projekt-ordner-verknuepfen': projektOrdnerVerknuepfen(pid, false); break;
       case 'projekt-bearbeiten': projektBearbeiten(pid); break;
       case 'projekt-loeschen': projektLoeschenMitBestaetigung(pid); break;

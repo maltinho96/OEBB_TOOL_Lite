@@ -35,6 +35,7 @@ import { mailInit } from './ui/mail.js';
 import { fotobreiteInit } from './ui/fotobreite.js';
 import { zusatzdatumInit } from './ui/zusatzdatum.js';
 import { anlassInit } from './ui/anlass.js';
+import { aktualisierenInit } from './ui/aktualisieren.js';
 import { desktopInit } from './ui/desktop.js';
 import { textfelderInit, textfelderBeiAnzeige } from './ui/textfelder.js';
 import { supportTabInit, supportBeiAnzeige } from './ui/support.js';
@@ -73,6 +74,7 @@ function start() {
   fotobreiteInit(app);
   zusatzdatumInit(app);
   anlassInit();
+  aktualisierenInit();
   desktopInit();
   textfelderInit(app);
 

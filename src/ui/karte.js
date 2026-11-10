@@ -44,10 +44,7 @@ function karteTabHtml() {
   return `
 ${logo()}
 <h1>Projektkarte</h1>
-<p class="kein-druck">
-  <button class="ordner-knopf" data-aktion="karte-aktualisieren">🔄 Aktualisieren</button>
-  <span id="karteStatus" style="margin-left:10px; color:#555;"></span>
-</p>
+<p class="kein-druck"><span id="karteStatus" style="color:#555;"></span></p>
 <div class="karte" id="projektKarte" style="height:520px"></div>
 <p style="font-size:11.5px; color:#777;">Nadeln setzt du beim Anlegen oder Bearbeiten (✎) eines Projekts im Reiter „Projekte“.
 Klick auf eine Nadel zeigt Projektdetails.</p>
@@ -105,7 +102,7 @@ async function karteTabAnzeigen(interaktiv) {
 
   const ordner = await grundordnerHolen(interaktiv);
   if (!ordner) {
-    if (status) status.textContent = 'Grundordner noch nicht freigegeben – „Aktualisieren“ klicken.';
+    if (status) status.textContent = 'Grundordner noch nicht freigegeben – oben „🔄 Aktualisieren“ klicken.';
     return;
   }
   const db = await dbLesen(ordner);
@@ -124,9 +121,6 @@ export function karteTabInit(mount) {
   section.innerHTML = karteTabHtml();
   mount.appendChild(section);
 
-  section
-    .querySelector('[data-aktion="karte-aktualisieren"]')
-    .addEventListener('click', () => karteTabAnzeigen(true));
 }
 
 // Wird beim Wechsel auf den Karten-Reiter aufgerufen (siehe ui/tabs.js

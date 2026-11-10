@@ -50,7 +50,6 @@ die Meldung wird in der gemeinsamen Datenbank gespeichert und gesammelt bearbeit
       <option value="alle">Alle</option>
     </select>
   </label>
-  <button class="ordner-knopf" data-aktion="support-aktualisieren">🔄 Aktualisieren</button>
 </p>
 <div id="spListe"></div>
 </div>
@@ -159,7 +158,6 @@ export function supportTabInit(mount) {
     if (!btn) return;
     switch (btn.dataset.aktion) {
       case 'support-senden': senden(); break;
-      case 'support-aktualisieren': neuLaden(); break;
       case 'support-loeschen': {
         const id = btn.dataset.id;
         if (confirm('Diese Meldung endgültig löschen?')) {

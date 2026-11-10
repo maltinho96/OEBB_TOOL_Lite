@@ -9,7 +9,6 @@ import { grundordnerHolen } from '../core/storage/index.js';
 import { dbLesen, dbAendern } from '../core/db.js';
 import { dbSetzen, dbHolen } from '../core/zustand.js';
 import { logo } from '../schema/felder.js';
-import { projektScannenUndSpeichern } from './projektformular.js';
 import {
   statusIcon,
   stundenSumme,
@@ -35,7 +34,6 @@ ${logo()}
   <p class="kein-druck" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
     <b>Projekt:</b>
     <select id="stProjekt" style="font:inherit; padding:4px; min-width:240px;"></select>
-    <button class="ordner-knopf" data-aktion="st-scannen">🔍 Scannen</button>
     <button class="ordner-knopf" data-aktion="st-speichern">💾 Alle Stunden speichern</button>
     <span id="stStatus" style="color:#555;"></span>
   </p>
@@ -83,7 +81,7 @@ async function stundenTabAnzeigen(interaktiv) {
   const ordner = await grundordnerHolen(interaktiv);
   const status = document.getElementById('stStatus');
   if (!ordner) {
-    status.textContent = 'Grundordner noch nicht freigegeben – Übersicht öffnen oder „Aktualisieren“.';
+    status.textContent = 'Grundordner noch nicht freigegeben – oben „🔄 Aktualisieren“ klicken.';
     return;
   }
   const db = await dbLesen(ordner);
@@ -151,7 +149,7 @@ function stTabRendern() {
     .sort((a, b) => (a.datum || '').localeCompare(b.datum || '') || a.datei.localeCompare(b.datei));
 
   if (!dateien.length) {
-    ziel.innerHTML = '<p>Dieses Projekt hat noch keine Protokolle – in der Übersicht „🔍 Scannen“ klicken.</p>';
+    ziel.innerHTML = '<p>Dieses Projekt hat noch keine Protokolle – oben „🔄 Aktualisieren“ klicken.</p>';
     return;
   }
 
@@ -326,16 +324,6 @@ function zettelBlock(p, einst, mkey, mz) {
   return html;
 }
 
-// Scannt das im Auswahlfeld gewählte Projekt neu (dieselbe Logik wie der
-// "🔍 Scannen"-Knopf in der Übersicht) und aktualisiert danach die
-// Stundentabelle – erspart den Umweg über den Übersicht-Reiter.
-async function stScannen() {
-  const pid = document.getElementById('stProjekt').value;
-  if (!pid) return;
-  await projektScannenUndSpeichern(pid);
-  stTabRendern();
-}
-
 // ---------- Initialisierung ----------
 
 export function stundenTabInit(mount) {
@@ -357,7 +345,6 @@ export function stundenTabInit(mount) {
     if (!btn) return;
     switch (btn.dataset.aktion) {
       case 'st-speichern': stTabSpeichern(); break;
-      case 'st-scannen': stScannen(); break;
       case 'st-zeile-plus': stZeilePlus(btn); break;
       case 'st-zeile-entfernen': btn.closest('tr').remove(); break;
       case 'einst-speichern': einstellungenSpeichern(); break;

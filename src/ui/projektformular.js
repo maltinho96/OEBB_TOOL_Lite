@@ -5,7 +5,7 @@
 //
 // projektScannenUndSpeichern, projektStatusSetzen und
 // projektLoeschenMitBestaetigung sind exportiert, weil ui/dashboard.js
-// (Tabellen-Aktionen) und ui/stundentabelle.js (🔍 Scannen-Knopf) sie
+// (Tabellen-Aktionen) sie
 // wiederverwenden.
 
 import L from 'leaflet';
@@ -284,7 +284,7 @@ export async function projektScannenUndSpeichern(id) {
 }
 
 // Nach dem Speichern: Projektordner ohne Rückfrage neu einlesen, wenn die
-// Leseberechtigung schon besteht (sonst bleibt es beim Knopf „Scannen“).
+// Leseberechtigung schon besteht (sonst beim nächsten „🔄 Aktualisieren“).
 export async function projektStillScannen(id) {
   const ordner = await projektOrdnerHolen(id, false);
   const grundOrdner = ordner && await grundordnerHolen(false);

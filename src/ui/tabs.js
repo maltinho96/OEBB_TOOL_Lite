@@ -49,6 +49,13 @@ export function tabZeigen(id) {
   wechselHooks.forEach((fn) => fn(id));
 }
 
+// Den gerade offenen Reiter mit frischen Daten neu zeichnen (für den
+// zentralen Aktualisieren-Knopf, ui/aktualisieren.js) – ohne zu scrollen.
+export function aktivenReiterNeuZeigen() {
+  const aktiv = document.querySelector('.tab.aktiv');
+  if (aktiv) wechselHooks.forEach((fn) => fn(aktiv.id));
+}
+
 // Springt zum zuletzt aktiven Protokoll-Reiter (Knopf "📄 Protokolle").
 function protokolleZeigen() {
   tabZeigen(letzterProtokollTab);
