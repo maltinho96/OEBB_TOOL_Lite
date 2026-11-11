@@ -106,3 +106,8 @@ DEINSTALLIEREN = EINRICHTUNG ZURÜCKSETZEN
 src-tauri/windows/hooks.nsh  # Windows: löscht oebb-konfig.txt beim Deinstallieren (nicht bei Updates)
 src-tauri/linux/postrm.sh    # Ubuntu: Marke /var/lib/oebb-tool/deinstalliert; das Programm verwirft
                              # danach eine ältere Einrichtung und startet die Einrichtung neu
+
+HANDY / TABLET (Android, iPhone)
+public/manifest.webmanifest, public/sw.js, public/icons/  # als App installierbar, offline nutzbar
+Fotodokumentation: „📷 Foto aufnehmen“ (Kamera, Standort vom Handy) und „🖼 Aus Galerie“
+– nur auf Touch-Geräten sichtbar (ui/fotos.js).

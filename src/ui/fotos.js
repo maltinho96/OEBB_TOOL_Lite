@@ -60,8 +60,10 @@ function neuerAbbBlock(container = aktiverTab().querySelector('.fotoContainer'))
 
 // Liest GPS aus der Original-Datei (vor dem Verkleinern, das EXIF entfernt),
 // verkleinert das Bild und hängt die Koordinate als data-lat/-lng an.
-async function fotoMitGps(file) {
-  const gps = await gpsAusDatei(file);
+// ersatzGps: Standort des Handys beim Aufnehmen (Kamera-Knopf) – viele
+// Android-Kameras/Browser liefern das Foto ohne GPS in den EXIF-Daten.
+async function fotoMitGps(file, ersatzGps) {
+  const gps = (await gpsAusDatei(file)) || ersatzGps || null;
   const url = await bildAlsDataUrl(file, BILD_MAX.foto, BILD_QUALITAET);
   const img = document.createElement('img');
   img.src = url;
@@ -86,7 +88,7 @@ function abbNummerieren() {
   });
 }
 
-async function fotosVerarbeiten(files) {
+async function fotosVerarbeiten(files, ersatzGps) {
   const tab = aktiverTab();
   const container = tab.querySelector('.fotoContainer') ? tab : null;
   if (!container) {
@@ -98,13 +100,33 @@ async function fotosVerarbeiten(files) {
   for (let i = 0; i < liste.length; i++) {
     if (i % 2 === 0) block = neuerAbbBlock();
     try {
-      block.querySelector('.abb-bilder').appendChild(await fotoMitGps(liste[i]));
+      block.querySelector('.abb-bilder').appendChild(await fotoMitGps(liste[i], ersatzGps));
     } catch {
       alert('Bild konnte nicht gelesen werden: ' + liste[i].name);
     }
   }
   abbNummerieren();
   karteAktualisieren(tab);
+}
+
+// Standort des Geräts (für Kamerafotos ohne GPS im Bild). Wird schon beim
+// Klick auf „Foto aufnehmen“ gestartet, damit er beim Zurückkommen aus der
+// Kamera meist schon da ist. null, wenn abgelehnt / nicht verfügbar.
+let standortAnfrage = null;
+function standortStarten() {
+  if (!navigator.geolocation) { standortAnfrage = Promise.resolve(null); return; }
+  standortAnfrage = new Promise((ok) => {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => ok({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => ok(null),
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 60000 },
+    );
+  });
+}
+async function standortHolen() {
+  if (!standortAnfrage) standortStarten();
+  // Nicht ewig warten – notfalls ohne Standort.
+  return Promise.race([standortAnfrage, new Promise((ok) => setTimeout(() => ok(null), 8000))]);
 }
 
 // ---------- Initialisierung ----------
@@ -156,12 +178,29 @@ export function fotosInit(root) {
     fotosVerarbeiten(e.target.files);
     e.target.value = '';
   });
+  const kameraInput = document.getElementById('kameraInput');
+  if (kameraInput) {
+    kameraInput.addEventListener('change', async (e) => {
+      const dateien = Array.from(e.target.files);
+      e.target.value = '';
+      if (!dateien.length) return;
+      await fotosVerarbeiten(dateien, await standortHolen());
+      standortAnfrage = null; // nächstes Foto: frischer Standort
+    });
+  }
 
   // Block-Aktionen (Delegation über den Mount-Punkt, da Blöcke dynamisch entstehen).
   root.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-aktion]');
     if (!btn) return;
     switch (btn.dataset.aktion) {
+      case 'foto-kamera':
+        standortStarten();
+        if (kameraInput) kameraInput.click();
+        break;
+      case 'foto-galerie':
+        fotoInput.click();
+        break;
       case 'abb-modus': {
         const block = btn.closest('.abb');
         block.classList.toggle('modus-1');

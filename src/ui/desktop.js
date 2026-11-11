@@ -36,8 +36,14 @@ async function nachUpdateSuchen() {
   }
 }
 
+// Browser (GitHub Pages): als App installierbar + offline nutzbar machen.
+function appModusStarten() {
+  if (!('serviceWorker' in navigator) || !import.meta.env.PROD) return;
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+
 export function desktopInit() {
-  if (!istDesktop()) return;
+  if (!istDesktop()) { appModusStarten(); return; }
   document.documentElement.classList.add('desktop');
   // Links mit target="_blank" (z. B. DIN-Normen in den Grundlagen) und
   // http(s)-Links nach außen im Standardbrowser öffnen.

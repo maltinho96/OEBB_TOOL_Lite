@@ -13,6 +13,8 @@ const CSP = [
   "img-src 'self' data: blob: https:",
   "connect-src 'self' data: blob: https:",
   "font-src 'self' data:",
+  "manifest-src 'self'",
+  "worker-src 'self'",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'none'",

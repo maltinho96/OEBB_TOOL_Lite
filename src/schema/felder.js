@@ -21,6 +21,11 @@ export function fotodokumentation(kleingedrucktes) {
     '<div class="dropzone kein-druck" data-dropzone>' +
     '📷 Fotos hierher ziehen oder klicken zum Auswählen<br>' +
     '<small>' + kleingedrucktes + '</small>' +
+    '</div>' +
+    // Handy/Tablet: direkt mit der Kamera aufnehmen oder aus der Galerie.
+    '<div class="foto-knoepfe kein-druck">' +
+    '<button type="button" class="haupt-knopf" data-aktion="foto-kamera">📷 Foto aufnehmen</button>' +
+    '<button type="button" class="ordner-knopf" data-aktion="foto-galerie">🖼 Aus Galerie</button>' +
     '</div>'
   );
 }
