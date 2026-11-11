@@ -43,40 +43,44 @@ export function mailBetreff(d) {
 // Keine Grußformel – die kommt aus der Signatur im Mailprogramm.
 
 // Die Bausteine des Textes – daraus entstehen Klartext und HTML.
+// einleitung: Liste von [Text, fett?] – z. B. das Protokoll und die Daten fett.
 function mailTeile(d) {
   const am = [d.datum, d.datum2].map(datumDeutsch).filter(Boolean).join(' und ');
   const az = (d.aktenzeichen || []).filter(Boolean);
-  let einleitung;
+  const einleitung = [['im Anhang übersende ich Ihnen das ', false]];
   let kern;
   if (d.typ === 'vorbegehung') {
-    einleitung = 'im Anhang übersende ich Ihnen das ' + nummerText(d.nummer) + 'Protokoll der Vorbegehung zur ökologischen Baubegleitung' +
-      (am ? ', durchgeführt am ' + am : '') + ', ' + bauvorhaben(d);
+    einleitung.push([nummerText(d.nummer) + 'Protokoll der Vorbegehung zur ökologischen Baubegleitung', true]);
+    if (am) einleitung.push([', durchgeführt am ', false], [am, true]);
+    einleitung.push([', ' + bauvorhaben(d), false]);
     kern = 'Die im Vorbegehungsprotokoll festgelegten Maßnahmen sind von der Baufirma umzusetzen.';
   } else if (d.typ === 'belehrung-karel') {
-    einleitung = 'im Anhang übersende ich Ihnen das Belehrungsprotokoll zur ökologischen Baubegleitung' +
-      (am ? ' vom ' + am : '') + ' ' + bauvorhaben(d);
+    einleitung.push(['Belehrungsprotokoll zur ökologischen Baubegleitung', true]);
+    if (am) einleitung.push([' vom ', false], [am, true]);
+    einleitung.push([' ' + bauvorhaben(d), false]);
     kern = 'Bitte beachten Sie die darin festgelegten Auflagen zum Naturschutz und geben Sie das Protokoll ' +
       'an alle auf der Baustelle tätigen Personen weiter.';
   } else {
-    einleitung = 'im Anhang übersende ich Ihnen das ' + nummerText(d.nummer) + 'Protokoll zur ökologischen Baubegleitung' +
-      (am ? ', durchgeführt am ' + am : '') + ', ' + bauvorhaben(d);
+    einleitung.push([nummerText(d.nummer) + 'Protokoll der Begehung zur ökologischen Baubegleitung', true]);
+    if (am) einleitung.push([', durchgeführt am ', false], [am, true]);
+    einleitung.push([', ' + bauvorhaben(d), false]);
     kern = d.abweichungen && d.abweichungen.length
       ? 'Es wurden Abweichungen von den Genehmigungsauflagen dokumentiert (' + d.abweichungen.join('; ') + '). ' +
         'Details entnehmen Sie bitte dem Protokoll.'
       : 'Es wurden keine Abweichungen von den Genehmigungsauflagen dokumentiert.';
   }
-  einleitung += az.length ? ', mit ' + (az.length > 1 ? 'den Aktenzeichen' : 'dem Aktenzeichen') + ':' : '.';
-  // Farbe des Kernsatzes in der HTML-Mail: Abweichungen rot, keine grün,
-  // Vorbegehung/Belehrung (Hinweis) dunkelblau – jeweils fett.
+  einleitung.push([az.length ? ', mit ' + (az.length > 1 ? 'den Aktenzeichen' : 'dem Aktenzeichen') + ':' : '.', false]);
+  // Kernsatz fett und farbig: Abweichungen gold/orange (wie in den Mails
+  // üblich), keine Abweichungen grün, Hinweise (Vorbegehung/Belehrung) dunkelblau.
   const farbe = d.typ === 'protokoll' || !d.typ
-    ? (d.abweichungen && d.abweichungen.length ? '#c00000' : '#2e7d32')
+    ? (d.abweichungen && d.abweichungen.length ? '#bf8f00' : '#2e7d32')
     : '#1f3864';
   return { anrede: 'Sehr geehrte Damen und Herren,', einleitung, az, kern, farbe, schluss: 'Bei Fragen kommen Sie gerne auf uns zu!' };
 }
 
 export function mailText(d) {
   const t = mailTeile(d);
-  const zeilen = [t.anrede, t.einleitung, ''];
+  const zeilen = [t.anrede, '', t.einleitung.map(([x]) => x).join(''), ''];
   if (t.az.length) {
     t.az.forEach((a) => zeilen.push('• ' + a));
     zeilen.push('');
@@ -95,8 +99,9 @@ export function mailHtml(d) {
   const t = mailTeile(d);
   const p = (inhalt) => '<p style="margin:0">' + inhalt + '</p>';
   const leer = p('&nbsp;');
+  const einleitung = t.einleitung.map(([x, fett]) => (fett ? '<b>' + esc(x) + '</b>' : esc(x))).join('');
   return '<div style="font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#000">' +
-    p(esc(t.anrede)) + p(esc(t.einleitung)) + leer +
+    p(esc(t.anrede)) + leer + p(einleitung) + leer +
     (t.az.length ? '<ul style="margin:0 0 0 18px;padding:0">' + t.az.map((a) => '<li>' + esc(a) + '</li>').join('') + '</ul>' + leer : '') +
     p('<b style="color:' + t.farbe + '">' + esc(t.kern) + '</b>') + leer + p(esc(t.schluss)) + leer +
     '</div>';

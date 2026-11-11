@@ -1,6 +1,6 @@
 [package]
 name = "oebb-tool"
-version = "0.6.1"
+version = "0.6.2"
 description = "ÖBB-Tool – Protokolle der ökologischen Baubegleitung (Desktop)"
 edition = "2021"
 
