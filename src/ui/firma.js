@@ -30,10 +30,33 @@ function logosEinsetzen() {
     img.alt = aktuelleFirma().name + ' Logo';
   });
   document.querySelectorAll('.logo .firmen-adresse').forEach((el) => { el.textContent = aktuelleFirma().adresse || ''; });
+  adresseVorbelegen();
 }
 
 // Wählt die Firma Nr. i: Farbe, Logo, Auswahlfeld und Seitentitel (der
 // Browser zeigt den Titel als Fenster-/Tab-Namen).
+// „Straße Nr., PLZ Ort“ -> { strasse, plz }
+export function adresseZerlegen(adresse) {
+  const a = String(adresse || '').trim();
+  const plz = (/\b(\d{5})\b/.exec(a) || [])[1] || '';
+  const strasse = a.split(/\s*,\s*/).filter((t) => t && !/\b\d{5}\b/.test(t))[0] || '';
+  return { strasse, plz };
+}
+
+// Gelber Abschnitt (Baubegleitung): PLZ und Straße der Firma eintragen –
+// nur in leere Felder oder solche, die noch den automatisch eingesetzten
+// Wert der vorher gewählten Firma enthalten (selbst Geschriebenes bleibt).
+function adresseVorbelegen() {
+  const { strasse, plz } = adresseZerlegen(aktuelleFirma().adresse);
+  [['firma-plz', plz], ['firma-strasse', strasse]].forEach(([feld, wert]) => {
+    document.querySelectorAll('[data-feld="' + feld + '"]').forEach((el) => {
+      if (el.value.trim() && el.value !== (el.dataset.auto || '')) return;
+      el.value = wert;
+      el.dataset.auto = wert;
+    });
+  });
+}
+
 function firmaSetzen(i) {
   aktuell = Math.max(0, Math.min(firmen.length - 1, Number(i) || 0));
   const f = aktuelleFirma();

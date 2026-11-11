@@ -66,7 +66,12 @@ function mailTeile(d) {
       : 'Es wurden keine Abweichungen von den Genehmigungsauflagen dokumentiert.';
   }
   einleitung += az.length ? ', mit ' + (az.length > 1 ? 'den Aktenzeichen' : 'dem Aktenzeichen') + ':' : '.';
-  return { anrede: 'Sehr geehrte Damen und Herren,', einleitung, az, kern, schluss: 'Bei Fragen kommen Sie gerne auf uns zu!' };
+  // Farbe des Kernsatzes in der HTML-Mail: Abweichungen rot, keine grün,
+  // Vorbegehung/Belehrung (Hinweis) dunkelblau – jeweils fett.
+  const farbe = d.typ === 'protokoll' || !d.typ
+    ? (d.abweichungen && d.abweichungen.length ? '#c00000' : '#2e7d32')
+    : '#1f3864';
+  return { anrede: 'Sehr geehrte Damen und Herren,', einleitung, az, kern, farbe, schluss: 'Bei Fragen kommen Sie gerne auf uns zu!' };
 }
 
 export function mailText(d) {
@@ -93,6 +98,6 @@ export function mailHtml(d) {
   return '<div style="font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#000">' +
     p(esc(t.anrede)) + p(esc(t.einleitung)) + leer +
     (t.az.length ? '<ul style="margin:0 0 0 18px;padding:0">' + t.az.map((a) => '<li>' + esc(a) + '</li>').join('') + '</ul>' + leer : '') +
-    p(esc(t.kern)) + leer + p(esc(t.schluss)) + leer +
+    p('<b style="color:' + t.farbe + '">' + esc(t.kern) + '</b>') + leer + p(esc(t.schluss)) + leer +
     '</div>';
 }

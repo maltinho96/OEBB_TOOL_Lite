@@ -13,6 +13,7 @@
 // direkt in der Mail.
 
 import { dbHolen } from '../core/zustand.js';
+import { istDesktop } from '../core/storage/index.js';
 import { externOeffnen } from './desktop.js';
 import { feldWert } from '../core/util.js';
 import { verteilerListe, EMAIL_MUSTER } from '../domain/projekt.js';
@@ -104,10 +105,26 @@ async function mailVorbereiten(tab) {
   if (!adressen.length && !confirm(fehlt + '\n\nMail trotzdem ohne Empfänger öffnen?')) return;
 
   const text = mailText(daten);
-  const kopiert = await inZwischenablage(mailHtml(daten), text);
-
   // Erste Person des Verteilers ins An-Feld, alle weiteren in CC.
   const [an, ...cc] = adressen;
+
+  // Desktop-Programm: fertiger Entwurf mit formatiertem Text direkt im
+  // Mailprogramm (Windows: Outlook, Linux: Thunderbird) – kein Strg+V nötig.
+  if (istDesktop()) {
+    try {
+      const weg = await window.__TAURI__.core.invoke('mail_oeffnen', {
+        an: an ? [an] : [], cc, betreff: mailBetreff(daten), html: mailHtml(daten),
+      });
+      document.dispatchEvent(new CustomEvent('mail-vorbereitet', { detail: 'desktop:' + weg }));
+      hinweisZeigen('✉ Mail-Entwurf geöffnet – Protokoll-PDF anhängen und senden.');
+      return;
+    } catch (e) {
+      // Sonst wie im Browser weiter (mailto + Zwischenablage).
+      hinweisZeigen('⚠ Mail-Entwurf ging nicht (' + (e && e.message ? e.message : e) + ') – Text ist kopiert.');
+    }
+  }
+
+  const kopiert = await inZwischenablage(mailHtml(daten), text);
   const url = 'mailto:' + (an || '') +
     '?' + (cc.length ? 'cc=' + cc.join(',') + '&' : '') +
     'subject=' + encodeURIComponent(mailBetreff(daten)) +

@@ -52,8 +52,8 @@ ${logo()}
   <tr class="bg-gelb"><td colspan="4" class="label">Anlass:<textarea rows="3" data-feld="anlass"></textarea></td></tr>
   <tr class="bg-gelb-h">
     <td><span class="zeile"><b>Telefon:</b> <input type="tel" data-feld="baubegleiter-telefon"></span></td>
-    <td><span class="zeile"><b>PLZ:</b> <input type="text" style="width:70px"></span></td>
-    <td colspan="2"><span class="zeile"><b>Straße:</b> <input type="text"></span></td>
+    <td><span class="zeile"><b>PLZ:</b> <input type="text" style="width:70px" data-feld="firma-plz"></span></td>
+    <td colspan="2"><span class="zeile"><b>Straße:</b> <input type="text" data-feld="firma-strasse"></span></td>
   </tr>
   <tr class="bg-gelb-h">
     <td class="label" colspan="2">Ökologische*r Baubegleiter*in:<br><input type="text" data-feld="baubegleiter"></td>

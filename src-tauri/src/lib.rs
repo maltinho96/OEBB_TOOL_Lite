@@ -406,6 +406,115 @@ fn datei_kopieren(z: tauri::State<Zugriff>, quelle: String, ordner: String, name
     Ok(())
 }
 
+// ---------- Mail-Entwurf (fertig formatiert) ----------
+//
+// Windows (Outlook): eine .eml-Datei mit „X-Unsent: 1“ – Outlook öffnet sie
+// als neuen, bearbeitbaren Entwurf mit An/CC/Betreff und formatiertem Text.
+// Linux: Thunderbird direkt mit „-compose“ (HTML-Text aus einer Datei);
+// ohne Thunderbird ebenfalls die .eml-Datei mit dem Standardprogramm.
+
+fn kopfzeile_kodieren(s: &str) -> String {
+    if s.is_ascii() {
+        s.to_string()
+    } else {
+        format!("=?UTF-8?B?{}?=", base64::engine::general_purpose::STANDARD.encode(s.as_bytes()))
+    }
+}
+
+// Nur einfache Adressen (keine Zeilenumbrüche/Steuerzeichen -> keine
+// eingeschleusten Kopfzeilen).
+fn adressen_pruefen(liste: &[String]) -> Result<Vec<String>, String> {
+    liste
+        .iter()
+        .map(|a| a.trim().to_string())
+        .filter(|a| !a.is_empty())
+        .map(|a| {
+            if a.chars().any(|c| c.is_control() || c == ',' || c == ';' || c == '\'' || c == '"') || !a.contains('@') {
+                Err(format!("Ungültige Adresse: {a}"))
+            } else {
+                Ok(a)
+            }
+        })
+        .collect()
+}
+
+fn mail_ordner() -> Result<PathBuf, String> {
+    let d = std::env::temp_dir().join("oebb-tool-mail");
+    fs::create_dir_all(&d).map_err(fehler)?;
+    // Alte Entwürfe (älter als 1 Tag) aufräumen
+    if let Ok(e) = fs::read_dir(&d) {
+        for f in e.flatten() {
+            let alt = f.metadata().and_then(|m| m.modified()).ok()
+                .and_then(|t| t.elapsed().ok())
+                .map(|d| d.as_secs() > 86_400)
+                .unwrap_or(false);
+            if alt {
+                let _ = fs::remove_file(f.path());
+            }
+        }
+    }
+    Ok(d)
+}
+
+fn eml_bauen(an: &[String], cc: &[String], betreff: &str, html: &str) -> String {
+    let rumpf = base64::engine::general_purpose::STANDARD.encode(html.as_bytes());
+    let mut zeilen = String::new();
+    for (i, c) in rumpf.chars().enumerate() {
+        if i > 0 && i % 76 == 0 {
+            zeilen.push_str("\r\n");
+        }
+        zeilen.push(c);
+    }
+    let mut kopf = String::from("X-Unsent: 1\r\n");
+    if !an.is_empty() {
+        kopf.push_str(&format!("To: {}\r\n", an.join(", ")));
+    }
+    if !cc.is_empty() {
+        kopf.push_str(&format!("Cc: {}\r\n", cc.join(", ")));
+    }
+    let betreff_einzeilig: String = betreff.chars().filter(|c| !c.is_control()).collect();
+    kopf.push_str(&format!("Subject: {}\r\n", kopfzeile_kodieren(&betreff_einzeilig)));
+    kopf.push_str("MIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n");
+    kopf + &zeilen + "\r\n"
+}
+
+#[tauri::command]
+fn mail_oeffnen(app: tauri::AppHandle, an: Vec<String>, cc: Vec<String>, betreff: String, html: String) -> Result<String, String> {
+    use tauri_plugin_opener::OpenerExt;
+    let an = adressen_pruefen(&an)?;
+    let cc = adressen_pruefen(&cc)?;
+    let ordner = mail_ordner()?;
+    let stempel = std::time::SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_millis()).unwrap_or(0);
+    let ganz = format!("<html><head><meta charset=\"utf-8\"></head><body>{html}</body></html>");
+
+    #[cfg(target_os = "linux")]
+    {
+        let datei = ordner.join(format!("mail-{stempel}.html"));
+        fs::write(&datei, &ganz).map_err(fehler)?;
+        let wert = |s: &str| s.replace('\'', "’");
+        let mut spec = String::new();
+        if !an.is_empty() {
+            spec.push_str(&format!("to='{}',", an.join(",")));
+        }
+        if !cc.is_empty() {
+            spec.push_str(&format!("cc='{}',", cc.join(",")));
+        }
+        spec.push_str(&format!("subject='{}',format=html,message='{}'", wert(&betreff), datei.display()));
+        for prog in ["thunderbird", "thunderbird-esr", "betterbird"] {
+            if std::process::Command::new(prog).arg("-compose").arg(&spec).spawn().is_ok() {
+                return Ok("thunderbird".into());
+            }
+        }
+    }
+
+    let datei = ordner.join(format!("Entwurf-{stempel}.eml"));
+    fs::write(&datei, eml_bauen(&an, &cc, &betreff, &ganz)).map_err(fehler)?;
+    app.opener()
+        .open_path(datei.display().to_string(), None::<&str>)
+        .map_err(|e| format!("Mailprogramm konnte nicht geöffnet werden: {e}"))?;
+    Ok("eml".into())
+}
+
 #[derive(Serialize)]
 struct Treffer {
     pfad: String,
@@ -493,7 +602,8 @@ pub fn run() {
             datei_waehlen,
             speicherort_waehlen,
             projektordner_lesen,
-            projektordner_setzen
+            projektordner_setzen,
+            mail_oeffnen
         ])
         .run(tauri::generate_context!())
         .expect("ÖBB-Tool konnte nicht gestartet werden");
@@ -541,6 +651,19 @@ mod tests {
         assert!(pfad_in("/a", "../x").is_err());
         assert!(pfad_in("/a", "b/c").is_err());
         let _ = fs::remove_dir_all(basis);
+    }
+
+    #[test]
+    fn mail_entwurf() {
+        assert!(adressen_pruefen(&["a@b.de".into(), " c@d.de ".into()]).is_ok());
+        assert!(adressen_pruefen(&["a@b.de\r\nBcc: x@y.de".into()]).is_err());
+        assert!(adressen_pruefen(&["kein-at".into()]).is_err());
+        let e = eml_bauen(&["a@b.de".into()], &["c@d.de".into(), "e@f.de".into()], "08. Protokoll in Märkisch-Oderland\nX: y", "<b>Ü</b>");
+        assert!(e.starts_with("X-Unsent: 1\r\nTo: a@b.de\r\nCc: c@d.de, e@f.de\r\nSubject: =?UTF-8?B?"));
+        assert!(!e.contains("\nX: y"));
+        let b64 = e.split("\r\n\r\n").nth(1).unwrap().replace("\r\n", "");
+        let roh = base64::engine::general_purpose::STANDARD.decode(b64).unwrap();
+        assert_eq!(String::from_utf8(roh).unwrap(), "<b>Ü</b>");
     }
 
     #[test]
