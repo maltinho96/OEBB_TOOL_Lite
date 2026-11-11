@@ -5,6 +5,7 @@
 // Original eingebettete Kopie derselben Bibliothek (kommt jetzt aus npm).
 
 import * as XLSX from 'xlsx-js-style';
+import { istAndroidApp, androidSpeichern } from '../core/android.js';
 import { statusText } from '../core/util.js';
 import { grundordnerHolen, istDesktop, speichernUnter } from '../core/storage/index.js';
 import { dbLesen } from '../core/db.js';
@@ -130,6 +131,11 @@ async function projektExportieren(pid, mkey) {
   if (istDesktop()) {
     await speichernUnter(name, ordner, { base64: XLSX.write(wb, { type: 'base64', bookType: 'xlsx' }) },
       { name: 'Excel', extensions: ['xlsx'] }).catch((e) => alert('Speichern fehlgeschlagen:\n' + e));
+    return;
+  }
+  if (istAndroidApp()) {
+    await androidSpeichern(name, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      XLSX.write(wb, { type: 'base64', bookType: 'xlsx' }), true);
     return;
   }
   XLSX.writeFile(wb, name);

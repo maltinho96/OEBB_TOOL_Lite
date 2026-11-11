@@ -93,7 +93,7 @@ jobs:
           prerelease: false
           args: ${{ env.TAURI_ARGS }}
 
-  # Android-App (APK). Mit den Secrets ANDROID_KEYSTORE_BASE64 und
+  # Android-App (APK, eigenständig – die Web-App steckt in der APK). Mit den Secrets ANDROID_KEYSTORE_BASE64 und
   # ANDROID_KEYSTORE_PASSWORD wird sie signiert und ins Release gelegt.
   # Ohne Secrets: Probe-Build mit Wegwerf-Schlüssel (nur als Artefakt des
   # Workflow-Laufs, wird NICHT veröffentlicht) – prüft, dass alles baut.
@@ -105,6 +105,17 @@ jobs:
     steps:
       - name: Repo auschecken
         uses: actions/checkout@v4
+
+      - name: Node.js einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Web-App für die Android-App bauen
+        run: |
+          npm ci
+          npm run build:android
 
       - name: Java einrichten
         uses: actions/setup-java@v4

@@ -38,6 +38,9 @@ ${logo()}
 <h1>Übersicht</h1>
 <p style="margin-top:2px; color:#555">Protokolle, Projekte und Stundennachweise – gemeinsam über den Grundordner.</p>
 
+<p class="nur-android" style="font-size:13px; color:#555;">📱 <b>Handy-App:</b> Protokolle hier ausfüllen (Fotos direkt
+mit der Kamera) und mit „💾 Speichern unter…“ auf dem Handy sichern – später am PC in den Projektordner legen.
+Ein angefangenes Protokoll wird automatisch als Entwurf gesichert.</p>
 <h2 class="c-grau nur-web">Einrichtung</h2>
 <p class="nur-web">Der <b>Grundordner</b> ist der gemeinsame Ordner mit der Datenbank
 (<code>oebb_datenbank.json</code>), den Firmen und Logos.

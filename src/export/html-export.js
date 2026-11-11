@@ -16,6 +16,7 @@ import { feldWert, aktiverTab } from '../core/util.js';
 import { gespeicherterProjektordner, istDesktop, speichernUnter } from '../core/storage/index.js';
 import { projektStillScannen } from '../ui/projektformular.js';
 import { zusatzdatumAufraeumen } from '../ui/zusatzdatum.js';
+import { istAndroidApp, androidSpeichern } from '../core/android.js';
 
 // Live-Werte (Inputs/Textareas/Checkboxen/Selects) als Attribute im DOM
 // festschreiben, damit sie beim outerHTML-Export erhalten bleiben.
@@ -137,6 +138,12 @@ async function alsHtmlSpeichern() {
     } catch (e) {
       alert('Speichern fehlgeschlagen:\n' + (e && e.message ? e.message : e));
     }
+    return;
+  }
+
+  // Android-App: Android-Speichern-Dialog (Ordner frei wählbar, z. B. Dokumente).
+  if (istAndroidApp()) {
+    if (await androidSpeichern(vorschlag, 'text/html', inhalt, false)) gespeichertMelden(tab);
     return;
   }
 

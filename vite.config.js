@@ -43,7 +43,7 @@ function cspEinfuegen(desktop) {
 export default defineConfig(({ command, mode }) => ({
   root: '.',            // Projektwurzel; index.html ist der Einstieg
   publicDir: 'public',  // wird 1:1 in den Build kopiert (Logos etc.)
-  base: mode === 'desktop' ? './' : command === 'build' ? '/OEBB_TOOL_Lite/' : '/',
+  base: mode === 'desktop' || mode === 'android' ? './' : command === 'build' ? '/OEBB_TOOL_Lite/' : '/',
   plugins: [
     cspEinfuegen(mode === 'desktop'),
     // shpjs (Shapefile-Import) bringt eine Kette alter Node-Pakete mit

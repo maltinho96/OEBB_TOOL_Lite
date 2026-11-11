@@ -123,6 +123,9 @@ input[type=checkbox], input[type=radio]{width:17px; height:17px; accent-color:#1
 .foto-knoepfe button{font-size:15px; padding:10px 16px;}
 /* Am PC mit Maus: die Ablagezone reicht, Kamera-Knöpfe ausblenden */
 @media (hover:hover) and (pointer:fine){ .foto-knoepfe{display:none;} }
+.nur-android{display:none;}
+.android-app .nur-android{display:block;}
+.android-app .nur-web, .android-app [data-aktion="grundordner-festlegen"], .android-app #grundordnerStatus{display:none !important;}
 .nur-desktop{display:none;}
 .desktop .nur-desktop{display:revert;}
 .desktop .nur-web{display:none;}

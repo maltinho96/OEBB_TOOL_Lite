@@ -114,9 +114,9 @@ Fotodokumentation: „📷 Foto aufnehmen“ (Kamera, Standort vom Handy) und �
 
 ANDROID (F-Droid)
 ─────────────────
-android/                     # kleine App-Hülle (Trusted Web Activity): öffnet die Web-App im Vollbild
-android/assetlinks.json      # optional: unter https://maltinho96.github.io/.well-known/assetlinks.json
-                             # ablegen (eigenes Repo maltinho96.github.io) -> App ohne Adresszeile
+android/                     # eigenständige App: Web-App (npm run build:android) liegt in der APK
+  app/src/main/java/…/MainActivity.java  # WebView + Kamera/Galerie, Standort, Speichern, Drucken, mailto
+src/core/android.js          # Brücke window.OebbAndroid (Speichern, Drucken) auf Web-Seite
 scripts/fdroid-repo.sh       # baut das F-Droid-Repo -> https://maltinho96.github.io/OEBB_TOOL_Lite/fdroid/
 Secrets: ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD (ohne sie: nur Probe-Build)
 

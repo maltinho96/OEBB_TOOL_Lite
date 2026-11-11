@@ -5,6 +5,7 @@
 
 import { istDesktop } from '../core/storage/index.js';
 import { einrichtungPruefen } from './einrichtung.js';
+import { istAndroidApp, androidDruckEinrichten } from '../core/android.js';
 
 export function externOeffnen(url) {
   if (istDesktop() && window.__TAURI__.opener) {
@@ -38,6 +39,12 @@ async function nachUpdateSuchen() {
 
 // Browser (GitHub Pages): als App installierbar + offline nutzbar machen.
 function appModusStarten() {
+  // Android-App: alles liegt schon in der APK – kein Service Worker nötig.
+  if (istAndroidApp()) {
+    document.documentElement.classList.add('android-app');
+    androidDruckEinrichten();
+    return;
+  }
   if (!('serviceWorker' in navigator) || !import.meta.env.PROD) return;
   navigator.serviceWorker.register('./sw.js').catch(() => {});
 }

@@ -1,13 +1,11 @@
-// Android-App des ÖBB-Tools.
+// Android-App des ÖBB-Tools – eigenständig, ohne Chrome.
 //
-// Eine schlanke Hülle ("Trusted Web Activity"): Sie öffnet die Web-App
-// (GitHub Pages) im Vollbild über Chrome. Dadurch verhält sie sich exakt
-// wie die installierte Web-App – Kamera, Standort, Galerie, Speichern und
-// Offline-Betrieb kommen von dort – und jede Aktualisierung der Website ist
-// sofort in der App, ohne neue APK.
+// Die Web-App (npm run build:android -> dist) wird als assets/www in die APK
+// gepackt und im Android System WebView ausgeführt (MainActivity.java).
+// Der Gradle-Task webAppKopieren erledigt das vor jedem Bau.
 //
-// Version: -PappVersion=0.5.0 (aus src-tauri/tauri.conf.json, setzt die CI).
-// Signatur: Umgebungsvariablen KS_FILE / KS_PASS / KS_ALIAS.
+// Version: -PappVersion=0.6.0 (aus src-tauri/tauri.conf.json, setzt die CI).
+// Signatur: Umgebungsvariablen KS_FILE / KS_PASS (Alias "app").
 plugins {
     id 'com.android.application'
 }
@@ -53,5 +51,18 @@ android {
 }
 
 dependencies {
-    implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.5.0'
+    implementation 'androidx.webkit:webkit:1.11.0'
+    implementation 'androidx.core:core:1.13.1'
 }
+
+// Fertig gebaute Web-App (../../dist) in die APK übernehmen.
+def webQuelle = file('../../dist')
+def webZiel = file('src/main/assets/www')
+tasks.register('webAppKopieren', Sync) {
+    from webQuelle
+    into webZiel
+    doFirst {
+        if (!webQuelle.exists()) throw new GradleException('dist fehlt – vorher "npm run build:android" ausführen')
+    }
+}
+preBuild.dependsOn webAppKopieren

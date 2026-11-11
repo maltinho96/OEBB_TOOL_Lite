@@ -3,3 +3,4 @@
 /.gradle/
 *.keystore
 *.jks
+/app/src/main/assets/www/
