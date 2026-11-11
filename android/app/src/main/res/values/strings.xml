@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ÖBB-Tool</string>
+    <string name="start_url">https://maltinho96.github.io/OEBB_TOOL_Lite/</string>
+    <string name="asset_statements">[{\"relation\": [\"delegate_permission/common.handle_all_urls\"], \"target\": {\"namespace\": \"web\", \"site\": \"https://maltinho96.github.io\"}}]</string>
+</resources>

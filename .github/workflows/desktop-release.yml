@@ -1,7 +1,7 @@
 name: Desktop-Programm bauen (Windows + Ubuntu)
 
-# Baut das ÖBB-Tool als Windows-Programm (Installer) und als Ubuntu-Paket
-# (.deb) und veröffentlicht beides unter "Releases" (Tag desktop-vX.Y.Z legt
+# Baut das ÖBB-Tool als Windows-Programm (Installer), als Ubuntu-Paket
+# (.deb) und als Android-App (.apk) und veröffentlicht sie unter "Releases" (Tag desktop-vX.Y.Z legt
 # die Action selbst an). Danach baut deploy-pages.yml die apt-Paketquelle.
 # Auslösen: in src-tauri/tauri.conf.json die Versionsnummer erhöhen und auf
 # beta-neu pushen – oder im Actions-Tab "Run workflow".
@@ -87,13 +87,86 @@ jobs:
             ```
             curl -fsSL https://maltinho96.github.io/OEBB_TOOL_Lite/apt/install.sh | sh
             ```
+
+            **Android (F-Droid):** Anleitung unter https://maltinho96.github.io/OEBB_TOOL_Lite/fdroid/
           releaseDraft: false
           prerelease: false
           args: ${{ env.TAURI_ARGS }}
 
-  # Danach die apt-Paketquelle auf GitHub Pages neu bauen.
-  apt-aktualisieren:
+  # Android-App (APK). Mit den Secrets ANDROID_KEYSTORE_BASE64 und
+  # ANDROID_KEYSTORE_PASSWORD wird sie signiert und ins Release gelegt.
+  # Ohne Secrets: Probe-Build mit Wegwerf-Schlüssel (nur als Artefakt des
+  # Workflow-Laufs, wird NICHT veröffentlicht) – prüft, dass alles baut.
+  android:
     needs: bauen
+    runs-on: ubuntu-latest
+    env:
+      HAT_ANDROID: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+    steps:
+      - name: Repo auschecken
+        uses: actions/checkout@v4
+
+      - name: Java einrichten
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Gradle einrichten
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Version und Schlüssel
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KS_PW: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          echo "VERSION=$(node -p "require('./src-tauri/tauri.conf.json').version")" >> "$GITHUB_ENV"
+          echo "KS_FILE=$RUNNER_TEMP/android.keystore" >> "$GITHUB_ENV"
+          if [ "$HAT_ANDROID" = "true" ]; then
+            printf '%s' "$KS_B64" | base64 -d > "$RUNNER_TEMP/android.keystore"
+            echo "::add-mask::$KS_PW"
+            echo "KS_PASS=$KS_PW" >> "$GITHUB_ENV"
+          else
+            for a in app fdroid; do
+              keytool -genkeypair -keystore "$RUNNER_TEMP/android.keystore" -storetype PKCS12 \
+                -storepass probe-123456 -keypass probe-123456 -alias $a -keyalg RSA -keysize 2048 \
+                -validity 30 -dname "CN=Probe"
+            done
+            echo "KS_PASS=probe-123456" >> "$GITHUB_ENV"
+          fi
+
+      - name: APK bauen
+        run: |
+          gradle -p android assembleRelease -PappVersion="$VERSION" --no-daemon
+          mkdir -p apk
+          cp android/app/build/outputs/apk/release/app-release.apk "apk/OEBB-Tool_${VERSION}.apk"
+          ls -la apk
+
+      - name: APK ins Release legen
+        if: env.HAT_ANDROID == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "desktop-v$VERSION" apk/*.apk --clobber --repo "${{ github.repository }}"
+
+      - name: 'Probe: F-Droid-Repo bauen (ohne Veröffentlichung)'
+        if: env.HAT_ANDROID != 'true'
+        run: |
+          sudo apt-get update >/dev/null && sudo apt-get install -y fdroidserver >/dev/null
+          scripts/fdroid-repo.sh "$RUNNER_TEMP/fdroid-probe" "$PWD/apk"
+          ls -la "$RUNNER_TEMP/fdroid-probe/repo"
+
+      - name: 'Probe-APK als Artefakt (nicht veröffentlicht)'
+        if: env.HAT_ANDROID != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: probe-apk-nicht-verteilen
+          path: apk/*.apk
+
+  # Danach die apt-Paketquelle und das F-Droid-Repo auf GitHub Pages neu bauen.
+  apt-aktualisieren:
+    needs: [bauen, android]
     runs-on: ubuntu-latest
     steps:
       - name: Pages-Workflow starten

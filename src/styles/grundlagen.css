@@ -118,6 +118,7 @@ input[type=checkbox], input[type=radio]{width:17px; height:17px; accent-color:#1
 .logo .firmen-adresse{display:block; font-size:9px; line-height:1.25; color:#555; text-align:right; margin-top:2px;}
 .logo .firmen-adresse:empty{display:none;}
 .desktop [data-aktion="grundordner-festlegen"]{display:none;}
+.entwurf-hinweis{display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:0 0 14px; padding:10px 12px; background:#fff8dc; border:1px solid #e0c45a; border-radius:6px; font-size:13px;}
 .foto-knoepfe{display:flex; gap:10px; justify-content:center; margin:10px 0 4px;}
 .foto-knoepfe button{font-size:15px; padding:10px 16px;}
 /* Am PC mit Maus: die Ablagezone reicht, Kamera-Knöpfe ausblenden */

@@ -111,3 +111,15 @@ HANDY / TABLET (Android, iPhone)
 public/manifest.webmanifest, public/sw.js, public/icons/  # als App installierbar, offline nutzbar
 Fotodokumentation: „📷 Foto aufnehmen“ (Kamera, Standort vom Handy) und „🖼 Aus Galerie“
 – nur auf Touch-Geräten sichtbar (ui/fotos.js).
+
+ANDROID (F-Droid)
+─────────────────
+android/                     # kleine App-Hülle (Trusted Web Activity): öffnet die Web-App im Vollbild
+android/assetlinks.json      # optional: unter https://maltinho96.github.io/.well-known/assetlinks.json
+                             # ablegen (eigenes Repo maltinho96.github.io) -> App ohne Adresszeile
+scripts/fdroid-repo.sh       # baut das F-Droid-Repo -> https://maltinho96.github.io/OEBB_TOOL_Lite/fdroid/
+Secrets: ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD (ohne sie: nur Probe-Build)
+
+SICHERHEIT / SPEICHERN
+src-tauri/src/lib.rs         # Zugriffsschutz: nur Grundordner + im Dialog gewählte Ordner/Dateien
+src/ui/entwurf.js            # automatische Entwurfs-Sicherung der Protokolle (IndexedDB, nur lokal)

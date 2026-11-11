@@ -14,11 +14,78 @@
 
 use base64::Engine;
 use serde::Serialize;
+use std::collections::HashMap;
 use std::fs;
 use std::io::{Read, Seek, SeekFrom};
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
+use std::sync::Mutex;
 use std::time::UNIX_EPOCH;
 use tauri::Manager;
+use tauri_plugin_dialog::DialogExt;
+
+// ---------- Zugriffsschutz ----------
+//
+// Die Oberfläche (Web-Inhalt) darf NICHT auf beliebige Pfade zugreifen.
+// Erlaubt sind nur:
+//   - der Grundordner aus oebb-konfig.txt
+//   - Ordner, die der Mensch in einem Ordner-Dialog gewählt hat (die Dialoge
+//     öffnet dieses Programm selbst, nicht die Oberfläche) – Projektordner
+//     werden dafür in projektordner.json gemerkt
+//   - einzelne Dateien aus einem Datei-/Speichern-Dialog (Logo, Protokoll)
+// So bleibt der Schaden begrenzt, selbst wenn fremder Code in die Oberfläche
+// gelangen sollte.
+#[derive(Default)]
+struct Zugriff {
+    wurzeln: Mutex<Vec<PathBuf>>,
+    dateien: Mutex<Vec<PathBuf>>,
+}
+
+fn wurzel_merken(z: &Zugriff, pfad: &str) {
+    let mut w = z.wurzeln.lock().unwrap();
+    let roh = PathBuf::from(pfad);
+    if let Ok(echt) = fs::canonicalize(&roh) {
+        if !w.contains(&echt) {
+            w.push(echt);
+        }
+    }
+    if !w.contains(&roh) {
+        w.push(roh);
+    }
+}
+
+fn datei_merken(z: &Zugriff, pfad: &Path) {
+    let mut d = z.dateien.lock().unwrap();
+    if !d.contains(&pfad.to_path_buf()) {
+        d.push(pfad.to_path_buf());
+    }
+}
+
+fn ordner_erlaubt(z: &Zugriff, ordner: &str) -> Result<(), String> {
+    let roh = Path::new(ordner);
+    if roh.components().any(|c| matches!(c, Component::ParentDir)) {
+        return Err("Ungültiger Pfad".into());
+    }
+    let w = z.wurzeln.lock().unwrap();
+    // Wenn der Ordner erreichbar ist, zählt sein echter Pfad (Verknüpfungen
+    // aufgelöst); sonst (z. B. Netzlaufwerk gerade weg) der angegebene.
+    let ok = match fs::canonicalize(roh) {
+        Ok(echt) => w.iter().any(|r| echt.starts_with(r)),
+        Err(_) => w.iter().any(|r| roh.starts_with(r)),
+    };
+    if ok {
+        Ok(())
+    } else {
+        Err(format!("Kein Zugriff auf {ordner} (Ordner ist nicht freigegeben)"))
+    }
+}
+
+fn datei_erlaubt(z: &Zugriff, pfad: &str) -> Result<(), String> {
+    if z.dateien.lock().unwrap().iter().any(|d| d == Path::new(pfad)) {
+        Ok(())
+    } else {
+        Err(format!("Kein Zugriff auf {pfad} (Datei wurde nicht im Dialog gewählt)"))
+    }
+}
 
 const KONFIG_DATEI: &str = "oebb-konfig.txt";
 
@@ -94,17 +161,21 @@ fn veraltet(_k: &Path) -> bool {
 }
 
 #[tauri::command]
-fn konfig_lesen(app: tauri::AppHandle) -> Konfig {
+fn konfig_lesen(app: tauri::AppHandle, z: tauri::State<Zugriff>) -> Konfig {
     let kandidaten = konfig_kandidaten(&app);
     let benutzer_datei = kandidaten.last().map(|p| p.display().to_string()).unwrap_or_default();
     if let Some(eigene) = kandidaten.last() {
         if veraltet(eigene) {
             let _ = fs::remove_file(eigene);
+            if let Some(d) = eigene.parent() {
+                let _ = fs::remove_file(d.join(PROJEKTORDNER_DATEI));
+            }
         }
     }
     for k in &kandidaten {
         if let Ok(t) = fs::read_to_string(k) {
             if let Some(p) = pfad_aus_konfig(&t) {
+                wurzel_merken(&z, &p);
                 return Konfig { grundordner: Some(p), datei: Some(k.display().to_string()), benutzer_datei };
             }
         }
@@ -113,7 +184,9 @@ fn konfig_lesen(app: tauri::AppHandle) -> Konfig {
 }
 
 #[tauri::command]
-fn konfig_speichern(app: tauri::AppHandle, grundordner: String) -> Result<String, String> {
+fn konfig_speichern(app: tauri::AppHandle, z: tauri::State<Zugriff>, grundordner: String) -> Result<String, String> {
+    // Nur ein Ordner, den der Mensch gerade im Dialog gewählt hat.
+    ordner_erlaubt(&z, &grundordner)?;
     let d = app.path().app_config_dir().map_err(fehler)?;
     fs::create_dir_all(&d).map_err(fehler)?;
     let datei = d.join(KONFIG_DATEI);
@@ -127,12 +200,115 @@ fn konfig_speichern(app: tauri::AppHandle, grundordner: String) -> Result<String
 }
 
 #[tauri::command]
-fn ordner_existiert(pfad: String) -> bool {
-    Path::new(&pfad).is_dir()
+fn ordner_existiert(z: tauri::State<Zugriff>, pfad: String) -> bool {
+    ordner_erlaubt(&z, &pfad).is_ok() && Path::new(&pfad).is_dir()
+}
+
+// ---------- Dialoge (öffnet das Programm, nicht die Oberfläche) ----------
+
+#[tauri::command]
+async fn ordner_waehlen(
+    app: tauri::AppHandle,
+    z: tauri::State<'_, Zugriff>,
+    titel: String,
+    start: Option<String>,
+) -> Result<Option<String>, String> {
+    let mut d = app.dialog().file().set_title(&titel);
+    if let Some(s) = start {
+        d = d.set_directory(s);
+    }
+    match d.blocking_pick_folder().and_then(|f| f.into_path().ok()) {
+        Some(p) => {
+            let s = p.display().to_string();
+            wurzel_merken(&z, &s);
+            Ok(Some(s))
+        }
+        None => Ok(None),
+    }
 }
 
 #[tauri::command]
-fn datei_lesen(ordner: String, name: String) -> Result<Option<String>, String> {
+async fn datei_waehlen(
+    app: tauri::AppHandle,
+    z: tauri::State<'_, Zugriff>,
+    titel: String,
+    name: String,
+    endungen: Vec<String>,
+) -> Result<Option<String>, String> {
+    let e: Vec<&str> = endungen.iter().map(|s| s.as_str()).collect();
+    let wahl = app.dialog().file().set_title(&titel).add_filter(&name, &e).blocking_pick_file();
+    match wahl.and_then(|f| f.into_path().ok()) {
+        Some(p) => {
+            datei_merken(&z, &p);
+            Ok(Some(p.display().to_string()))
+        }
+        None => Ok(None),
+    }
+}
+
+#[tauri::command]
+async fn speicherort_waehlen(
+    app: tauri::AppHandle,
+    z: tauri::State<'_, Zugriff>,
+    vorschlag: String,
+    start: Option<String>,
+    name: String,
+    endungen: Vec<String>,
+) -> Result<Option<String>, String> {
+    let e: Vec<&str> = endungen.iter().map(|s| s.as_str()).collect();
+    let mut d = app.dialog().file().set_file_name(&vorschlag).add_filter(&name, &e);
+    if let Some(s) = start {
+        d = d.set_directory(s);
+    }
+    match d.blocking_save_file().and_then(|f| f.into_path().ok()) {
+        Some(p) => {
+            datei_merken(&z, &p);
+            Ok(Some(p.display().to_string()))
+        }
+        None => Ok(None),
+    }
+}
+
+// ---------- Projektordner (je Projekt-ID ein gewählter Ordner) ----------
+
+const PROJEKTORDNER_DATEI: &str = "projektordner.json";
+
+fn projektordner_pfad(app: &tauri::AppHandle) -> Result<PathBuf, String> {
+    Ok(app.path().app_config_dir().map_err(fehler)?.join(PROJEKTORDNER_DATEI))
+}
+
+fn projektordner_laden(app: &tauri::AppHandle) -> HashMap<String, String> {
+    projektordner_pfad(app)
+        .ok()
+        .and_then(|p| fs::read_to_string(p).ok())
+        .and_then(|t| serde_json::from_str(&t).ok())
+        .unwrap_or_default()
+}
+
+#[tauri::command]
+fn projektordner_lesen(app: tauri::AppHandle, z: tauri::State<Zugriff>) -> HashMap<String, String> {
+    let m = projektordner_laden(&app);
+    for p in m.values() {
+        wurzel_merken(&z, p);
+    }
+    m
+}
+
+#[tauri::command]
+fn projektordner_setzen(app: tauri::AppHandle, z: tauri::State<Zugriff>, id: String, pfad: String) -> Result<(), String> {
+    ordner_erlaubt(&z, &pfad)?; // muss gerade im Dialog gewählt worden sein
+    let mut m = projektordner_laden(&app);
+    m.insert(id, pfad);
+    let datei = projektordner_pfad(&app)?;
+    if let Some(d) = datei.parent() {
+        fs::create_dir_all(d).map_err(fehler)?;
+    }
+    fs::write(datei, serde_json::to_string_pretty(&m).map_err(fehler)?).map_err(fehler)
+}
+
+#[tauri::command]
+fn datei_lesen(z: tauri::State<Zugriff>, ordner: String, name: String) -> Result<Option<String>, String> {
+    ordner_erlaubt(&z, &ordner)?;
     let p = pfad_in(&ordner, &name)?;
     match fs::read(&p) {
         Ok(b) => Ok(Some(String::from_utf8_lossy(&b).into_owned())),
@@ -145,7 +321,8 @@ fn datei_lesen(ordner: String, name: String) -> Result<Option<String>, String> {
 }
 
 #[tauri::command]
-fn datei_lesen_base64(ordner: String, name: String) -> Result<Option<String>, String> {
+fn datei_lesen_base64(z: tauri::State<Zugriff>, ordner: String, name: String) -> Result<Option<String>, String> {
+    ordner_erlaubt(&z, &ordner)?;
     let p = pfad_in(&ordner, &name)?;
     match fs::read(&p) {
         Ok(b) => Ok(Some(base64::engine::general_purpose::STANDARD.encode(b))),
@@ -154,7 +331,8 @@ fn datei_lesen_base64(ordner: String, name: String) -> Result<Option<String>, St
 }
 
 #[tauri::command]
-fn datei_schreiben(ordner: String, name: String, text: String) -> Result<(), String> {
+fn datei_schreiben(z: tauri::State<Zugriff>, ordner: String, name: String, text: String) -> Result<(), String> {
+    ordner_erlaubt(&z, &ordner)?;
     let p = pfad_in(&ordner, &name)?;
     // Erst in eine Hilfsdatei, dann umbenennen: eine halb geschriebene
     // Datenbank bleibt so nie zurück (z. B. bei Netzwerkabbruch).
@@ -169,14 +347,16 @@ fn datei_schreiben(ordner: String, name: String, text: String) -> Result<(), Str
 }
 
 #[tauri::command]
-fn datei_loeschen(ordner: String, name: String) -> Result<(), String> {
+fn datei_loeschen(z: tauri::State<Zugriff>, ordner: String, name: String) -> Result<(), String> {
+    ordner_erlaubt(&z, &ordner)?;
     let p = pfad_in(&ordner, &name)?;
     let _ = fs::remove_file(p);
     Ok(())
 }
 
 #[tauri::command]
-fn unterordner(ordner: String, name: String) -> Result<String, String> {
+fn unterordner(z: tauri::State<Zugriff>, ordner: String, name: String) -> Result<String, String> {
+    ordner_erlaubt(&z, &ordner)?;
     let p = pfad_in(&ordner, &name)?;
     fs::create_dir_all(&p).map_err(fehler)?;
     Ok(p.display().to_string())
@@ -184,19 +364,31 @@ fn unterordner(ordner: String, name: String) -> Result<String, String> {
 
 // Speichern-Dialog-Ziel: ganzer Pfad (kommt aus dem Speichern-Dialog).
 #[tauri::command]
-fn pfad_schreiben(pfad: String, text: Option<String>, base64: Option<String>) -> Result<(), String> {
+fn pfad_schreiben(z: tauri::State<Zugriff>, pfad: String, text: Option<String>, base64: Option<String>) -> Result<(), String> {
+    datei_erlaubt(&z, &pfad)?; // nur ein Ziel aus dem Speichern-Dialog
     let daten = match (text, base64) {
         (Some(t), _) => t.into_bytes(),
         (None, Some(b)) => base64::engine::general_purpose::STANDARD.decode(b).map_err(fehler)?,
         _ => return Err("Kein Inhalt".into()),
     };
-    fs::write(pfad, daten).map_err(fehler)
+    // Erst in eine Hilfsdatei, dann umbenennen – so bleibt bei einem Abbruch
+    // (Netz weg, Platte voll) keine halbe oder leere Protokolldatei zurück.
+    let ziel = PathBuf::from(&pfad);
+    let tmp = PathBuf::from(format!("{pfad}.schreiben"));
+    fs::write(&tmp, &daten).map_err(fehler)?;
+    if fs::rename(&tmp, &ziel).is_err() {
+        let ergebnis = fs::write(&ziel, &daten).map_err(fehler);
+        let _ = fs::remove_file(&tmp);
+        ergebnis?;
+    }
+    Ok(())
 }
 
 // Namen im Ordner (eine Ebene) – für die Einrichtung: leer, bestehender
 // Grundordner oder fremder Ordner?
 #[tauri::command]
-fn ordner_inhalt(pfad: String) -> Result<Vec<String>, String> {
+fn ordner_inhalt(z: tauri::State<Zugriff>, pfad: String) -> Result<Vec<String>, String> {
+    ordner_erlaubt(&z, &pfad)?;
     let mut namen = Vec::new();
     for e in fs::read_dir(&pfad).map_err(fehler)?.flatten() {
         namen.push(e.file_name().to_string_lossy().into_owned());
@@ -206,7 +398,9 @@ fn ordner_inhalt(pfad: String) -> Result<Vec<String>, String> {
 
 // Logo bei der Einrichtung in den Grundordner kopieren.
 #[tauri::command]
-fn datei_kopieren(quelle: String, ordner: String, name: String) -> Result<(), String> {
+fn datei_kopieren(z: tauri::State<Zugriff>, quelle: String, ordner: String, name: String) -> Result<(), String> {
+    datei_erlaubt(&z, &quelle)?; // Quelle kommt aus dem Datei-Dialog
+    ordner_erlaubt(&z, &ordner)?;
     let ziel = pfad_in(&ordner, &name)?;
     fs::copy(quelle, ziel).map_err(fehler)?;
     Ok(())
@@ -267,15 +461,17 @@ fn scannen(ordner: &Path, rel: &str, tiefe: u32, erg: &mut ScanErgebnis) {
 }
 
 #[tauri::command]
-async fn html_scannen(ordner: String) -> ScanErgebnis {
+async fn html_scannen(z: tauri::State<'_, Zugriff>, ordner: String) -> Result<ScanErgebnis, String> {
+    ordner_erlaubt(&z, &ordner)?;
     let mut erg = ScanErgebnis { treffer: Vec::new(), geprueft: 0 };
     scannen(Path::new(&ordner), "", 0, &mut erg);
-    erg
+    Ok(erg)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .manage(Zugriff::default())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_process::init())
@@ -292,8 +488,65 @@ pub fn run() {
             pfad_schreiben,
             html_scannen,
             ordner_inhalt,
-            datei_kopieren
+            datei_kopieren,
+            ordner_waehlen,
+            datei_waehlen,
+            speicherort_waehlen,
+            projektordner_lesen,
+            projektordner_setzen
         ])
         .run(tauri::generate_context!())
         .expect("ÖBB-Tool konnte nicht gestartet werden");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn zugriff_nur_in_freigegebenen_ordnern() {
+        let basis = std::env::temp_dir().join(format!("oebb-test-{}", std::process::id()));
+        let frei = basis.join("grund");
+        let fremd = basis.join("fremd");
+        fs::create_dir_all(frei.join("logos")).unwrap();
+        fs::create_dir_all(&fremd).unwrap();
+        let z = Zugriff::default();
+        wurzel_merken(&z, frei.to_str().unwrap());
+
+        assert!(ordner_erlaubt(&z, frei.to_str().unwrap()).is_ok());
+        assert!(ordner_erlaubt(&z, frei.join("logos").to_str().unwrap()).is_ok());
+        // noch nicht vorhandener Unterordner im freigegebenen Ordner
+        assert!(ordner_erlaubt(&z, frei.join("backups").to_str().unwrap()).is_ok());
+        // fremder Ordner, ".."-Trick, Namensvetter ("grund2")
+        assert!(ordner_erlaubt(&z, fremd.to_str().unwrap()).is_err());
+        assert!(ordner_erlaubt(&z, frei.join("..").join("fremd").to_str().unwrap()).is_err());
+        assert!(ordner_erlaubt(&z, basis.join("grund2").to_str().unwrap()).is_err());
+        assert!(ordner_erlaubt(&z, "/etc").is_err());
+
+        // Verknüpfung im freigegebenen Ordner, die nach draußen zeigt
+        #[cfg(unix)]
+        {
+            std::os::unix::fs::symlink(&fremd, frei.join("raus")).unwrap();
+            assert!(ordner_erlaubt(&z, frei.join("raus").to_str().unwrap()).is_err());
+        }
+
+        // Dateien: nur aus dem Dialog
+        assert!(datei_erlaubt(&z, fremd.join("x.html").to_str().unwrap()).is_err());
+        datei_merken(&z, &fremd.join("x.html"));
+        assert!(datei_erlaubt(&z, fremd.join("x.html").to_str().unwrap()).is_ok());
+        assert!(datei_erlaubt(&z, fremd.join("y.html").to_str().unwrap()).is_err());
+
+        // Dateinamen ohne Pfadanteile
+        assert!(pfad_in("/a", "ok.txt").is_ok());
+        assert!(pfad_in("/a", "../x").is_err());
+        assert!(pfad_in("/a", "b/c").is_err());
+        let _ = fs::remove_dir_all(basis);
+    }
+
+    #[test]
+    fn konfig_zeile_lesen() {
+        assert_eq!(pfad_aus_konfig("# x\nGrundordner=\\\\srv\\a b\n"), Some("\\\\srv\\a b".to_string()));
+        assert_eq!(pfad_aus_konfig("Pfad = \"/mnt/x\""), Some("/mnt/x".to_string()));
+        assert_eq!(pfad_aus_konfig("# nur Kommentar"), None);
+    }
 }

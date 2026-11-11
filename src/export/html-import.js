@@ -110,7 +110,12 @@ function felderUebernehmen(quelle, ziel) {
 }
 
 async function protokollLaden(file) {
-  const text = await file.text();
+  return protokollAusText(await file.text());
+}
+
+// entwurf=true: automatisch gesicherten Entwurf zurückholen (ui/entwurf.js) –
+// alles übernehmen (auch Fotos/Unterschrift), ohne Rückfragen.
+export async function protokollAusText(text, entwurf) {
   const meta = metaAusText(text);
   const zielTabId = (meta && TYP_ZU_TAB[meta.typ]) || null;
   if (meta && meta.typ === 'belehrung') {
@@ -146,6 +151,12 @@ async function protokollLaden(file) {
   ziel.dataset.projektId = quelle.getAttribute('data-projekt-id') || '';
 
   // Korrigieren oder Folgeprotokoll? Nur fragen, wenn die Datei Bilder hat.
+  if (entwurf) {
+    fotosUebernehmen(quelle, ziel);
+    unterschriftenUebernehmen(quelle, ziel);
+    return true;
+  }
+
   const hatBilder = quelle.querySelector('.fotoContainer .abb-bilder img, .unterschrift-feld img');
   const korrigieren = !!hatBilder && confirm(
     'Wie soll das Protokoll geladen werden?\n\n' +

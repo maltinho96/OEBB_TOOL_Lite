@@ -85,14 +85,11 @@ function metaAusTab(tab) {
   });
 }
 
-async function alsHtmlSpeichern() {
-  const tab = aktiverTab();
-  if (!tab || !PROTOKOLL_TABS.includes(tab.id)) {
-    alert('Bitte zuerst einen Protokoll-Reiter öffnen (Begehung/Vorbegehung/Belehrung).');
-    return;
-  }
-
-  zusatzdatumAufraeumen(tab);
+// Das Protokoll eines Reiters als vollständige HTML-Datei (Text).
+// entwurf=true: für die automatische Entwurfs-Sicherung (ui/entwurf.js) –
+// lässt die Oberfläche unverändert (kein Einklappen leerer Felder).
+export async function protokollInhalt(tab, entwurf) {
+  if (!entwurf) zusatzdatumAufraeumen(tab);
   zustandSichern(tab);
   // Gespeichert wird eine Kopie: die lebenden Karten bleiben unangetastet.
   // Karten, für die ein Druckbild existiert, werden in der Kopie durch das
@@ -112,6 +109,20 @@ async function alsHtmlSpeichern() {
     metaScriptTag,
     fussCss: fussStilText(),
   });
+  return inhalt;
+}
+
+function gespeichertMelden(tab) {
+  document.dispatchEvent(new CustomEvent('protokoll-gespeichert', { detail: { tabId: tab.id } }));
+}
+
+async function alsHtmlSpeichern() {
+  const tab = aktiverTab();
+  if (!tab || !PROTOKOLL_TABS.includes(tab.id)) {
+    alert('Bitte zuerst einen Protokoll-Reiter öffnen (Begehung/Vorbegehung/Belehrung).');
+    return;
+  }
+  const inhalt = await protokollInhalt(tab, false);
   const vorschlag = dateinameBauen(tab);
 
   // Desktop-Programm: Speichern-Dialog im Protokollordner des Projekts.
@@ -120,6 +131,7 @@ async function alsHtmlSpeichern() {
     const start = pid ? await gespeicherterProjektordner(pid).catch(() => null) : null;
     try {
       if (await speichernUnter(vorschlag, start, { text: inhalt }, { name: 'HTML-Protokoll', extensions: ['html'] })) {
+        gespeichertMelden(tab);
         if (pid) projektStillScannen(pid).catch(() => {});
       }
     } catch (e) {
@@ -153,6 +165,7 @@ async function alsHtmlSpeichern() {
           'verschieben und die leere Datei „' + handle.name + '“ löschen.');
         throw e;
       }
+      gespeichertMelden(tab);
       // Projekt-Tabelle gleich aktualisieren (ohne Nachfrage, falls erlaubt).
       if (pid) projektStillScannen(pid).catch(() => {});
       return;
@@ -171,6 +184,7 @@ async function alsHtmlSpeichern() {
   document.body.removeChild(a);
   // Erst später freigeben – sofortiges Freigeben bricht den Download manchmal ab.
   setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+  gespeichertMelden(tab);
 }
 
 // Verdrahtet den Werkzeugleisten-Knopf data-aktion="speichern" (index.html).

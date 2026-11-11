@@ -2,38 +2,34 @@
 // aber statt Browser-Handles werden Ordner als { pfad, name, kind } geführt
 // und alle Zugriffe laufen über die Rust-Befehle in src-tauri/src/lib.rs.
 //
-// Grundordner: aus oebb-konfig.txt (neben dem Programm oder im
-// Einstellungsordner des Benutzers). Wer „Anderen Grundordner wählen“
-// klickt, wählt per Dialog – der Pfad landet dann in der Benutzer-Konfig.
-// Projektordner: Pfade je Projekt im localStorage dieses Rechners.
+// Das Programm lässt nur Zugriffe auf freigegebene Ordner zu: den
+// Grundordner aus oebb-konfig.txt und Ordner/Dateien, die in einem Dialog
+// des Programms gewählt wurden (siehe „Zugriffsschutz“ in lib.rs).
 
 import { DB_NAME } from '../../config/konstanten.js';
 
 const T = () => window.__TAURI__;
 const aufruf = (befehl, args) => T().core.invoke(befehl, args);
 
-const PROJEKT_SPEICHER = 'oebb-projektordner';
 let grundOrdner = null;
 
 function ordnerHandle(pfad) {
   const teile = String(pfad).replace(/[\\/]+$/, '').split(/[\\/]/);
   return { pfad, name: teile[teile.length - 1] || pfad, kind: 'directory' };
 }
-function trenner(pfad) {
-  return pfad.includes('\\') ? '\\' : '/';
+
+// Projektordner (Projekt-ID -> Pfad) verwaltet das Programm selbst
+// (projektordner.json) – nur dort gemerkte Ordner sind freigegeben.
+let projektPfadeCache = null;
+async function projektPfade() {
+  if (!projektPfadeCache) projektPfadeCache = await aufruf('projektordner_lesen').catch(() => ({}));
+  return projektPfadeCache;
 }
 
-function projektPfade() {
-  try { return JSON.parse(localStorage.getItem(PROJEKT_SPEICHER) || '{}'); } catch { return {}; }
-}
-function projektPfadSetzen(id, pfad) {
-  const m = projektPfade();
-  m[id] = pfad;
-  try { localStorage.setItem(PROJEKT_SPEICHER, JSON.stringify(m)); } catch { /* egal */ }
-}
-
+// Ordner-Dialog: öffnet das Programm (Rust), nicht die Oberfläche. Nur so
+// gewählte Ordner gibt das Programm für den Dateizugriff frei.
 async function ordnerDialog(titel, start) {
-  const p = await T().dialog.open({ directory: true, multiple: false, title: titel, defaultPath: start || undefined });
+  const p = await aufruf('ordner_waehlen', { titel, start: start || null });
   return typeof p === 'string' ? p : null;
 }
 
@@ -72,11 +68,12 @@ export async function gespeicherterGrundordner() {
 export async function waehleProjektordner(id) {
   const pfad = await ordnerDialog('Protokollordner des Projekts wählen', grundOrdner && grundOrdner.pfad);
   if (!pfad) return null;
-  projektPfadSetzen(id, pfad);
+  await aufruf('projektordner_setzen', { id, pfad });
+  (await projektPfade())[id] = pfad;
   return ordnerHandle(pfad);
 }
 export async function gespeicherterProjektordner(id) {
-  const p = projektPfade()[id];
+  const p = (await projektPfade())[id];
   return p ? ordnerHandle(p) : null;
 }
 export async function projektOrdnerHolen(id) {
@@ -120,8 +117,12 @@ export async function scanneHtmlDateien(ordner) {
 // ---------- Speichern-Dialog (Protokoll, Excel) ----------
 // inhalt: { text } oder { base64 }. Gibt true zurück, wenn gespeichert.
 export async function speichernUnter(vorschlag, startOrdner, inhalt, filter) {
-  const start = startOrdner && startOrdner.pfad ? startOrdner.pfad + trenner(startOrdner.pfad) + vorschlag : vorschlag;
-  const ziel = await T().dialog.save({ defaultPath: start, filters: filter ? [filter] : undefined });
+  const ziel = await aufruf('speicherort_waehlen', {
+    vorschlag,
+    start: startOrdner && startOrdner.pfad ? startOrdner.pfad : null,
+    name: filter ? filter.name : 'Datei',
+    endungen: filter ? filter.extensions : [],
+  });
   if (!ziel) return false;
   await aufruf('pfad_schreiben', { pfad: ziel, text: inhalt.text ?? null, base64: inhalt.base64 ?? null });
   return true;

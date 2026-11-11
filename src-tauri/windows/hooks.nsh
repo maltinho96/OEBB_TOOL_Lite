@@ -7,5 +7,6 @@
 !macro NSIS_HOOK_POSTUNINSTALL
   ${If} $UpdateMode <> 1
     Delete "$APPDATA\de.nettec.oebbtool\oebb-konfig.txt"
+    Delete "$APPDATA\de.nettec.oebbtool\projektordner.json"
   ${EndIf}
 !macroend

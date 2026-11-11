@@ -47,6 +47,19 @@ jobs:
           sudo apt-get install -y dpkg-dev apt-utils >/dev/null
           scripts/apt-quelle.sh dist/apt
 
+      # Eigenes F-Droid-Repo für Android (aus den APKs der Releases)
+      - name: F-Droid-Repo bauen
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -z "$KS_B64" ]; then echo "Kein Android-Schlüssel – F-Droid-Repo ausgelassen."; exit 0; fi
+          export KS_FILE="$RUNNER_TEMP/android.keystore"
+          printf '%s' "$KS_B64" | base64 -d > "$KS_FILE"
+          sudo apt-get install -y fdroidserver >/dev/null
+          scripts/fdroid-repo.sh dist/fdroid
+
       - name: Pages vorbereiten
         uses: actions/configure-pages@v6
 

@@ -1,0 +1,57 @@
+// Android-App des ÖBB-Tools.
+//
+// Eine schlanke Hülle ("Trusted Web Activity"): Sie öffnet die Web-App
+// (GitHub Pages) im Vollbild über Chrome. Dadurch verhält sie sich exakt
+// wie die installierte Web-App – Kamera, Standort, Galerie, Speichern und
+// Offline-Betrieb kommen von dort – und jede Aktualisierung der Website ist
+// sofort in der App, ohne neue APK.
+//
+// Version: -PappVersion=0.5.0 (aus src-tauri/tauri.conf.json, setzt die CI).
+// Signatur: Umgebungsvariablen KS_FILE / KS_PASS / KS_ALIAS.
+plugins {
+    id 'com.android.application'
+}
+
+def appVersion = (project.findProperty('appVersion') ?: '0.0.1').toString()
+def teile = appVersion.tokenize('.').collect { it.toInteger() }
+def code = teile[0] * 10000 + teile[1] * 100 + teile[2]
+
+android {
+    namespace 'de.nettec.oebbtool'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'de.nettec.oebbtool'
+        minSdk 23
+        targetSdk 34
+        versionCode code
+        versionName appVersion
+    }
+
+    signingConfigs {
+        release {
+            if (System.getenv('KS_FILE')) {
+                storeFile file(System.getenv('KS_FILE'))
+                storePassword System.getenv('KS_PASS')
+                keyAlias System.getenv('KS_ALIAS') ?: 'app'
+                keyPassword System.getenv('KS_PASS')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.5.0'
+}

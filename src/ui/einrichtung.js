@@ -42,7 +42,7 @@ function start() {
 }
 
 async function waehlen() {
-  const pfad = await T().dialog.open({ directory: true, multiple: false, title: 'Gemeinsamen Grundordner wählen' });
+  const pfad = await aufruf('ordner_waehlen', { titel: 'Gemeinsamen Grundordner wählen', start: null });
   if (typeof pfad !== 'string') return;
   gewaehlt = pfad;
   let namen;
@@ -192,7 +192,7 @@ async function klick(e) {
   if (was === 'plus') firmen.push({ name: '', farbe: '#1f3864', adresse: '', logoDatei: '', logoPfad: '' });
   if (was === 'weg') firmen.splice(+b.dataset.i, 1);
   if (was === 'logo') {
-    const p = await T().dialog.open({ multiple: false, title: 'Logo wählen', filters: [{ name: 'Bilder', extensions: ['svg', 'png', 'jpg', 'jpeg'] }] });
+    const p = await aufruf('datei_waehlen', { titel: 'Logo wählen', name: 'Bilder', endungen: ['svg', 'png', 'jpg', 'jpeg'] });
     if (typeof p === 'string') firmen[+b.dataset.i].logoPfad = p;
   }
   firmenZeigen();

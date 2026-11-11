@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "de.nettec.oebbtool",
+    "sha256_cert_fingerprints": ["0A:23:99:FF:77:3D:E0:B1:11:B4:B6:84:29:DC:D1:59:64:9A:3A:2D:EC:35:F1:29:25:EF:93:DE:C6:F5:80:B1"]
+  }
+}]
