@@ -8,6 +8,7 @@
 #   KS_FILE (Pfad) und KS_PASS – in der CI aus den Secrets
 #   ANDROID_KEYSTORE_BASE64 / ANDROID_KEYSTORE_PASSWORD.
 set -euo pipefail
+SKRIPTE="$(cd "$(dirname "$0")" && pwd)"
 ZIEL="$(mkdir -p "$1" && cd "$1" && pwd)"
 APKS="${2:-}"
 URL="https://maltinho96.github.io/OEBB_TOOL_Lite/fdroid/repo"
@@ -35,7 +36,8 @@ if ! ls "$ARBEIT/repo"/*.apk >/dev/null 2>&1; then
 fi
 
 cd "$ARBEIT"
-cp "$(dirname "$0")/../public/icons/icon-512.png" icon.png 2>/dev/null || true
+mkdir -p repo/icons
+cp "$SKRIPTE/../public/icons/icon-512.png" repo/icons/icon.png 2>/dev/null || true
 cat > config.yml <<KONFIG
 repo_url: $URL
 repo_name: ÖBB-Tool
