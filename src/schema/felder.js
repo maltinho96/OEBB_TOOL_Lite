@@ -52,7 +52,11 @@ export function mailKnopf(empfaenger) {
   return (
     '<div class="mail-leiste kein-druck">' +
     '<button type="button" class="mail-knopf" data-aktion="mail-vorbereiten">✉ Mail vorbereiten</button>' +
-    '<span>Öffnet eine Mail ' + empfaenger + ' und kopiert den fertigen Text – im Mailfenster Strg+V. Das PDF bitte als Anhang dazulegen.</span>' +
+    '<span>Öffnet eine Mail ' + empfaenger + ' mit dem fertigen Text. Das PDF bitte als Anhang dazulegen.</span>' +
+    '</div>' +
+    '<div class="mail-leiste kein-druck">' +
+    '<button type="button" class="mail-knopf" data-aktion="in-stunden">⏱ In Stunden überführen</button>' +
+    '<span>Legt für dieses Protokoll (Name, Nummer, Datum) einen Eintrag im Reiter „Stunden“ des gewählten Projekts an.</span>' +
     '</div>'
   );
 }

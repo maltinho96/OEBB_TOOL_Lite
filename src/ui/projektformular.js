@@ -1,17 +1,15 @@
-// Projektformular: Anlegen/Bearbeiten mit Kartennadel, Ordner-Verknüpfung,
-// Scannen, Löschen, Statuswechsel. Nutzt domain/projekt.js für die DB-
-// Logik, ui/karte.js für die Leaflet-Helfer, ui/team.js und
-// ui/shapefiles.js für die jeweiligen Formularabschnitte.
+// Projektformular: Anlegen/Bearbeiten mit Kartennadel, Protokollordner,
+// Abrechnung (Stunden-/Tagessatz), Löschen, Statuswechsel. Nutzt
+// domain/projekt.js für die DB-Logik, ui/karte.js für die Leaflet-Helfer,
+// ui/team.js und ui/shapefiles.js für die jeweiligen Formularabschnitte.
 //
-// projektScannenUndSpeichern, projektStatusSetzen und
-// projektLoeschenMitBestaetigung sind exportiert, weil ui/dashboard.js
-// (Tabellen-Aktionen) sie
-// wiederverwenden.
+// projektOrdnerVerknuepfen, projektStatusSetzen und
+// projektLoeschenMitBestaetigung exportiert ui/dashboard.js (Tabellen-Aktionen).
 
 import L from 'leaflet';
 import { statusText } from '../core/util.js';
 import { KARTE_START } from '../config/konstanten.js';
-import { grundordnerHolen, waehleProjektordner, projektOrdnerHolen, gespeicherterProjektordner } from '../core/storage/index.js';
+import { grundordnerHolen, waehleProjektordner } from '../core/storage/index.js';
 import { dbAendern } from '../core/db.js';
 import { dbSetzen, dbHolen } from '../core/zustand.js';
 import { nadelIcon, osmEbene } from './karte.js';
@@ -22,8 +20,6 @@ import {
   projektSchreiben,
   projektLoeschen as projektAusDbLoeschen,
   neueProjektId,
-  projektScannen as projektOrdnerScannen,
-  eintraegeZusammenfuehren,
   aktenzeichenListe,
   hauptAktenzeichen,
   verteilerListe,
@@ -76,6 +72,7 @@ function formularLeeren() {
     document.getElementById(id).value = '';
   });
   document.getElementById('npStatus').value = 'aktuell';
+  document.getElementById('npAbrechnung').value = 'stunde';
   teamAnzeigen();
   listenFuellen([], []);
   nadelEntfernen();
@@ -117,6 +114,7 @@ export function projektBearbeiten(pid) {
   document.getElementById('npNummer').value = p.projektnummer || '';
   document.getElementById('npOrt').value = p.ort || '';
   document.getElementById('npStatus').value = p.status || 'aktuell';
+  document.getElementById('npAbrechnung').value = p.abrechnung === 'tag' ? 'tag' : 'stunde';
   document.getElementById('npStart').value = p.start || '';
   document.getElementById('npEnde').value = p.ende || '';
   teamAnzeigen(p.hauptverantwortlich || '', p.zweitverantwortlich || '');
@@ -143,26 +141,28 @@ export function projektBearbeiten(pid) {
   document.getElementById('npAbbrechen').style.display = '';
 }
 
-// Zeile "Protokollordner" im Bearbeiten-Formular: Name des verknüpften Ordners.
-async function ordnerAnzeigen(pid) {
+// Zeile "Protokollordner" im Bearbeiten-Formular: Name des verknüpften
+// Ordners (steht in der Datenbank, gilt damit auf allen Rechnern).
+function ordnerAnzeigen(pid) {
   const zeile = document.getElementById('npOrdnerZeile');
   const name = document.getElementById('npOrdnerName');
   zeile.style.display = '';
-  const h = await gespeicherterProjektordner(pid);
-  name.textContent = h ? '📁 ' + h.name : 'noch keiner verknüpft';
+  const db = dbHolen();
+  const o = db && db.projekte[pid] && db.projekte[pid].ordner;
+  name.textContent = o && o.name ? '📁 ' + (o.pfad || o.name) : 'noch keiner verknüpft';
 }
 
 async function ordnerAendern() {
   if (!bearbeitePid) return;
-  const pid = bearbeitePid;
-  const h = await waehleProjektordner(pid);
-  if (!h) return;
-  await ordnerAnzeigen(pid);
-  statusText('Protokollordner geändert: ' + h.name + ' – wird gescannt …');
-  await projektScannenUndSpeichern(pid);
+  if (await projektOrdnerVerknuepfen(bearbeitePid)) ordnerAnzeigen(bearbeitePid);
 }
 
-// ---------- Anlegen / Ordner verknüpfen / Löschen / Scannen / Status ----------
+// Gewählten Ordner als { name, pfad } (pfad nur im Desktop-Programm).
+function ordnerDaten(h) {
+  return { name: h.name || '', pfad: h.pfad || '' };
+}
+
+// ---------- Anlegen / Ordner verknüpfen / Löschen / Status ----------
 
 async function projektAnlegen() {
   const name = document.getElementById('npName').value.trim();
@@ -181,6 +181,7 @@ async function projektAnlegen() {
     projektnummer: nummer,
     ort: document.getElementById('npOrt').value.trim(),
     status: document.getElementById('npStatus').value,
+    abrechnung: document.getElementById('npAbrechnung').value,
     start: document.getElementById('npStart').value,
     ende: document.getElementById('npEnde').value,
     hauptverantwortlich: document.getElementById('npHauptverantwortlich').value,
@@ -212,11 +213,11 @@ async function projektAnlegen() {
   // öffnet den Ordner-Dialog nur direkt nach einem Klick – nach dem
   // Speichern (das auf Netzlaufwerken ein paar Sekunden dauern kann) wäre
   // diese Frist abgelaufen und der Dialog ginge nicht mehr auf.
-  let protokollOrdner = null;
   if (!warBearbeitung) {
-    statusText('Bitte den Protokollordner des Projekts wählen …');
-    protokollOrdner = await waehleProjektordner(neuId);
-    if (!protokollOrdner) statusText('Kein Protokollordner gewählt – später in der Tabelle über 📂 verknüpfen.');
+    statusText('Bitte den Protokollordner des Projekts wählen (dort wird gespeichert) …');
+    const h = await waehleProjektordner(neuId);
+    if (h) daten.ordner = ordnerDaten(h);
+    else statusText('Kein Protokollordner gewählt – später in der Tabelle über 📂 verknüpfen.');
   }
 
   const ordner = await grundordnerHolen(true);
@@ -229,14 +230,21 @@ async function projektAnlegen() {
 
   formularLeeren();
   projektFormularSchliessen();
-  if (protokollOrdner) await projektScannenUndSpeichern(neuId);
 }
 
-export async function projektOrdnerVerknuepfen(id, danachScannen) {
+// Protokollordner wählen und in der Datenbank vermerken. true = geändert.
+export async function projektOrdnerVerknuepfen(id) {
   const h = await waehleProjektordner(id);
-  if (!h) return;
-  statusText('Protokollordner verknüpft: ' + h.name);
-  if (danachScannen) await projektScannenUndSpeichern(id);
+  if (!h) return false;
+  const ordner = await grundordnerHolen(true);
+  if (!ordner) return false;
+  const db = await dbAendern(ordner, (db) => {
+    if (db.projekte[id]) db.projekte[id].ordner = ordnerDaten(h);
+  });
+  dbSetzen(db);
+  aufAenderung(db);
+  statusText('Protokollordner verknüpft: ' + (h.pfad || h.name));
+  return true;
 }
 
 export async function projektStatusSetzen(id, neuerStatus) {
@@ -265,43 +273,10 @@ export async function projektLoeschenMitBestaetigung(id) {
   aufAenderung(db);
 }
 
-export async function projektScannenUndSpeichern(id) {
-  const ordner = await projektOrdnerHolen(id, true);
-  if (!ordner) { await projektOrdnerVerknuepfen(id, true); return; }
-  statusText('Scanne …');
-  const { neu, gefunden, geprueft } = await projektOrdnerScannen(ordner);
-
-  const grundOrdner = await grundordnerHolen(true);
-  if (!grundOrdner) return;
-  const db = await dbAendern(grundOrdner, (db) => {
-    const p = db.projekte[id];
-    if (!p) return;
-    eintraegeZusammenfuehren(p, neu);
-  });
-  dbSetzen(db);
-  aufAenderung(db);
-  statusText(geprueft + ' HTML-Dateien geprüft, ' + gefunden + (gefunden === 1 ? ' Protokoll' : ' Protokolle') + ' im Projekt.');
-}
-
-// Nach dem Speichern: Projektordner ohne Rückfrage neu einlesen, wenn die
-// Leseberechtigung schon besteht (sonst beim nächsten „🔄 Aktualisieren“).
-export async function projektStillScannen(id) {
-  const ordner = await projektOrdnerHolen(id, false);
-  const grundOrdner = ordner && await grundordnerHolen(false);
-  if (!ordner || !grundOrdner) return;
-  const { neu } = await projektOrdnerScannen(ordner);
-  const db = await dbAendern(grundOrdner, (db) => {
-    const p = db.projekte[id];
-    if (p) eintraegeZusammenfuehren(p, neu);
-  });
-  dbSetzen(db);
-  aufAenderung(db);
-}
-
 // ---------- Initialisierung ----------
 
 // Verdrahtet ausschließlich die formular-internen Knöpfe. Die Zeilen-
-// Aktionen der Projekttabelle (Scannen/Bearbeiten/Löschen/Status-Wechsel)
+// Aktionen der Projekttabelle (Ordner/Bearbeiten/Löschen/Status-Wechsel)
 // verdrahtet ui/dashboard.js selbst und ruft dafür die oben exportierten
 // Funktionen auf.
 export function projektformularInit(section) {

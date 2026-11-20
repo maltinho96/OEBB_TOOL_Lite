@@ -10,7 +10,7 @@ import { statusText } from '../core/util.js';
 import { grundordnerHolen, istDesktop, speichernUnter } from '../core/storage/index.js';
 import { dbLesen } from '../core/db.js';
 import { dbSetzen } from '../core/zustand.js';
-import { projektStundenzeilen, nachMonat, monatsName, smNummer } from '../domain/stunden.js';
+import { projektStundenzeilen, nachMonat, monatsName, smNummer, abrechnungVon } from '../domain/stunden.js';
 
 // ---------- Excel-Arbeitsmappe bauen ----------
 
@@ -25,6 +25,7 @@ function arbeitsmappeBauen(db, pid, mkey) {
   const monate = nachMonat(zeilen);
   const einst = db.einstellungen || {};
   const wb = XLSX.utils.book_new();
+  const tag = abrechnungVon(p) === 'tag';
 
   const duenn = { style: 'thin', color: { rgb: '000000' } };
   const rand = { top: duenn, bottom: duenn, left: duenn, right: duenn };
@@ -35,10 +36,10 @@ function arbeitsmappeBauen(db, pid, mkey) {
     const mz = monate[mk];
     const aoa = [
       [], [einst.adresse1 || ''], [einst.adresse2 || ''], [einst.kundennr || ''], [],
-      ['Stundennachweis', '', '', '', '', 'Stundenverrechnungssatz\nIngenieurkräfte'],
+      [tag ? 'Tagesnachweis' : 'Stundennachweis', '', '', '', '', tag ? 'Tagessatz\nIngenieurkräfte' : 'Stundenverrechnungssatz\nIngenieurkräfte'],
       ['Leistungsnummer', '', '', '', '', einst.leistungsnr || ''],
       ['Lfd. Nr.', '', '', '', '', einst.lfdnr || ''],
-      ['Pos', 'SM Nr.:', 'Ort Bvh', 'Asp BvT', 'Bezeichnung', '(LE) Std.', 'Datum', 'Beschreibung'],
+      ['Pos', 'SM Nr.:', 'Ort Bvh', 'Asp BvT', 'Bezeichnung', tag ? '(LE) Tage' : '(LE) Std.', 'Datum', 'Beschreibung'],
       [],
     ];
     let summe = 0;

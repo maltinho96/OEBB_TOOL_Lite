@@ -28,7 +28,7 @@ import {
   projektStatusSetzen,
   projektLoeschenMitBestaetigung,
 } from './projektformular.js';
-import { statusIcon, stundenSumme } from '../domain/stunden.js';
+import { statusIcon, stundenSumme, einheit } from '../domain/stunden.js';
 
 // ---------- HTML des Übersicht-Reiters ----------
 
@@ -45,7 +45,7 @@ Ein angefangenes Protokoll wird automatisch als Entwurf gesichert.</p>
 <p class="nur-web">Der <b>Grundordner</b> ist der gemeinsame Ordner mit der Datenbank
 (<code>oebb_datenbank.json</code>), den Firmen und Logos.
 Beim ersten Start hier klicken – danach merkt sich der Browser die Verknüpfung.
-Jedes Projekt (Reiter „Projekte“) bekommt einmalig seinen Protokollordner verknüpft – danach liest „🔄 Aktualisieren“ oben in der Leiste alle Protokolle ein.</p>
+Jedes Projekt (Reiter „Projekte“) kann einen Protokollordner bekommen – dort öffnet sich dann „💾 Speichern unter…“. Stunden kommen über „⏱ In Stunden überführen“ unten im Protokoll in die Tabelle.</p>
 <p class="kein-druck">
   <button class="haupt-knopf" data-aktion="grundordner-festlegen">📂 Grundordner festlegen</button>
   <span id="grundordnerStatus" style="margin-left:10px; color:#555;">Noch nicht festgelegt.</span>
@@ -119,6 +119,12 @@ ${logo()}
       <option value="aktuell">▶ Aktuell</option>
       <option value="geplant">🕓 Geplant / kommend</option>
       <option value="abgeschlossen">✔ Abgeschlossen</option>
+    </select>
+  </td></tr>
+  <tr class="bg-grau-h"><td class="label">Abrechnung:</td><td>
+    <select id="npAbrechnung">
+      <option value="stunde">Stundensatz (Außen- und Innendienst je eine Zeile, in Stunden)</option>
+      <option value="tag">Tagessatz (eine Zeile je Tag mit Außen- und Innendienst, in Tagen)</option>
     </select>
   </td></tr>
   <tr class="bg-grau-h"><td class="label">Geplanter Start <small>(optional)</small>:</td><td><input type="date" id="npStart"></td></tr>
@@ -273,7 +279,7 @@ function uebersichtRendern(db) {
   const statusLabel = { aktuell: '▶ Aktuell', geplant: '🕓 Geplant', abgeschlossen: '✔ Abgeschlossen' };
   let html = '<table class="uebersicht"><tr>' +
     '<th>Projekt</th><th>Projektnummer</th><th>Ort</th><th>Status</th>' +
-    '<th>Σ Std.</th><th class="kein-druck">Aktionen</th></tr>';
+    '<th>Σ Std./Tage</th><th class="kein-druck">Aktionen</th></tr>';
 
   ids.sort((a, b) => (db.projekte[a].name || '').localeCompare(db.projekte[b].name || '')).forEach((pid) => {
     const p = db.projekte[pid];
@@ -285,16 +291,16 @@ function uebersichtRendern(db) {
       .map((d) => {
         const dat = d.datum ? new Date(d.datum).toLocaleDateString('de-DE') : '';
         const su = stundenSumme(d);
-        return '<li>' + statusIcon(d) + ' ' + esc(d.datei) + (d.fehlt ? ' <span style="color:#b00">(Datei fehlt)</span>' : '') + ' – ' + (TYP_NAMEN[d.typ] || esc(d.typ)) +
+        return '<li>' + statusIcon(d) + ' ' + esc(d.datei) + ' – ' + (TYP_NAMEN[d.typ] || esc(d.typ)) +
           (d.nummer ? ' Nr. ' + esc(d.nummer) : '') +
           (dat ? ', Begehung am ' + dat : '') +
-          (su > 0 ? ' – <b>' + su + ' Std.</b>' : ' – <i>noch keine Stunden → Reiter „🕒 Stunden“</i>') + '</li>';
+          (su > 0 ? ' – <b>' + su + ' ' + einheit(p, true) + '</b>' : ' – <i>noch keine Stunden → Reiter „🕒 Stunden“</i>') + '</li>';
       })
       .join('');
 
     html += '<tr>' +
-      '<td><details><summary>' + (esc(p.name) || '<i>ohne Namen</i>') + ' <span style="color:#777">(' + dateien.length + (dateien.length === 1 ? ' Protokoll' : ' Protokolle') + ')</span></summary>' +
-      (dateien.length ? '<ul class="datei-liste">' + liste + '</ul>' : '<p style="font-size:11.5px">Noch keine Protokolle – oben „🔄 Aktualisieren“ klicken.</p>') + '</details></td>' +
+      '<td><details><summary>' + (esc(p.name) || '<i>ohne Namen</i>') + ' <span style="color:#777">(' + dateien.length + (dateien.length === 1 ? ' Eintrag' : ' Einträge') + ')</span></summary>' +
+      (dateien.length ? '<ul class="datei-liste">' + liste + '</ul>' : '<p style="font-size:11.5px">Noch keine Einträge – im Protokoll unten „⏱ In Stunden überführen“ klicken.</p>') + '</details></td>' +
       '<td>' + esc(p.projektnummer) + '</td>' +
       '<td>' + esc(p.ort) + (p.lat != null ? ' <span title="' + p.lat + ', ' + p.lng + '">📍</span>' : '') +
       (p.infos && (p.infos.auftraggeber || p.infos.baufirma || p.infos.landkreis || p.infos.behoerde || p.infos.ansprechpartner) || aktenzeichenListe(p).length || verteilerListe(p).length || p.hauptverantwortlich || p.start || p.ende
@@ -317,9 +323,11 @@ function uebersichtRendern(db) {
             : '') + '</div>'
         : '') + '</td>' +
       '<td class="mitte">' + statusLabel[p.status || 'aktuell'] + '</td>' +
-      '<td class="mitte"><b>' + stdSumme + '</b></td>' +
+      '<td class="mitte"><b>' + stdSumme + '</b> <span style="font-size:11px;color:#666">' + einheit(p, true) + '</span></td>' +
       '<td class="kein-druck"><div class="projekt-aktionen">' +
-      '<button class="ordner-knopf" data-aktion="projekt-ordner-verknuepfen" data-pid="' + esc(pid) + '" title="Protokollordner wählen / ändern">📂</button>' +
+      '<button class="ordner-knopf" data-aktion="projekt-ordner-verknuepfen" data-pid="' + esc(pid) + '" title="' +
+        (p.ordner ? 'Protokollordner: ' + esc(p.ordner.pfad || p.ordner.name) + ' – klicken zum Ändern' : 'Protokollordner wählen (Startordner für „Speichern unter…“)') + '">📂' +
+        (p.ordner ? ' ' + esc(p.ordner.name) : '') + '</button>' +
       '<button class="ordner-knopf" data-aktion="projekt-bearbeiten" data-pid="' + esc(pid) + '">✎</button>' +
       ((p.status || 'aktuell') === 'abgeschlossen'
         ? '<button class="ordner-knopf" data-aktion="projekt-reaktivieren" data-pid="' + esc(pid) + '">↩ Reaktivieren</button>'
@@ -414,7 +422,7 @@ export function uebersichtTabInit(mount) {
     const pid = btn.dataset.pid;
     switch (btn.dataset.aktion) {
       case 'grundordner-festlegen': grundordnerFestlegen(); break;
-      case 'projekt-ordner-verknuepfen': projektOrdnerVerknuepfen(pid, false); break;
+      case 'projekt-ordner-verknuepfen': projektOrdnerVerknuepfen(pid); break;
       case 'projekt-bearbeiten': projektBearbeiten(pid); break;
       case 'projekt-loeschen': projektLoeschenMitBestaetigung(pid); break;
       case 'projekt-abschliessen': projektStatusSetzen(pid, 'abgeschlossen'); break;

@@ -36,6 +36,7 @@ import { fotobreiteInit } from './ui/fotobreite.js';
 import { zusatzdatumInit } from './ui/zusatzdatum.js';
 import { anlassInit } from './ui/anlass.js';
 import { aktualisierenInit } from './ui/aktualisieren.js';
+import { stundenuebernahmeInit } from './ui/stundenuebernahme.js';
 import { entwurfInit } from './ui/entwurf.js';
 import { desktopInit } from './ui/desktop.js';
 import { textfelderInit, textfelderBeiAnzeige } from './ui/textfelder.js';
@@ -76,6 +77,7 @@ function start() {
   zusatzdatumInit(app);
   anlassInit();
   aktualisierenInit();
+  stundenuebernahmeInit();
   entwurfInit();
   desktopInit();
   textfelderInit(app);

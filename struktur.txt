@@ -33,7 +33,7 @@ oebb-app/   (Stand: Oktober 2026)
     │   └── util.js              # esc, datumDeutsch, feldWert, aktiverTab, statusText
     │
     ├── domain/                  # Fachlogik ohne Oberfläche
-    │   ├── projekt.js           # Projekte, Scannen, Aktenzeichen, Verteiler
+    │   ├── projekt.js           # Projekte, Aktenzeichen, Verteiler
     │   ├── stunden.js           # Stundenrechnung
     │   └── mailtext.js          # Betreff/Text der Begleit-Mail
     │
@@ -54,11 +54,12 @@ oebb-app/   (Stand: Oktober 2026)
     │   ├── haftungshinweis.js   # Hinweis am Protokollende aus haftungshinweis.txt
     │   ├── zusatzdatum.js       # zweites Begehungsdatum (Wochenprotokoll)
     │   ├── anlass.js            # Anlass-Text vorbelegen und aktuell halten
-    │   ├── aktualisieren.js     # EIN Aktualisieren-Knopf oben: DB + alle Projektordner neu einlesen
+    │   ├── aktualisieren.js     # Aktualisieren-Knopf oben: gemeinsame DB neu einlesen
     │   ├── grundordnerpruefung.js # richtiger Grundordner? sonst warnen, nichts anlegen
     │   ├── fotos.js, markieren.js, fotokarte.js, kartenbild.js, karte.js
     │   ├── einklappen.js, bausteine.js, fusszeile.js, mail.js
     │   ├── stundentabelle.js
+    │   ├── stundenuebernahme.js # „⏱ In Stunden überführen“ am Protokollende
     │   └── support.js
     │
     ├── export/
@@ -84,7 +85,7 @@ src-tauri/
 ├── tauri.conf.json      # Name, Version, Installer (pro Benutzer), Update-Adresse
 ├── capabilities/        # Rechte des Fensters (Dialoge, Links, Updates)
 ├── icons/               # Programmsymbol
-└── src/lib.rs           # Dateizugriff (lesen/schreiben/scannen), oebb-konfig.txt
+└── src/lib.rs           # Dateizugriff (lesen/schreiben), Dialoge, oebb-konfig.txt
 src/core/storage/tauri.js  # Speicher-Backend im Programm (statt fsa.js)
 src/ui/desktop.js          # Links/mailto ins Standardprogramm, Update-Suche
 src/ui/einrichtung.js      # Einrichtung nach der Installation: Grundordner (bestehend/neu), Firmen, Logos

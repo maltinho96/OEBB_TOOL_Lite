@@ -14,7 +14,6 @@ import { fussStilText } from '../ui/fusszeile.js';
 import { aktuelleFirma } from '../ui/firma.js';
 import { feldWert, aktiverTab } from '../core/util.js';
 import { gespeicherterProjektordner, istDesktop, speichernUnter } from '../core/storage/index.js';
-import { projektStillScannen } from '../ui/projektformular.js';
 import { zusatzdatumAufraeumen } from '../ui/zusatzdatum.js';
 import { istAndroidApp, androidSpeichern } from '../core/android.js';
 
@@ -43,7 +42,7 @@ function zustandSichern(scope) {
 //   JJMMTT_NN.ÖBB_Protokoll_Ort      z. B. 260930_06.ÖBB_Protokoll_Potsdam_Westliche_Vorstadt
 // Datum = heutiger Tag (Tag der Erstellung), NN = Protokollnummer, Ort aus
 // dem Protokoll; Leerzeichen werden zu Unterstrichen.
-function dateinameBauen(tab) {
+export function dateinameBauen(tab) {
   const feld = (name) => feldWert(tab, name);
   function sauber(text) {
     return text.replace(/[\\/:*?"<>|]+/g, '').trim().replace(/\s+/g, '_');
@@ -133,7 +132,6 @@ async function alsHtmlSpeichern() {
     try {
       if (await speichernUnter(vorschlag, start, { text: inhalt }, { name: 'HTML-Protokoll', extensions: ['html'] })) {
         gespeichertMelden(tab);
-        if (pid) projektStillScannen(pid).catch(() => {});
       }
     } catch (e) {
       alert('Speichern fehlgeschlagen:\n' + (e && e.message ? e.message : e));
@@ -173,8 +171,6 @@ async function alsHtmlSpeichern() {
         throw e;
       }
       gespeichertMelden(tab);
-      // Projekt-Tabelle gleich aktualisieren (ohne Nachfrage, falls erlaubt).
-      if (pid) projektStillScannen(pid).catch(() => {});
       return;
     } catch (e) {
       if (e && e.name === 'AbortError') return; // Dialog abgebrochen

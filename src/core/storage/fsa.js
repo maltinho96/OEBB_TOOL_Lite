@@ -1,5 +1,5 @@
 // Speicher-Backend fuer die Browserphase: File System Access API.
-// Kapselt alle FSA-Details (Ordnerauswahl, Rechte, Datei-IO, Scan) und
+// Kapselt alle FSA-Details (Ordnerauswahl, Rechte, Datei-IO) und
 // persistiert die Ordner-Handles in IndexedDB, damit sie eine Sitzung
 // ueberdauern. Spaeter tritt daneben ein tauri.js hinter dieselbe Fassade.
 //
@@ -44,13 +44,11 @@ function fsaVerfuegbar() {
   return false;
 }
 
-// mode: Projektordner werden nur gelesen ('read') – sonst fragt Chrome
-// unnötig nach Schreibrechten (und ohne Zusage gilt der Ordner als fehlend).
-async function handleHolen(schluessel, zwischenspeicher, interaktiv, mode = 'readwrite') {
+async function handleHolen(schluessel, zwischenspeicher, interaktiv) {
   const h = zwischenspeicher || await idbHolen(schluessel).catch(() => null);
   if (!h) return null;
-  let p = await h.queryPermission({ mode });
-  if (p !== 'granted' && interaktiv) p = await h.requestPermission({ mode });
+  let p = await h.queryPermission({ mode: 'readwrite' });
+  if (p !== 'granted' && interaktiv) p = await h.requestPermission({ mode: 'readwrite' });
   return p === 'granted' ? h : null;
 }
 
@@ -98,7 +96,8 @@ export async function gespeicherterGrundordner() {
 export async function waehleProjektordner(id) {
   if (!fsaVerfuegbar()) return null;
   try {
-    const h = await window.showDirectoryPicker({ mode: 'read' });
+    // Nur als Startordner für „Speichern unter…“ – Lesen ist nicht nötig.
+    const h = await window.showDirectoryPicker({ id: 'oebb-projektordner' });
     projektOrdnerCache[id] = h;
     await idbSetzen('projektOrdner:' + id, h);
     return h;
@@ -107,16 +106,12 @@ export async function waehleProjektordner(id) {
     return null;
   }
 }
-// Gespeicherter Projektordner (nur für die Anzeige des Namens) – ohne
-// Berechtigungs-Nachfrage.
+// Gespeicherter Projektordner als Startordner für den Speichern-Dialog –
+// ohne Berechtigungs-Nachfrage (startIn braucht keine Rechte). Der Handle
+// gilt nur in diesem Browser; Name/Pfad stehen zusätzlich in der DB.
 export async function gespeicherterProjektordner(id) {
   if (projektOrdnerCache[id]) return projektOrdnerCache[id];
   return await idbHolen('projektOrdner:' + id).catch(() => null);
-}
-export async function projektOrdnerHolen(id, interaktiv) {
-  const h = await handleHolen('projektOrdner:' + id, projektOrdnerCache[id], interaktiv, 'read');
-  if (h) projektOrdnerCache[id] = h;
-  return h;
 }
 
 // ---------- Beliebige Textdatei im Ordner lesen/schreiben/loeschen ----------
@@ -191,33 +186,3 @@ export async function schreibeDbText(ordner, text) {
   return dateiSchreiben(ordner, DB_NAME, text);
 }
 
-// ---------- HTML-Dateien im Projektordner scannen ----------
-// Laeuft rekursiv (max. Tiefe 3) und liefert je HTML-Datei den Kopf-Text
-// (erste 200 kB) plus Aenderungsdatum. Das Parsen der Metadaten macht
-// die Aufrufer-Schicht (domain/projekt.js) – hier nur Datei-IO.
-export async function scanneHtmlDateien(ordner) {
-  const treffer = [];
-  let geprueft = 0;
-
-  async function rekursiv(handle, pfad, tiefe) {
-    for await (const eintrag of handle.values()) {
-      if (eintrag.kind === 'file' && eintrag.name.toLowerCase().endsWith('.html')) {
-        geprueft++;
-        try {
-          const f = await eintrag.getFile();
-          // Metadaten stehen im <head> – bei älteren Dateien aber am Ende,
-          // hinter den eingebetteten Fotos. Dann zusätzlich das Ende lesen.
-          let kopf = await f.slice(0, 200000).text();
-          if (!kopf.includes('id="protokollMeta"') && f.size > 200000) {
-            kopf += '\n' + await f.slice(Math.max(200000, f.size - 400000)).text();
-          }
-          treffer.push({ pfad: pfad + eintrag.name, kopf, geaendert: f.lastModified });
-        } catch { /* Datei ueberspringen */ }
-      } else if (eintrag.kind === 'directory' && tiefe < 3) {
-        await rekursiv(eintrag, pfad + eintrag.name + '/', tiefe + 1);
-      }
-    }
-  }
-  await rekursiv(ordner, '', 0);
-  return { treffer, geprueft };
-}

@@ -1,7 +1,8 @@
 // Stunden-Reiter: Stundenerfassung je Protokoll + Stundenzettel-Vorschau.
-// Der eigentliche Excel-/PDF-Export (arbeitsmappeBauen, exPdf, exXlsx) lebt
-// in export/xlsx-export.js (Stufe 5) – hier nur Erfassung und Vorschau.
-// Originalgetreu portiert.
+// Einträge entstehen über „⏱ In Stunden überführen“ am Protokollende
+// (ui/stundenuebernahme.js). Je nach Projekt wird in Stunden (Stundensatz:
+// AD- und ID-Zeile) oder in Tagen (Tagessatz: eine Zeile je Tag) erfasst.
+// Der Excel-/PDF-Export lebt in export/xlsx-export.js.
 
 import { esc, statusText } from '../core/util.js';
 import { TYP_NAMEN } from '../config/konstanten.js';
@@ -13,6 +14,8 @@ import {
   statusIcon,
   stundenSumme,
   stVorschlag,
+  abrechnungVon,
+  einheit,
   projektStundenzeilen,
   nachMonat,
   monatsName,
@@ -97,7 +100,11 @@ async function stundenTabAnzeigen(interaktiv) {
       return '<option value="' + esc(pid) + '">' + esc(p.name || p.projektnummer || pid) + '</option>';
     })
     .join('');
-  if (vorher && db.projekte[vorher]) sel.value = vorher;
+  // Vorwahl aus „In Stunden überführen“ hat Vorrang.
+  const vorwahl = sel.dataset.vorwahl;
+  delete sel.dataset.vorwahl;
+  if (vorwahl && db.projekte[vorwahl]) sel.value = vorwahl;
+  else if (vorher && db.projekte[vorher]) sel.value = vorher;
   status.textContent = '';
   einstellungenLaden(db);
   stTabRendern();
@@ -140,26 +147,30 @@ function stTabRendern() {
   const pid = document.getElementById('stProjekt').value;
   const db = dbHolen();
   if (!db || !pid || !db.projekte[pid]) {
-    ziel.innerHTML = '<p>Kein Projekt gewählt – ggf. zuerst in der Übersicht ein Projekt anlegen und scannen.</p>';
+    ziel.innerHTML = '<p>Kein Projekt gewählt – ggf. zuerst im Reiter „Projekte“ ein Projekt anlegen.</p>';
     return;
   }
   const p = db.projekte[pid];
   const dateien = Object.keys(p.eintraege)
-    .map((k) => { const e = p.eintraege[k]; e.datei = k; return e; })
+    .map((k) => ({ ...p.eintraege[k], datei: k }))
     .sort((a, b) => (a.datum || '').localeCompare(b.datum || '') || a.datei.localeCompare(b.datei));
 
   if (!dateien.length) {
-    ziel.innerHTML = '<p>Dieses Projekt hat noch keine Protokolle – oben „🔄 Aktualisieren“ klicken.</p>';
+    ziel.innerHTML = '<p>Noch keine Einträge – im Protokoll unten auf „⏱ In Stunden überführen“ klicken.</p>';
     return;
   }
 
+  const art = abrechnungVon(p);
+  const eh = einheit(p, true);
   let summe = 0;
-  let html = '<table class="form"><tr class="bg-grau">' +
-    '<td class="label" style="width:80px">Std.</td><td class="label" style="width:150px">Datum</td>' +
+  let html = '<p class="kein-druck" style="margin:0 0 6px;color:#555;font-size:12px">Abrechnung: <b>' +
+    (art === 'tag' ? 'Tagessatz' : 'Stundensatz') + '</b> (im Projekt änderbar)</p>' +
+    '<table class="form"><tr class="bg-grau">' +
+    '<td class="label" style="width:80px">' + eh + '</td><td class="label" style="width:150px">Datum</td>' +
     '<td class="label">Beschreibung</td><td style="width:36px"></td></tr>';
 
   dateien.forEach((e) => {
-    const zeilen = e.stunden && e.stunden.length ? e.stunden : stVorschlag(e);
+    const zeilen = e.stunden && e.stunden.length ? e.stunden : stVorschlag(e, art);
     const dat = e.datum ? new Date(e.datum).toLocaleDateString('de-DE') : '';
     const su = stundenSumme(e);
     summe += su;
@@ -167,9 +178,9 @@ function stTabRendern() {
       '<span class="st-status">' + statusIcon(e) + '</span> ' + (TYP_NAMEN[e.typ] || esc(e.typ)) +
       (e.nummer ? ' Nr. ' + esc(e.nummer) : '') + (dat ? ' · Begehung am ' + dat : '') +
       ' <span style="font-weight:400;color:#666">(' + esc(e.datei) + ')</span>' +
-      (e.fehlt ? ' <span style="font-weight:400;color:#b00">– Datei nicht mehr im Ordner</span>' : '') +
       '</td>' +
-      '<td><button class="kein-druck" title="Zeile hinzufügen" data-aktion="st-zeile-plus" data-datei="' + encodeURIComponent(e.datei) + '">＋</button></td></tr>';
+      '<td style="white-space:nowrap"><button class="kein-druck" title="Zeile hinzufügen" data-aktion="st-zeile-plus" data-datei="' + encodeURIComponent(e.datei) + '">＋</button>' +
+      '<button class="kein-druck" title="Ganzen Eintrag entfernen" style="color:#a00" data-aktion="st-eintrag-entfernen" data-datei="' + encodeURIComponent(e.datei) + '">🗑</button></td></tr>';
 
     zeilen.forEach((z) => {
       html += '<tr class="bg-grau-h" data-datei="' + encodeURIComponent(e.datei) + '">' +
@@ -180,9 +191,24 @@ function stTabRendern() {
     });
   });
 
-  html += '<tr class="bg-grau"><td class="label">Σ ' + summe + '</td><td colspan="3" style="font-size:11.5px;color:#555">' +
+  html += '<tr class="bg-grau"><td class="label">Σ ' + summe + ' ' + eh + '</td><td colspan="3" style="font-size:11.5px;color:#555">' +
     'Gespeicherte Summe – nach Änderungen „💾 Alle Stunden speichern“ klicken.</td></tr></table>';
   ziel.innerHTML = html;
+}
+
+// Ganzen Eintrag (Protokoll) aus der Stundentabelle entfernen.
+async function stEintragEntfernen(btn) {
+  const pid = document.getElementById('stProjekt').value;
+  const datei = decodeURIComponent(btn.dataset.datei);
+  if (!pid || !confirm('Eintrag „' + datei + '“ mit allen erfassten Zeilen aus der Stundentabelle entfernen?\n(Die Protokolldatei selbst bleibt.)')) return;
+  const ordner = await grundordnerHolen(true);
+  if (!ordner) return;
+  const db = await dbAendern(ordner, (db) => {
+    const p = db.projekte[pid];
+    if (p && p.eintraege) delete p.eintraege[datei];
+  });
+  dbSetzen(db);
+  stTabRendern();
 }
 
 function stZeilePlus(btn) {
@@ -236,7 +262,7 @@ async function stTabSpeichern() {
     });
   });
   dbSetzen(db);
-  document.getElementById('stStatus').textContent = 'Gespeichert – ' + gesamt + ' Std. im Projekt.';
+  document.getElementById('stStatus').textContent = 'Gespeichert – ' + gesamt + ' ' + einheit(db.projekte[pid], true) + ' im Projekt.';
   stTabRendern();
 }
 
@@ -292,19 +318,20 @@ export function exVorschau() {
 function zettelBlock(p, einst, mkey, mz) {
   if (!mz.length) return '';
   const summe = mz.reduce((a, z) => a + z.std, 0);
+  const tag = abrechnungVon(p) === 'tag';
   let html = '<div class="sz-block">' +
     '<div class="sz-kopf">' + esc(einst.adresse1 || '') + '<br>' + esc(einst.adresse2 || '') +
     (einst.kundennr ? '<br>Kundennummer: ' + esc(einst.kundennr) : '') + '</div>' +
-    '<div class="sz-titel">Stundennachweis – ' + esc(p.name || '') + ' – ' + esc(monatsName(mkey)) + '</div>' +
+    '<div class="sz-titel">' + (tag ? 'Tagesnachweis' : 'Stundennachweis') + ' – ' + esc(p.name || '') + ' – ' + esc(monatsName(mkey)) + '</div>' +
     '<div class="sz-kopf">' +
     (einst.leistungsnr ? 'Leistungsnummer: ' + esc(einst.leistungsnr) + ' &nbsp;·&nbsp; ' : '') +
-    (einst.lfdnr ? 'Lfd. Nr. (Stundenverrechnungssatz Ingenieurkräfte): ' + esc(einst.lfdnr) : '') + '</div>' +
+    (einst.lfdnr ? 'Lfd. Nr. (' + (tag ? 'Tagessatz' : 'Stundenverrechnungssatz') + ' Ingenieurkräfte): ' + esc(einst.lfdnr) : '') + '</div>' +
     '<table class="sz"><colgroup>' +
     '<col style="width:4%"><col style="width:11%"><col style="width:12%"><col style="width:12%">' +
     '<col style="width:8%"><col style="width:7%"><col style="width:10%"><col style="width:36%">' +
     '</colgroup><tr>' +
     '<th class="mitte">Pos</th><th>SM Nr.:</th><th>Ort Bvh</th><th>Asp BvT</th><th>Bezeichnung</th>' +
-    '<th class="mitte">(LE) Std.</th><th>Datum</th><th>Beschreibung</th></tr>';
+    '<th class="mitte">(LE) ' + (tag ? 'Tage' : 'Std.') + '</th><th>Datum</th><th>Beschreibung</th></tr>';
 
   mz.forEach((z, i) => {
     const d = z.datum ? z.datum.split('-').reverse().join('.') : '';
@@ -346,6 +373,7 @@ export function stundenTabInit(mount) {
     switch (btn.dataset.aktion) {
       case 'st-speichern': stTabSpeichern(); break;
       case 'st-zeile-plus': stZeilePlus(btn); break;
+      case 'st-eintrag-entfernen': stEintragEntfernen(btn); break;
       case 'st-zeile-entfernen': btn.closest('tr').remove(); break;
       case 'einst-speichern': einstellungenSpeichern(); break;
       // ex-pdf / ex-xlsx: verdrahtet in export/xlsx-export.js (Stufe 5)

@@ -14,7 +14,6 @@ export const waehleGrundordner = (...a) => b().waehleGrundordner(...a);
 export const grundordnerHolen = (...a) => b().grundordnerHolen(...a);
 export const gespeicherterGrundordner = (...a) => b().gespeicherterGrundordner(...a);
 export const waehleProjektordner = (...a) => b().waehleProjektordner(...a);
-export const projektOrdnerHolen = (...a) => b().projektOrdnerHolen(...a);
 export const gespeicherterProjektordner = (...a) => b().gespeicherterProjektordner(...a);
 export const leseDbText = (...a) => b().leseDbText(...a);
 export const schreibeDbText = (...a) => b().schreibeDbText(...a);
@@ -23,7 +22,6 @@ export const dateiAlsDataUrl = (...a) => b().dateiAlsDataUrl(...a);
 export const dateiSchreiben = (...a) => b().dateiSchreiben(...a);
 export const dateiLoeschen = (...a) => b().dateiLoeschen(...a);
 export const unterordnerHolen = (...a) => b().unterordnerHolen(...a);
-export const scanneHtmlDateien = (...a) => b().scanneHtmlDateien(...a);
 
 // Nur Desktop: Speichern-Dialog mit vollem Dateizugriff.
 export const speichernUnter = (...a) => tauri.speichernUnter(...a);

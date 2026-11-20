@@ -1,9 +1,12 @@
-// Projektlogik: DB-Manipulation und das Einlesen (Scannen) eines
-// Projektordners. KEIN DOM – die Formular-/Bestaetigungs-/Render-Teile
-// liegen spaeter in ui/projektformular.js bzw. ui/dashboard.js.
-
-import { scanneHtmlDateien } from '../core/storage/index.js';
-import { metaAusText } from '../core/meta.js';
+// Projektlogik: DB-Manipulation. KEIN DOM – die Formular-/Render-Teile
+// liegen in ui/projektformular.js bzw. ui/dashboard.js.
+//
+// p.eintraege: { Dateiname: { typ, nummer, datum, ort, stunden: [...] } }
+//   – entstehen über „⏱ In Stunden überführen“ am Ende eines Protokolls
+//   (ui/stundenuebernahme.js). Es wird kein Ordner mehr durchsucht.
+// p.ordner:    { name, pfad } – Protokollordner (Speicherort). pfad nur im
+//   Desktop-Programm (der Browser verrät keine Pfade).
+// p.abrechnung: 'stunde' (Standard) | 'tag'
 
 // ---------- DB-Manipulation (rein, ohne IO) ----------
 
@@ -28,79 +31,6 @@ export function projektLoeschen(db, id) {
 // Neue Projekt-Id erzeugen.
 export function neueProjektId() {
   return 'p' + Date.now();
-}
-
-// ---------- Scannen ----------
-
-// Typ, Nummer und Datum aus dem Dateinamen (so wie die App speichert):
-//   261104_09.ÖBB_Protokoll_Ort.html             -> Begehung Nr. 09, 04.11.2026
-//   261021_ÖBB_Vorbegehungsprotokoll_Ort.html    -> Vorbegehung
-//   260930_Belehrungsprotokoll_Firma_Ort.html    -> Belehrung
-// Ohne Datum vorne oder ohne „protokoll“ im Namen: null.
-export function metaAusDateiname(pfad) {
-  const name = String(pfad).split('/').pop().normalize('NFC');
-  const m = /^(\d{2})(\d{2})(\d{2})_(?:(\d{1,3})\.)?(.*)\.html?$/i.exec(name);
-  if (!m || !/protokoll/i.test(m[5])) return null;
-  const typ = /vorbegehung/i.test(m[5]) ? 'vorbegehung' : /belehrung/i.test(m[5]) ? 'belehrung-karel' : 'protokoll';
-  return { typ, nummer: m[4] || '', datum: '20' + m[1] + '-' + m[2] + '-' + m[3] };
-}
-
-// Einen Projektordner nach Protokoll-HTMLs durchsuchen. Entscheidend ist der
-// DATEINAME (Datum, Nummer, Typ) – nicht der Inhalt: jede so benannte Datei
-// zählt als Protokoll, auch wenn sie leer ist oder sich nicht lesen lässt.
-// Die Metadaten im Inhalt ergänzen nur (z. B. Ort, Status) bzw. erkennen
-// Protokolle mit abweichendem Namen.
-// Reine Auswertung: schreibt noch nichts in die DB.
-export async function projektScannen(ordner) {
-  const { treffer, geprueft } = await scanneHtmlDateien(ordner);
-  const neu = {};
-  let gefunden = 0;
-
-  treffer.forEach(({ pfad, kopf, geaendert }) => {
-    const ausName = metaAusDateiname(pfad);
-    let ausInhalt = null;
-    try { ausInhalt = kopf ? metaAusText(kopf) : null; } catch { ausInhalt = null; }
-    if (ausInhalt && (ausInhalt.typ === 'start' || ausInhalt.typ === 'uebersicht')) ausInhalt = null;
-    if (!ausName && !(ausInhalt && ausInhalt.typ)) return;
-    // Dateiname hat Vorrang (so sieht es auch der Mensch im Ordner).
-    neu[pfad] = { ...(ausInhalt || {}), ...(ausName || {}), geaendert };
-    gefunden++;
-  });
-
-  return { neu, gefunden, geprueft };
-}
-
-// Scan-Ergebnis (vollständiger Ordner-Scan) in ein Projekt einpflegen:
-//  - gefundene Dateien: Metadaten ersetzen, Stunden behalten
-//  - umbenannte Datei (gleicher Typ + Nummer, alte Datei weg): Stunden
-//    wandern zur neuen Datei mit
-//  - verschwundene Dateien ohne Stunden: aus der Liste entfernen
-//  - verschwundene Dateien MIT Stunden: behalten, als „fehlt“ markiert
-//    (damit keine erfassten Stunden verloren gehen)
-export function eintraegeZusammenfuehren(projekt, neu) {
-  const alt = projekt.eintraege || {};
-  const ergebnis = {};
-  const hatStunden = (e) => Array.isArray(e.stunden) && e.stunden.length > 0;
-  const weg = Object.keys(alt).filter((d) => !neu[d]);
-
-  Object.keys(neu).forEach((datei) => {
-    let stunden = alt[datei] && alt[datei].stunden;
-    if (!alt[datei]) {
-      const umbenannt = weg.find((d) => hatStunden(alt[d]) && alt[d].typ === neu[datei].typ &&
-        String(alt[d].nummer || '') === String(neu[datei].nummer || '') && (alt[d].nummer || alt[d].datum === neu[datei].datum));
-      if (umbenannt) {
-        stunden = alt[umbenannt].stunden;
-        weg.splice(weg.indexOf(umbenannt), 1);
-        delete alt[umbenannt];
-      }
-    }
-    ergebnis[datei] = { ...neu[datei], stunden: stunden || [] };
-    delete ergebnis[datei].fehlt;
-  });
-  weg.forEach((d) => {
-    if (alt[d] && hatStunden(alt[d])) ergebnis[d] = { ...alt[d], fehlt: true };
-  });
-  projekt.eintraege = ergebnis;
 }
 
 // ---------- Aktenzeichen und Verteiler je Projekt ----------

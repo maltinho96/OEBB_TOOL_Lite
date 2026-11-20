@@ -14,9 +14,7 @@
 
 use base64::Engine;
 use serde::Serialize;
-use std::collections::HashMap;
 use std::fs;
-use std::io::{Read, Seek, SeekFrom};
 use std::path::{Component, Path, PathBuf};
 use std::sync::Mutex;
 use std::time::UNIX_EPOCH;
@@ -29,8 +27,7 @@ use tauri_plugin_dialog::DialogExt;
 // Erlaubt sind nur:
 //   - der Grundordner aus oebb-konfig.txt
 //   - Ordner, die der Mensch in einem Ordner-Dialog gewählt hat (die Dialoge
-//     öffnet dieses Programm selbst, nicht die Oberfläche) – Projektordner
-//     werden dafür in projektordner.json gemerkt
+//     öffnet dieses Programm selbst, nicht die Oberfläche)
 //   - einzelne Dateien aus einem Datei-/Speichern-Dialog (Logo, Protokoll)
 // So bleibt der Schaden begrenzt, selbst wenn fremder Code in die Oberfläche
 // gelangen sollte.
@@ -168,7 +165,7 @@ fn konfig_lesen(app: tauri::AppHandle, z: tauri::State<Zugriff>) -> Konfig {
         if veraltet(eigene) {
             let _ = fs::remove_file(eigene);
             if let Some(d) = eigene.parent() {
-                let _ = fs::remove_file(d.join(PROJEKTORDNER_DATEI));
+                let _ = fs::remove_file(d.join("projektordner.json") /* Altlast bis 0.6 */);
             }
         }
     }
@@ -267,43 +264,6 @@ async fn speicherort_waehlen(
         }
         None => Ok(None),
     }
-}
-
-// ---------- Projektordner (je Projekt-ID ein gewählter Ordner) ----------
-
-const PROJEKTORDNER_DATEI: &str = "projektordner.json";
-
-fn projektordner_pfad(app: &tauri::AppHandle) -> Result<PathBuf, String> {
-    Ok(app.path().app_config_dir().map_err(fehler)?.join(PROJEKTORDNER_DATEI))
-}
-
-fn projektordner_laden(app: &tauri::AppHandle) -> HashMap<String, String> {
-    projektordner_pfad(app)
-        .ok()
-        .and_then(|p| fs::read_to_string(p).ok())
-        .and_then(|t| serde_json::from_str(&t).ok())
-        .unwrap_or_default()
-}
-
-#[tauri::command]
-fn projektordner_lesen(app: tauri::AppHandle, z: tauri::State<Zugriff>) -> HashMap<String, String> {
-    let m = projektordner_laden(&app);
-    for p in m.values() {
-        wurzel_merken(&z, p);
-    }
-    m
-}
-
-#[tauri::command]
-fn projektordner_setzen(app: tauri::AppHandle, z: tauri::State<Zugriff>, id: String, pfad: String) -> Result<(), String> {
-    ordner_erlaubt(&z, &pfad)?; // muss gerade im Dialog gewählt worden sein
-    let mut m = projektordner_laden(&app);
-    m.insert(id, pfad);
-    let datei = projektordner_pfad(&app)?;
-    if let Some(d) = datei.parent() {
-        fs::create_dir_all(d).map_err(fehler)?;
-    }
-    fs::write(datei, serde_json::to_string_pretty(&m).map_err(fehler)?).map_err(fehler)
 }
 
 #[tauri::command]
@@ -515,68 +475,6 @@ fn mail_oeffnen(app: tauri::AppHandle, an: Vec<String>, cc: Vec<String>, betreff
     Ok("eml".into())
 }
 
-#[derive(Serialize)]
-struct Treffer {
-    pfad: String,
-    kopf: String,
-    geaendert: u64,
-}
-
-#[derive(Serialize)]
-struct ScanErgebnis {
-    treffer: Vec<Treffer>,
-    geprueft: u32,
-}
-
-fn teil_lesen(p: &Path, start: u64, laenge: usize) -> String {
-    let mut puffer = vec![0u8; laenge];
-    let Ok(mut f) = fs::File::open(p) else { return String::new() };
-    if f.seek(SeekFrom::Start(start)).is_err() {
-        return String::new();
-    }
-    let n = f.read(&mut puffer).unwrap_or(0);
-    puffer.truncate(n);
-    String::from_utf8_lossy(&puffer).into_owned()
-}
-
-// Wie scanneHtmlDateien in fsa.js: HTML-Dateien bis Tiefe 3, Kopf (200 kB)
-// und – falls die Metadaten dort fehlen – zusätzlich das Dateiende.
-fn scannen(ordner: &Path, rel: &str, tiefe: u32, erg: &mut ScanErgebnis) {
-    let Ok(eintraege) = fs::read_dir(ordner) else { return };
-    for e in eintraege.flatten() {
-        let name = e.file_name().to_string_lossy().into_owned();
-        let Ok(meta) = e.metadata() else { continue };
-        if meta.is_file() && name.to_lowercase().ends_with(".html") {
-            erg.geprueft += 1;
-            let p = e.path();
-            let groesse = meta.len();
-            let mut kopf = teil_lesen(&p, 0, 200_000);
-            if !kopf.contains("id=\"protokollMeta\"") && groesse > 200_000 {
-                let start = std::cmp::max(200_000, groesse.saturating_sub(400_000));
-                kopf.push('\n');
-                kopf.push_str(&teil_lesen(&p, start, (groesse - start) as usize));
-            }
-            let geaendert = meta
-                .modified()
-                .ok()
-                .and_then(|t| t.duration_since(UNIX_EPOCH).ok())
-                .map(|d| d.as_millis() as u64)
-                .unwrap_or(0);
-            erg.treffer.push(Treffer { pfad: format!("{rel}{name}"), kopf, geaendert });
-        } else if meta.is_dir() && tiefe < 3 {
-            scannen(&e.path(), &format!("{rel}{name}/"), tiefe + 1, erg);
-        }
-    }
-}
-
-#[tauri::command]
-async fn html_scannen(z: tauri::State<'_, Zugriff>, ordner: String) -> Result<ScanErgebnis, String> {
-    ordner_erlaubt(&z, &ordner)?;
-    let mut erg = ScanErgebnis { treffer: Vec::new(), geprueft: 0 };
-    scannen(Path::new(&ordner), "", 0, &mut erg);
-    Ok(erg)
-}
-
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -595,14 +493,11 @@ pub fn run() {
             datei_loeschen,
             unterordner,
             pfad_schreiben,
-            html_scannen,
             ordner_inhalt,
             datei_kopieren,
             ordner_waehlen,
             datei_waehlen,
             speicherort_waehlen,
-            projektordner_lesen,
-            projektordner_setzen,
             mail_oeffnen
         ])
         .run(tauri::generate_context!())

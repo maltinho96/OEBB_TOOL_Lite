@@ -13,25 +13,37 @@ export function stundenSumme(e) {
   return (e.stunden || []).reduce((a, z) => a + (parseFloat(z.std) || 0), 0);
 }
 
-// Vorschlagszeilen für einen Eintrag (AD-/ID-Standardzeilen).
-export function stVorschlag(eintrag) {
+// Abrechnung eines Projekts: 'stunde' (Standard) oder 'tag'.
+export function abrechnungVon(p) {
+  return p && p.abrechnung === 'tag' ? 'tag' : 'stunde';
+}
+// Einheit für Überschriften/Summen.
+export function einheit(p, kurz) {
+  return abrechnungVon(p) === 'tag' ? 'Tage' : kurz ? 'Std.' : 'Stunden';
+}
+
+// Vorschlagszeilen für einen Eintrag.
+//   Stundensatz: je Begehungstag eine AD-Zeile (Außendienst) + eine ID-Zeile
+//                (Innendienst)
+//   Tagessatz:   je Begehungstag EINE Zeile mit Außen- und Innendienst
+export function stVorschlag(eintrag, abrechnung) {
   const nr = eintrag.nummer
-    ? (eintrag.nummer.length < 2 ? '0' + eintrag.nummer : eintrag.nummer)
+    ? (String(eintrag.nummer).length < 2 ? '0' + eintrag.nummer : String(eintrag.nummer))
     : '';
   const praefix = nr ? nr + '.ÖBB' : 'ÖBB';
+  const vb = eintrag.typ === 'vorbegehung' ? ' + Vorbegehung' : '';
+  const tage = [eintrag.datum, eintrag.datum2].filter(Boolean);
+  if (!tage.length) tage.push('');
+  if (abrechnung === 'tag') {
+    return tage.map((d) => ({
+      std: '',
+      datum: d,
+      beschreibung: praefix + ' AD + ID inkl. An- und Abfahrt' + vb + ', Protokollerstellung, Emails, Telefonate mit AG, Amt, etc.',
+    }));
+  }
   return [
-    {
-      std: '',
-      datum: eintrag.datum || '',
-      beschreibung:
-        praefix + ' AD inkl. An- und Abfahrt' +
-        (eintrag.typ === 'vorbegehung' ? ' + Vorbegehung' : ''),
-    },
-    {
-      std: '',
-      datum: eintrag.datum || '',
-      beschreibung: praefix + ' ID Protokollerstellung inkl. Emails, Telefonate mit AG, Amt, etc.',
-    },
+    ...tage.map((d) => ({ std: '', datum: d, beschreibung: praefix + ' AD inkl. An- und Abfahrt' + vb })),
+    { std: '', datum: tage[tage.length - 1], beschreibung: praefix + ' ID Protokollerstellung inkl. Emails, Telefonate mit AG, Amt, etc.' },
   ];
 }
 

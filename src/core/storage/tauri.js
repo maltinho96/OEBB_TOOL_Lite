@@ -7,6 +7,7 @@
 // des Programms gewählt wurden (siehe „Zugriffsschutz“ in lib.rs).
 
 import { DB_NAME } from '../../config/konstanten.js';
+import { dbHolen } from '../zustand.js';
 
 const T = () => window.__TAURI__;
 const aufruf = (befehl, args) => T().core.invoke(befehl, args);
@@ -16,14 +17,6 @@ let grundOrdner = null;
 function ordnerHandle(pfad) {
   const teile = String(pfad).replace(/[\\/]+$/, '').split(/[\\/]/);
   return { pfad, name: teile[teile.length - 1] || pfad, kind: 'directory' };
-}
-
-// Projektordner (Projekt-ID -> Pfad) verwaltet das Programm selbst
-// (projektordner.json) – nur dort gemerkte Ordner sind freigegeben.
-let projektPfadeCache = null;
-async function projektPfade() {
-  if (!projektPfadeCache) projektPfadeCache = await aufruf('projektordner_lesen').catch(() => ({}));
-  return projektPfadeCache;
 }
 
 // Ordner-Dialog: öffnet das Programm (Rust), nicht die Oberfläche. Nur so
@@ -65,21 +58,16 @@ export async function gespeicherterGrundordner() {
 }
 
 // ---------- Projektordner ----------
-export async function waehleProjektordner(id) {
+// Der Pfad steht in der gemeinsamen Datenbank (p.ordner.pfad) – so gilt er
+// für alle Rechner. Er dient nur als Startordner für „Speichern unter…“.
+export async function waehleProjektordner() {
   const pfad = await ordnerDialog('Protokollordner des Projekts wählen', grundOrdner && grundOrdner.pfad);
-  if (!pfad) return null;
-  await aufruf('projektordner_setzen', { id, pfad });
-  (await projektPfade())[id] = pfad;
-  return ordnerHandle(pfad);
+  return pfad ? ordnerHandle(pfad) : null;
 }
 export async function gespeicherterProjektordner(id) {
-  const p = (await projektPfade())[id];
-  return p ? ordnerHandle(p) : null;
-}
-export async function projektOrdnerHolen(id) {
-  const h = await gespeicherterProjektordner(id);
-  if (!h) return null;
-  return (await aufruf('ordner_existiert', { pfad: h.pfad })) ? h : null;
+  const db = dbHolen();
+  const o = db && db.projekte && db.projekte[id] && db.projekte[id].ordner;
+  return o && o.pfad ? ordnerHandle(o.pfad) : null;
 }
 
 // ---------- Dateien ----------
@@ -109,9 +97,6 @@ export async function leseDbText(ordner) {
 }
 export async function schreibeDbText(ordner, text) {
   return dateiSchreiben(ordner, DB_NAME, text);
-}
-export async function scanneHtmlDateien(ordner) {
-  return aufruf('html_scannen', { ordner: ordner.pfad });
 }
 
 // ---------- Speichern-Dialog (Protokoll, Excel) ----------
