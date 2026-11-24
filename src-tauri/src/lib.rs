@@ -276,6 +276,60 @@ async fn datei_oeffnen(
     }
 }
 
+// ---------- PDF speichern (nur Windows) ----------
+// Erzeugt das PDF direkt aus der WebView2 (wie „Als PDF speichern“ im
+// Druckdialog, gleiche Druck-CSS), aber an einen Pfad aus dem Speichern-
+// Dialog – also z. B. direkt in den Protokollordner des Projekts.
+#[cfg(windows)]
+#[tauri::command]
+async fn pdf_speichern(fenster: tauri::WebviewWindow, z: tauri::State<'_, Zugriff>, pfad: String) -> Result<(), String> {
+    use std::sync::mpsc;
+    use webview2_com::Microsoft::Web::WebView2::Win32::{ICoreWebView2Environment6, ICoreWebView2_2, ICoreWebView2_7};
+    use webview2_com::PrintToPdfCompletedHandler;
+    use windows_core::{Interface, HSTRING};
+
+    datei_erlaubt(&z, &pfad)?; // nur ein Ziel aus dem Speichern-Dialog
+    let (tx, rx) = mpsc::channel::<Result<bool, String>>();
+    fenster
+        .with_webview(move |wv| {
+            let tx_fertig = tx.clone();
+            let start = (|| -> windows_core::Result<()> {
+                unsafe {
+                    let core = wv.controller().CoreWebView2()?;
+                    let umgebung = core.cast::<ICoreWebView2_2>()?.Environment()?;
+                    let e = umgebung.cast::<ICoreWebView2Environment6>()?.CreatePrintSettings()?;
+                    // A4, Ränder/Fußzeile kommen aus der Druck-CSS (@page).
+                    e.SetPageWidth(8.27)?;
+                    e.SetPageHeight(11.69)?;
+                    e.SetShouldPrintBackgrounds(true)?;
+                    e.SetShouldPrintHeaderAndFooter(false)?;
+                    let fertig = PrintToPdfCompletedHandler::create(Box::new(move |erg, ok| {
+                        let _ = tx_fertig.send(erg.map(|_| ok).map_err(|f| f.message()));
+                        Ok(())
+                    }));
+                    core.cast::<ICoreWebView2_7>()?.PrintToPdf(&HSTRING::from(pfad.as_str()), &e, &fertig)
+                }
+            })();
+            if let Err(f) = start {
+                let _ = tx.send(Err(f.message()));
+            }
+        })
+        .map_err(fehler)?;
+    match rx.recv_timeout(std::time::Duration::from_secs(180)) {
+        Ok(Ok(true)) => Ok(()),
+        Ok(Ok(false)) => Err("PDF konnte nicht geschrieben werden (Datei geöffnet oder kein Schreibrecht?)".into()),
+        Ok(Err(f)) => Err(f),
+        Err(_) => Err("PDF-Erstellung hat zu lange gedauert".into()),
+    }
+}
+
+#[cfg(not(windows))]
+#[tauri::command]
+async fn pdf_speichern(pfad: String) -> Result<(), String> {
+    let _ = pfad;
+    Err("PDF speichern gibt es nur im Windows-Programm".into())
+}
+
 #[tauri::command]
 async fn speicherort_waehlen(
     app: tauri::AppHandle,
@@ -532,6 +586,7 @@ pub fn run() {
             datei_waehlen,
             speicherort_waehlen,
             datei_oeffnen,
+            pdf_speichern,
             mail_oeffnen
         ])
         .run(tauri::generate_context!())

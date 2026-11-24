@@ -205,7 +205,7 @@ export function druckTitelInit() {
   let vorher = null;
   window.addEventListener('beforeprint', () => {
     const tab = aktiverTab();
-    if (!tab || !PROTOKOLL_TABS.includes(tab.id)) return;
+    if (!tab || !PROTOKOLL_TABS.includes(tab.id) || vorher !== null) return;
     vorher = document.title;
     // Chrome hält alles nach dem letzten Punkt für die Endung und schneidet
     // es ab ("261103_08.ÖBB_Protokoll_Ort" -> "261103_08.pdf"). Mit ".pdf"

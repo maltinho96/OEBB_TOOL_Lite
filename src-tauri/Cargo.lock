@@ -2427,7 +2427,7 @@ dependencies = [
 
 [[package]]
 name = "oebb-tool"
-version = "0.7.2"
+version = "0.7.3"
 dependencies = [
  "base64 0.22.1",
  "serde",
@@ -2438,6 +2438,8 @@ dependencies = [
  "tauri-plugin-opener",
  "tauri-plugin-process",
  "tauri-plugin-updater",
+ "webview2-com",
+ "windows-core",
 ]
 
 [[package]]

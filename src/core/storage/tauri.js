@@ -110,6 +110,22 @@ export async function dateiOeffnen(startOrdner, filter) {
   });
 }
 
+// ---------- PDF speichern (nur Windows) ----------
+// Speichern-Dialog (Start im Projektordner), dann erzeugt die WebView2 das
+// PDF mit der Druck-CSS. Gibt den Pfad zurück oder null (abgebrochen).
+export async function pdfSpeichern(vorschlag, startOrdner, vorbereiten) {
+  const ziel = await aufruf('speicherort_waehlen', {
+    vorschlag,
+    start: startOrdner && startOrdner.pfad ? startOrdner.pfad : null,
+    name: 'PDF',
+    endungen: ['pdf'],
+  });
+  if (!ziel) return null;
+  if (vorbereiten) await vorbereiten();
+  await aufruf('pdf_speichern', { pfad: ziel });
+  return ziel;
+}
+
 // ---------- Speichern-Dialog (Protokoll, Excel) ----------
 // inhalt: { text } oder { base64 }. Gibt true zurück, wenn gespeichert.
 export async function speichernUnter(vorschlag, startOrdner, inhalt, filter) {
