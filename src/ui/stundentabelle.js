@@ -41,6 +41,12 @@ ${logo()}
     <span id="stStatus" style="color:#555;"></span>
   </p>
   <div id="stundenTabelle"></div>
+  <p class="kein-druck" id="stTerminZeile" style="display:none; gap:8px; flex-wrap:wrap; align-items:center; margin-top:10px;">
+    <b>Weiteren Termin nachtragen:</b>
+    <input type="date" id="stTerminDatum" style="font:inherit; padding:3px; width:150px; flex:none;">
+    <input type="text" id="stTerminText" placeholder="Bezeichnung, z. B. Abstimmung UNB vor Ort" style="font:inherit; padding:3px; width:340px; max-width:100%; flex:0 1 auto;">
+    <button class="ordner-knopf" data-aktion="st-termin-plus">＋ Termin hinzufügen</button>
+  </p>
 </div>
 
 <div id="st-export" style="display:none">
@@ -70,12 +76,20 @@ ${logo()}
 // ---------- Sub-Reiter (erfassen / export) ----------
 
 export function stBereich(name) {
+  // Beim Wechsel im selben Projekt bleiben.
+  const st = document.getElementById('stProjekt');
+  const ex = document.getElementById('exProjekt');
+  if (name === 'export') {
+    exProjekteFuellen(st.value);
+  } else if (ex.value && ex.value !== st.value && [...st.options].some((o) => o.value === ex.value)) {
+    st.value = ex.value;
+    stTabRendern();
+  }
   document.getElementById('st-erfassen').style.display = name === 'erfassen' ? '' : 'none';
   document.getElementById('st-export').style.display = name === 'export' ? '' : 'none';
   document.querySelectorAll('.sub2-knopf').forEach((b) => {
     b.classList.toggle('aktiv', b.dataset.st === name);
   });
-  if (name === 'export') exProjekteFuellen();
 }
 
 // ---------- Laden / Projektauswahl ----------
@@ -108,7 +122,7 @@ async function stundenTabAnzeigen(interaktiv) {
   status.textContent = '';
   einstellungenLaden(db);
   stTabRendern();
-  exProjekteFuellen();
+  exProjekteFuellen(sel.value);
 }
 
 function einstellungenLaden(db) {
@@ -146,6 +160,7 @@ function stTabRendern() {
   const ziel = document.getElementById('stundenTabelle');
   const pid = document.getElementById('stProjekt').value;
   const db = dbHolen();
+  document.getElementById('stTerminZeile').style.display = db && pid && db.projekte[pid] ? 'flex' : 'none';
   if (!db || !pid || !db.projekte[pid]) {
     ziel.innerHTML = '<p>Kein Projekt gewählt – ggf. zuerst im Reiter „Projekte“ ein Projekt anlegen.</p>';
     return;
@@ -156,7 +171,7 @@ function stTabRendern() {
     .sort((a, b) => (a.datum || '').localeCompare(b.datum || '') || a.datei.localeCompare(b.datei));
 
   if (!dateien.length) {
-    ziel.innerHTML = '<p>Noch keine Einträge – im Protokoll unten auf „⏱ In Stunden überführen“ klicken.</p>';
+    ziel.innerHTML = '<p>Noch keine Einträge – im Protokoll unten auf „⏱ In Stunden überführen“ klicken oder unten einen Termin nachtragen.</p>';
     return;
   }
 
@@ -176,10 +191,12 @@ function stTabRendern() {
     summe += su;
     html += '<tr class="bg-blau-h"><td colspan="3" style="font-weight:700">' +
       '<span class="st-status">' + statusIcon(e) + '</span> ' + (TYP_NAMEN[e.typ] || esc(e.typ)) +
-      (e.nummer ? ' Nr. ' + esc(e.nummer) : '') + (dat ? ' · Begehung am ' + dat : '') +
-      ' <span style="font-weight:400;color:#666">(' + esc(e.datei) + ')</span>' +
+      (e.nummer ? ' Nr. ' + esc(e.nummer) : '') +
+      (e.typ === 'termin'
+        ? (dat ? ' am ' + dat : '') + (e.bezeichnung ? ' – ' + esc(e.bezeichnung) : '')
+        : (dat ? ' · Begehung am ' + dat : '') + ' <span style="font-weight:400;color:#666">(' + esc(e.datei) + ')</span>') +
       '</td>' +
-      '<td style="white-space:nowrap"><button class="kein-druck" title="Zeile hinzufügen" data-aktion="st-zeile-plus" data-datei="' + encodeURIComponent(e.datei) + '">＋</button>' +
+      '<td style="white-space:nowrap"><button class="kein-druck" title="Weitere Zeile / weiteren Tag zu diesem Eintrag hinzufügen" data-aktion="st-zeile-plus" data-datei="' + encodeURIComponent(e.datei) + '">＋</button>' +
       '<button class="kein-druck" title="Ganzen Eintrag entfernen" style="color:#a00" data-aktion="st-eintrag-entfernen" data-datei="' + encodeURIComponent(e.datei) + '">🗑</button></td></tr>';
 
     zeilen.forEach((z) => {
@@ -211,26 +228,29 @@ async function stEintragEntfernen(btn) {
   stTabRendern();
 }
 
+// Weitere Zeile (z. B. weiterer Tag) zu einem Eintrag – die Beschreibung der
+// letzten Zeile wird als Vorschlag übernommen, das Datum bleibt leer.
 function stZeilePlus(btn) {
   const datei = btn.dataset.datei;
   const kopfzeile = btn.closest('tr');
+  let ref = kopfzeile;
+  while (ref.nextElementSibling && ref.nextElementSibling.dataset.datei === datei) {
+    ref = ref.nextElementSibling;
+  }
+  const letzte = ref !== kopfzeile ? ref.querySelector('.st-beschr') : null;
   const tr = document.createElement('tr');
   tr.className = 'bg-grau-h';
   tr.dataset.datei = datei;
   tr.innerHTML = '<td><input type="text" class="st-std" style="width:60px"></td>' +
     '<td><input type="date" class="st-datum"></td>' +
-    '<td><input type="text" class="st-beschr"></td>' +
+    '<td><input type="text" class="st-beschr" value="' + esc(letzte ? letzte.value : '') + '"></td>' +
     '<td><button class="kein-druck" data-aktion="st-zeile-entfernen" style="color:#a00">✕</button></td>';
-  let ref = kopfzeile;
-  while (ref.nextElementSibling && ref.nextElementSibling.dataset.datei === datei) {
-    ref = ref.nextElementSibling;
-  }
   ref.parentNode.insertBefore(tr, ref.nextElementSibling);
+  tr.querySelector('.st-datum').focus();
 }
 
-async function stTabSpeichern() {
-  const pid = document.getElementById('stProjekt').value;
-  if (!pid) return;
+// Zeilen der Tabelle (noch ungespeichert) je Eintrag einsammeln.
+function tabelleLesen() {
   const proDatei = {};
   document.querySelectorAll('#stundenTabelle tr[data-datei]').forEach((tr) => {
     const datei = decodeURIComponent(tr.dataset.datei);
@@ -247,6 +267,40 @@ async function stTabSpeichern() {
       });
     }
   });
+  return proDatei;
+}
+
+// Termin ohne Protokoll nachtragen (eigener Eintrag). Ungespeicherte
+// Eingaben in der Tabelle werden dabei mitgespeichert.
+async function stTerminPlus() {
+  const pid = document.getElementById('stProjekt').value;
+  const datum = document.getElementById('stTerminDatum').value;
+  const bezeichnung = document.getElementById('stTerminText').value.trim();
+  if (!pid) return;
+  if (!datum) { alert('Bitte ein Datum für den Termin wählen.'); return; }
+  const proDatei = tabelleLesen();
+  const ordner = await grundordnerHolen(true);
+  if (!ordner) return;
+  const db = await dbAendern(ordner, (db) => {
+    const p = db.projekte[pid];
+    if (!p) return;
+    p.eintraege = p.eintraege || {};
+    Object.keys(proDatei).forEach((d) => { if (p.eintraege[d]) p.eintraege[d].stunden = proDatei[d]; });
+    const e = { typ: 'termin', datum, bezeichnung: bezeichnung || 'Termin' };
+    e.stunden = stVorschlag(e, abrechnungVon(p));
+    p.eintraege['termin-' + datum + '-' + Date.now().toString(36)] = e;
+  });
+  dbSetzen(db);
+  document.getElementById('stTerminDatum').value = '';
+  document.getElementById('stTerminText').value = '';
+  document.getElementById('stStatus').textContent = 'Termin hinzugefügt – Stunden/Tage eintragen und speichern.';
+  stTabRendern();
+}
+
+async function stTabSpeichern() {
+  const pid = document.getElementById('stProjekt').value;
+  if (!pid) return;
+  const proDatei = tabelleLesen();
 
   const ordner = await grundordnerHolen(true);
   if (!ordner) return;
@@ -268,11 +322,11 @@ async function stTabSpeichern() {
 
 // ---------- Export-Vorschau (Auswahl + Stundenzettel-HTML) ----------
 
-function exProjekteFuellen() {
+function exProjekteFuellen(wunsch) {
   const sel = document.getElementById('exProjekt');
   const db = dbHolen();
   if (!db) { document.getElementById('exStatus').textContent = 'Noch keine Projektdaten geladen.'; return; }
-  const vorher = sel.value;
+  const vorher = wunsch || sel.value;
   const ids = Object.keys(db.projekte).sort((a, b) =>
     (db.projekte[a].name || '').localeCompare(db.projekte[b].name || '')
   );
@@ -364,7 +418,14 @@ export function stundenTabInit(mount) {
     btn.addEventListener('click', () => stBereich(btn.dataset.st));
   });
   document.getElementById('stProjekt').addEventListener('change', stTabRendern);
-  document.getElementById('exProjekt').addEventListener('change', exMonateFuellen);
+  document.getElementById('exProjekt').addEventListener('change', () => {
+    // Auswahl im Export auch fürs Erfassen übernehmen (gleiches Projekt).
+    const st = document.getElementById('stProjekt');
+    const ex = document.getElementById('exProjekt');
+    if ([...st.options].some((o) => o.value === ex.value)) { st.value = ex.value; stTabRendern(); }
+    exMonateFuellen();
+  });
+  document.getElementById('stProjekt').addEventListener('change', () => exProjekteFuellen(document.getElementById('stProjekt').value));
   document.getElementById('exMonat').addEventListener('change', exVorschau);
 
   section.addEventListener('click', (e) => {
@@ -374,6 +435,7 @@ export function stundenTabInit(mount) {
       case 'st-speichern': stTabSpeichern(); break;
       case 'st-zeile-plus': stZeilePlus(btn); break;
       case 'st-eintrag-entfernen': stEintragEntfernen(btn); break;
+      case 'st-termin-plus': stTerminPlus(); break;
       case 'st-zeile-entfernen': btn.closest('tr').remove(); break;
       case 'einst-speichern': einstellungenSpeichern(); break;
       // ex-pdf / ex-xlsx: verdrahtet in export/xlsx-export.js (Stufe 5)

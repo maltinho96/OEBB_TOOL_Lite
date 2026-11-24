@@ -34,6 +34,15 @@ export function stVorschlag(eintrag, abrechnung) {
   const vb = eintrag.typ === 'vorbegehung' ? ' + Vorbegehung' : '';
   const tage = [eintrag.datum, eintrag.datum2].filter(Boolean);
   if (!tage.length) tage.push('');
+  // Nachgetragener Termin (kein Protokoll): ohne „Protokollerstellung“.
+  if (eintrag.typ === 'termin') {
+    const t = eintrag.bezeichnung || 'Termin';
+    if (abrechnung === 'tag') return tage.map((d) => ({ std: '', datum: d, beschreibung: t + ' – AD + ID inkl. An- und Abfahrt, Emails, Telefonate' }));
+    return [
+      ...tage.map((d) => ({ std: '', datum: d, beschreibung: t + ' – AD inkl. An- und Abfahrt' })),
+      { std: '', datum: tage[tage.length - 1], beschreibung: t + ' – ID Nachbereitung inkl. Emails, Telefonate' },
+    ];
+  }
   if (abrechnung === 'tag') {
     return tage.map((d) => ({
       std: '',

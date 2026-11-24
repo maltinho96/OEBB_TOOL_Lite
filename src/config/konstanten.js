@@ -46,6 +46,7 @@ export const TYP_NAMEN = {
   vorbegehung: 'Vorbegehung',
   'belehrung-karel': 'Belehrung',
   belehrung: 'Belehrung (altes Format)',
+  termin: 'Weiterer Termin',
 };
 
 export const PROTOKOLL_TABS = ['tab-protokoll', 'tab-vorbegehung', 'tab-belehrung-karel'];
