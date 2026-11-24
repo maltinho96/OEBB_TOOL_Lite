@@ -99,6 +99,17 @@ export async function schreibeDbText(ordner, text) {
   return dateiSchreiben(ordner, DB_NAME, text);
 }
 
+// ---------- Öffnen-Dialog (Protokoll laden) ----------
+// Gibt { name, text } oder null (abgebrochen) zurück.
+export async function dateiOeffnen(startOrdner, filter) {
+  return aufruf('datei_oeffnen', {
+    titel: 'Protokoll laden',
+    start: startOrdner && startOrdner.pfad ? startOrdner.pfad : null,
+    name: filter ? filter.name : 'Datei',
+    endungen: filter ? filter.extensions : [],
+  });
+}
+
 // ---------- Speichern-Dialog (Protokoll, Excel) ----------
 // inhalt: { text } oder { base64 }. Gibt true zurück, wenn gespeichert.
 export async function speichernUnter(vorschlag, startOrdner, inhalt, filter) {

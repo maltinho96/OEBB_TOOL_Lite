@@ -25,4 +25,5 @@ export const unterordnerHolen = (...a) => b().unterordnerHolen(...a);
 
 // Nur Desktop: Speichern-Dialog mit vollem Dateizugriff.
 export const speichernUnter = (...a) => tauri.speichernUnter(...a);
+export const dateiOeffnen = (...a) => tauri.dateiOeffnen(...a);
 export const konfigLesen = () => tauri.konfigLesen();

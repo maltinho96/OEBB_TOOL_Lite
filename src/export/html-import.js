@@ -18,6 +18,8 @@ import { einklappenAktualisieren } from '../ui/einklappen.js';
 import { fotosUebernehmen, unterschriftenUebernehmen, textMitUmbruechen } from '../ui/fotos.js';
 import { karteAktualisieren } from '../ui/fotokarte.js';
 import { zusatzdatumAktualisieren } from '../ui/zusatzdatum.js';
+import { aktiverTab } from '../core/util.js';
+import { gespeicherterProjektordner, istDesktop, dateiOeffnen } from '../core/storage/index.js';
 
 // typ (aus protokollMeta) -> Reiter-Id
 const TYP_ZU_TAB = {
@@ -182,6 +184,38 @@ export async function protokollAusText(text, entwurf) {
   alert('Als Folgeprotokoll geladen – ohne Fotos und Unterschrift. Bitte Nummer/Datum anpassen und neu speichern.');
 }
 
+// Öffnen-Dialog – wenn im offenen Protokoll ein Projekt gewählt ist, startet
+// er in dessen Protokollordner. Ohne Projekt/Ordner: zuletzt genutzter Ordner.
+async function ladenDialog(input) {
+  const tab = aktiverTab();
+  const pid = tab && tab.dataset.projektId;
+  const start = pid ? await gespeicherterProjektordner(pid).catch(() => null) : null;
+
+  if (istDesktop()) {
+    try {
+      const d = await dateiOeffnen(start, { name: 'HTML-Protokoll', extensions: ['html', 'htm'] });
+      if (d) await protokollAusText(d.text);
+    } catch (e) {
+      alert('Laden fehlgeschlagen:\n' + (e && e.message ? e.message : e));
+    }
+    return;
+  }
+  if (window.showOpenFilePicker) {
+    const optionen = { types: [{ description: 'HTML-Protokoll', accept: { 'text/html': ['.html', '.htm'] } }] };
+    if (start) optionen.startIn = start;
+    else optionen.id = 'oebb-protokoll';
+    try {
+      const [h] = await window.showOpenFilePicker(optionen);
+      await protokollLaden(await h.getFile());
+      return;
+    } catch (e) {
+      if (e && e.name === 'AbortError') return; // abgebrochen
+      // sonst klassisch über das Datei-Feld
+    }
+  }
+  input.click(); // Firefox, Android-App
+}
+
 export function htmlImportInit() {
   // Verstecktes Datei-Eingabefeld einmalig anlegen.
   let input = document.getElementById('protokollLadenInput');
@@ -199,6 +233,6 @@ export function htmlImportInit() {
   });
 
   document.querySelectorAll('[data-aktion="protokoll-laden"]').forEach((btn) => {
-    btn.addEventListener('click', () => input.click());
+    btn.addEventListener('click', () => ladenDialog(input));
   });
 }

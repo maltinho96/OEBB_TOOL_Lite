@@ -243,6 +243,39 @@ async fn datei_waehlen(
     }
 }
 
+// Protokoll laden: Öffnen-Dialog (optional im Projektordner) und die gewählte
+// Datei gleich lesen. Die Freigabe ergibt sich aus der Wahl im Dialog.
+#[derive(Serialize)]
+struct GeoeffneteDatei {
+    name: String,
+    text: String,
+}
+
+#[tauri::command]
+async fn datei_oeffnen(
+    app: tauri::AppHandle,
+    titel: String,
+    start: Option<String>,
+    name: String,
+    endungen: Vec<String>,
+) -> Result<Option<GeoeffneteDatei>, String> {
+    let e: Vec<&str> = endungen.iter().map(|s| s.as_str()).collect();
+    let mut d = app.dialog().file().set_title(&titel).add_filter(&name, &e);
+    if let Some(s) = start.filter(|s| Path::new(s).is_dir()) {
+        d = d.set_directory(s);
+    }
+    match d.blocking_pick_file().and_then(|f| f.into_path().ok()) {
+        Some(p) => {
+            let b = fs::read(&p).map_err(fehler)?;
+            Ok(Some(GeoeffneteDatei {
+                name: p.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default(),
+                text: String::from_utf8_lossy(&b).into_owned(),
+            }))
+        }
+        None => Ok(None),
+    }
+}
+
 #[tauri::command]
 async fn speicherort_waehlen(
     app: tauri::AppHandle,
@@ -498,6 +531,7 @@ pub fn run() {
             ordner_waehlen,
             datei_waehlen,
             speicherort_waehlen,
+            datei_oeffnen,
             mail_oeffnen
         ])
         .run(tauri::generate_context!())
