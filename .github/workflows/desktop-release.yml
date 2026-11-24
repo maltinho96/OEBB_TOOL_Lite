@@ -1,8 +1,12 @@
-name: Desktop-Programm bauen (Windows + Ubuntu)
+name: Desktop-Programm bauen (Windows)
 
 # Baut das ÖBB-Tool als Windows-Programm (Installer), als Ubuntu-Paket
 # (.deb) und als Android-App (.apk) und veröffentlicht sie unter "Releases" (Tag desktop-vX.Y.Z legt
 # die Action selbst an). Danach baut deploy-pages.yml die apt-Paketquelle.
+#
+# ZURZEIT NUR WINDOWS: Ubuntu (.deb) und Android sind vorübergehend
+# abgeschaltet (Matrix-Eintrag auskommentiert, android-Job mit if: false).
+# Wieder einschalten: die drei Stellen mit „NUR WINDOWS“ zurücknehmen.
 # Auslösen: in src-tauri/tauri.conf.json die Versionsnummer erhöhen und auf
 # beta-neu pushen – oder im Actions-Tab "Run workflow".
 #
@@ -28,9 +32,9 @@ jobs:
         include:
           - os: windows-latest
             bundles: nsis
-          # Ubuntu 22.04: läuft dann auf 22.04, 24.04 und neuer
-          - os: ubuntu-22.04
-            bundles: deb
+          # NUR WINDOWS – Ubuntu 22.04 (läuft auf 22.04, 24.04 und neuer):
+          # - os: ubuntu-22.04
+          #   bundles: deb
     runs-on: ${{ matrix.os }}
     env:
       HAT_SCHLUESSEL: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY != '' }}
@@ -83,12 +87,7 @@ jobs:
           releaseBody: |
             **Windows:** unten unter "Assets" `OEBB-Tool_…_x64-setup.exe` herunterladen und starten (keine Administratorrechte nötig; SmartScreen ggf. mit "Weitere Informationen" → "Trotzdem ausführen").
 
-            **Ubuntu (apt, mit automatischen Updates über `sudo apt upgrade`):**
-            ```
-            curl -fsSL https://maltinho96.github.io/OEBB_TOOL_Lite/apt/install.sh | sh
-            ```
-
-            **Android (F-Droid):** Anleitung unter https://maltinho96.github.io/OEBB_TOOL_Lite/fdroid/
+            Ubuntu und Android bekommen diese Version vorerst nicht.
           releaseDraft: false
           prerelease: false
           args: ${{ env.TAURI_ARGS }}
@@ -98,6 +97,7 @@ jobs:
   # Ohne Secrets: Probe-Build mit Wegwerf-Schlüssel (nur als Artefakt des
   # Workflow-Laufs, wird NICHT veröffentlicht) – prüft, dass alles baut.
   android:
+    if: false # NUR WINDOWS
     needs: bauen
     runs-on: ubuntu-latest
     env:
@@ -177,6 +177,7 @@ jobs:
 
   # Danach die apt-Paketquelle und das F-Droid-Repo auf GitHub Pages neu bauen.
   apt-aktualisieren:
+    if: false # NUR WINDOWS
     needs: [bauen, android]
     runs-on: ubuntu-latest
     steps:
